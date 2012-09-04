@@ -218,6 +218,8 @@
 			private var loadingLabel:String;	
 			private var selectionLabel:String;	
 			private var nolayerLabel:String;
+			private var requiredLbl:String;
+			private var requiredTooltip:String;
 			
 			//Properties
 			[Bindable] private var graphicsLayer:GraphicsLayer;
@@ -323,8 +325,8 @@
 			private var overFillSymbol:Symbol;
 			
 			//Build Constants
-			protected const VERSION:String = "3.0.7";
-			protected const BUILDDATE:String = "8/21/2012";
+			protected const VERSION:String = "3.0.8";
+			protected const BUILDDATE:String = "9/4/2012";
 			
 			//Resources
 			[Embed(source="assets/images/i_about.png")]
@@ -400,6 +402,8 @@
 					enableMultiPartSearch = configXML.labels.enablemultipartsearch || "enable multi-part graphics";
 					applyTolleranceByDefault = configXML.tolerancebydefault && configXML.tolerancebydefault == "true";
 					widgetAndGridIteract = configXML.enabledatagridinteractionwithwidget && configXML.enabledatagridinteractionwithwidget == "true";
+					requiredLbl = configXML.labels.required || "*";
+					requiredTooltip = configXML.labels.requiredtooltip || "This field is required.&#13;Enter a value to enable search button";
 					
 					configSpatialSearchRelation = [];
 					var operList:XMLList = configXML..spatialrelationship;
@@ -529,7 +533,7 @@
 						for (j = 0; j < lyrExprList.length(); j++){
 							var lyrExprAlias:String = lyrExprList[j].@alias;
 							var lyrTextLabel:String = lyrExprList[j].@textsearchlabel;
-							var lyrRequiresAValue:Boolean = lyrExprList[j].@isValueRequired && lyrExprList[j].@isValueRequired == "true";
+							var lyrRequiresAValue:Boolean = lyrExprList[j].@isvaluerequired && lyrExprList[j].@isvaluerequired == "true";
 							var lyrExprVals:XMLList = lyrExprList[j]..value;
 							configLayerExprsVals = [];
 							for (v = 0; v < lyrExprVals.length(); v++){
@@ -539,17 +543,16 @@
 								var valUserList:String = lyrExprVals[v].@userlist;
 								var valDomain:Boolean = lyrExprVals[v].@usedomain && lyrExprVals[v].@usedomain == "true";
 								// if config is given and set to false explicitly, then make it optional (aka not required). Otherwise, default to being required
-								var isOptional:Boolean = lyrExprVals[v].@isValueRequired && lyrExprVals[v].@isValueRequired == "false";
-								var prependToValue:String =  lyrExprVals[v].@prepend;
-								
+								var isOptional:Boolean = lyrExprVals[v].@isvaluerequired && lyrExprVals[v].@isvaluerequired == "false";
+								var operatorValue:String =  lyrExprVals[v].@operator;
 								var exprVals:Object = {
 									prompt: valPrompt,
 									expression: valExpr,
 									field: valField,
 									usedomain: valDomain,
 									userlist: valUserList,
-									isValueRequired : !isOptional,
-									prepend : prependToValue
+									isvaluerequired : !isOptional,
+									operator : operatorValue
 								};
 								configLayerExprsVals.push(exprVals)
 							}
@@ -557,8 +560,7 @@
 								label: lyrExprAlias,
 								textlabel: lyrTextLabel,
 								values: configLayerExprsVals,
-								isValueRequired : lyrRequiresAValue
-								
+								isvaluerequired : lyrRequiresAValue
 							};
 							configLayerExprs.push(expr);
 						}
@@ -571,11 +573,13 @@
 						for (l = 0; l < lyrLinkList.length(); l++){
 							var lyrLink:String = XML(lyrLinkList[l]).text() || "";
 							var lyrLinkAlias:String = lyrLinkList[l].@alias || "";
+							var lyrLinkdiableIfNull:Boolean = lyrLinkList[l].@diablelinksifnull && lyrLinkList[l].@diablelinksifnull == "true";
 							var lyrIcon:String = XML(lyrLinkList[l]).child("icon") || "";
 							var linkObj:Object = {
 								link: lyrLink,
 								alias: lyrLinkAlias,
-								icon: lyrIcon
+								icon: lyrIcon,
+								diablelinksifnull: lyrLinkdiableIfNull
 							};
 							lyrLinks.push(linkObj);
 						}
@@ -621,6 +625,8 @@
 							}
 						}
 						
+						var lyrSymbol:Symbol = getLayerSymbology(lyrList[i]);
+						
 						var searchLayer:Object = {
 							layer: layer,
 							label: lyrLabel,
@@ -638,7 +644,8 @@
 							defexpr: lyrDefExpr,
 							opendg: openDG,
 							relates: configLayerRels,
-							attachments: lyrQueryAttach
+							attachments: lyrQueryAttach,
+							symbology: lyrSymbol
 						};
 						configSearchGraphical.push(searchLayer);
 						
@@ -676,7 +683,7 @@
 						for (j = 0; j < tblExprList.length(); j++){
 							var tblExprAlias:String = tblExprList[j].@alias;
 							var tblTextLabel:String = tblExprList[j].@textsearchlabel;
-							var tblRequiresAValue:Boolean = tblExprList[j].@isValueRequired && tblExprList[j].@isValueRequired == "true";
+							var tblRequiresAValue:Boolean = tblExprList[j].@isvaluerequired && tblExprList[j].@isvaluerequired == "true";
 							var tblExprVals:XMLList = tblExprList[j]..value;
 							configTableExprsVals = [];
 							for (v = 0; v < tblExprVals.length(); v++){
@@ -686,17 +693,16 @@
 								var tblUserList:String = tblExprVals[v].@userlist;
 								var tblDomain:Boolean = tblExprVals[v].@usedomain && tblExprVals[v].@usedomain == "true";
 								// if config is given and set to false explicitly, then make it optional (aka not required). Otherwise, default to being required
-								var isOptional:Boolean = tblExprVals[v].@isValueRequired && tblExprVals[v].@isValueRequired == "false";
-								var prependToValue:String =  tblExprVals[v].@prepend;
-
+								var isOptionalt:Boolean = tblExprVals[v].@isvaluerequired && tblExprVals[v].@isvaluerequired == "false";
+								var operatorValuet:String =  tblExprVals[v].@operator;
 								var tblexprVals:Object = {
 									prompt: tblPrompt,
 									expression: tblExpr,
 									field: tblField,
 									usedomain: tblDomain,
 									userlist: tblUserList,
-									isValueRequired : !isOptional,
-									prepend : prependToValue
+									isvaluerequired: !isOptionalt,
+									operator: operatorValuet
 								};
 								configTableExprsVals.push(tblexprVals)
 							}
@@ -704,7 +710,7 @@
 								label: tblExprAlias,
 								textlabel: tblTextLabel,
 								values: configTableExprsVals,
-								isValueRequired : tblRequiresAValue
+								isvaluerequired : tblRequiresAValue
 							};
 							configTableExprs.push(tblexpr);
 						}
@@ -717,11 +723,13 @@
 						for (l = 0; l < tblLinkList.length(); l++){
 							var tblLink:String = XML(tblLinkList[l]).text() || "";
 							var tblLinkAlias:String = tblLinkList[l].@alias || "";
+							var tblLinkdiableIfNull:Boolean = tblLinkList[l].@diablelinksifnull && tblLinkList[l].@diablelinksifnull == "true";
 							var tblIcon:String = XML(tblLinkList[l]).child("icon") || "";
 							var tbllinkObj:Object = {
 								link: tblLink,
 								alias: tblLinkAlias,
-								icon: tblIcon
+								icon: tblIcon,
+								diablelinksifnull: tblLinkdiableIfNull
 							};
 							tblLinks.push(tbllinkObj);
 						}	
@@ -897,15 +905,16 @@
 					txtLabelText.text = configSearchText[0].expr[0].textlabel;
 					
 					for(v=0; v<configSearchText[0].expr[0].values.length; v++){
-						var cfg = configSearchText[0].expr[0].values[v];
+						var cfg:Object = configSearchText[0].expr[0].values[v];
 						if(v == 0){
 							sItemVal = searchGroup.getElementAt(0) as SearchExpValueItem;
 							sItemVal.changeToTextBox();
 							sItemVal.setPrompt = cfg.prompt;
-							sItemVal.isValueRequired = cfg.isValueRequired;// set the required property from the config
-							if (cfg.prepend)
-							{
-								sItemVal.prepend = cfg.prepend;
+							sItemVal.isValueRequired = cfg.isvaluerequired;// set the required property from the config
+							sItemVal.setRequiredText = requiredLbl;
+							sItemVal.setRequiredTooltip = requiredTooltip;
+							if (cfg.operator){
+								sItemVal.operator = cfg.operator;
 							};
 							sItemVal.addEventListener("valueChanged", onValueChanged);
 							sItemVal.addEventListener("submitSearch", onSearchSubmitted);
@@ -915,25 +924,17 @@
 							sItemVal.wTemplateWidth = wTemplate.width;
 							sItemVal.percentWidth = 100;
 							sItemVal.setPrompt = cfg.prompt;
-							sItemVal.isValueRequired = cfg.isValueRequired;// set the required property from the config
-							if (cfg.prepend)
-							{
-								sItemVal.prepend = cfg.prepend;
+							sItemVal.isValueRequired = cfg.isvaluerequired;// set the required property from the config
+							sItemVal.setRequiredText = requiredLbl;
+							sItemVal.setRequiredTooltip = requiredTooltip;
+							if (cfg.operator){
+								sItemVal.operator = cfg.operator;
 							};
 							sItemVal.addEventListener("valueChanged", onValueChanged);
 							sItemVal.addEventListener("submitSearch", onSearchSubmitted);
 							sItemVal.addEventListener(FocusEvent.FOCUS_IN, searchGroupItem_focusInHandler);
 							searchGroup.addElement(sItemVal);
 						}
-						
-						var cfg:Object = configSearchText[0].expr[0].values[v];
-						// set the required property from the config
-						sItemVal.isValueRequired = cfg.isValueRequired;
-						if (cfg.prepend)
-						{
-							sItemVal.prepend = cfg.prepend;
-						};
-						
 						
 						if(configSearchText[0].expr[0].values[v].usedomain){
 							popCBwithDomain(configSearchText[0].expr[0].values[v].field, sItemVal);
@@ -1021,10 +1022,54 @@
 				onSearchFormChanged();
 			}
 			
+			private function getLayerSymbology(lyrList:XML):Symbol
+			{
+				var retSym:Symbol = null;
+				
+				if(lyrList.symbology.picturemarkersymbol[0] || lyrList.symbology.simplemarkersymbol[0]){
+					//marker symbol
+					if(lyrList.symbology.picturemarkersymbol.@url[0] != null){
+						const resultMarkerSymbolURL:String = lyrList.symbology.picturemarkersymbol.@url || widgetIcon;
+						const resultMarkerSymbolHeight:Number = (lyrList.symbology.picturemarkersymbol.@height[0] != null) ? lyrList.symbology.picturemarkersymbol.@height : 30;
+						const resultMarkerSymbolWidth:Number = (lyrList.symbology.picturemarkersymbol.@width[0] != null) ? lyrList.symbology.picturemarkersymbol.@width : 30;
+						const resultMarkerSymbolXOffset:Number = (lyrList.symbology.picturemarkersymbol.@xoffset[0] != null) ? lyrList.symbology.picturemarkersymbol.@xoffset : 0;
+						const resultMarkerSymbolYOffset:Number = (lyrList.symbology.picturemarkersymbol.@yoffset[0] != null) ? lyrList.symbology.picturemarkersymbol.@yoffset : 0;
+						const resultMarkerSymbolAngle:Number = (lyrList.symbologysimplemarkersymbol.@angle[0] != null) ? lyrList.symbology.simplemarkersymbol.@angle : 0;
+						retSym = new PictureMarkerSymbol(resultMarkerSymbolURL, resultMarkerSymbolWidth, resultMarkerSymbolHeight, resultMarkerSymbolXOffset, resultMarkerSymbolYOffset, resultMarkerSymbolAngle);
+					}else{
+						const resultMarkerSymbolStyle:String = lyrList.symbology.simplemarkersymbol.@style || "circle";
+						const resultMarkerSymbolSize:Number = (lyrList.symbology.simplemarkersymbol.@size[0] != null) ? lyrList.symbology.simplemarkersymbol.@size : 15;
+						const resultMarkerSymbolColor:uint = (lyrList.symbology.simplemarkersymbol.@color[0] != null) ? lyrList.symbology.simplemarkersymbol.@color : 0xFF0000;
+						const resultMarkerSymbolAlpha:Number = (lyrList.symbology.simplemarkersymbol.@alpha[0] != null) ? lyrList.symbology.simplemarkersymbol.@alpha : 0.8;
+						const resultMarkerSymbolXOffset2:Number = (lyrList.symbology.simplemarkersymbol.@xoffset[0] != null) ? lyrList.symbology.simplemarkersymbol.@xoffset : 0;
+						const resultMarkerSymbolYOffset2:Number = (lyrList.symbology.simplemarkersymbol.@yoffset[0] != null) ? lyrList.symbology.simplemarkersymbol.@yoffset : 0;
+						const resultMarkerSymbolAngle2:Number = (lyrList.symbology.simplemarkersymbol.@angle[0] != null) ? lyrList.symbology.simplemarkersymbol.@angle : 0;
+						const resultMarkerSymbolOutlineStyle:String = lyrList.symbology.simplemarkersymbol.outline.@style || "solid";
+						const resultMarkerSymbolOutlineColor:uint = (lyrList.symbology.simplemarkersymbol.outline.@color[0] != null) ? lyrList.symbology.simplemarkersymbol.outline.@color : 0x0000ff;
+						const resultMarkerSymbolOutlineAlpha:Number = (lyrList.symbology.simplemarkersymbol.outline.@alpha[0] != null) ? lyrList.symbology.simplemarkersymbol.outline.@alpha : 0.8;
+						const resultMarkerSymbolOutlineWidth:Number = (lyrList.symbology.simplemarkersymbol.outline.@width[0] != null) ? lyrList.symbology.simplemarkersymbol.outline.@width : 2;
+						retSym = new SimpleMarkerSymbol(resultMarkerSymbolStyle,resultMarkerSymbolSize,resultMarkerSymbolColor,resultMarkerSymbolAlpha,resultMarkerSymbolXOffset2,resultMarkerSymbolYOffset2,resultMarkerSymbolAngle2,new SimpleLineSymbol(resultMarkerSymbolOutlineStyle, resultMarkerSymbolOutlineColor, resultMarkerSymbolOutlineAlpha, resultMarkerSymbolOutlineWidth));
+					}
+				}else if(lyrList.symbology.simplelinesymbol[0]){
+					//line symbol
+					const resultLineSymbolColor:uint = (lyrList.symbology.simplelinesymbol.@color[0] != null) ? lyrList.symbology.simplelinesymbol.@color : 0xFF0000;
+					const resultLineSymbolAlpha:Number = (lyrList.symbology.simplelinesymbol.@alpha[0] != null) ? lyrList.symbology.simplelinesymbol.@alpha : 0.8;
+					const resultLineSymbolWidth:Number = (lyrList.symbology.simplelinesymbol.@width[0] != null) ? lyrList.symbology.simplelinesymbol.@width : 2;
+					retSym = new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, resultLineSymbolColor, resultLineSymbolAlpha, resultLineSymbolWidth);
+				}else if(lyrList.symbology.simplefillsymbol[0]){
+					// fill symbol
+					const resultFillSymbolColor:uint = (lyrList.symbology.simplefillsymbol.@color[0] != null) ? lyrList.symbology.simplefillsymbol.@color : 0xFF0000;
+					const resultFillSymbolAlpha:Number = (lyrList.symbology.simplefillsymbol.@alpha[0] != null) ? lyrList.symbology.simplefillsymbol.@alpha : 0.5; 
+					const resultFillSymbolOutlineColor:uint = (lyrList.symbology.simplefillsymbol.outline.@color[0] != null) ? lyrList.symbology.simplefillsymbol.outline.@color : 0xFF0000;
+					const resultFillSymbolOutlineAlpha:Number = (lyrList.symbology.simplefillsymbol.outline.@alpha[0] != null) ? lyrList.symbology.simplefillsymbol.outline.@alpha : 0.8;
+					const resultFillSymbolOutlineWidth:Number = (lyrList.symbology.simplefillsymbol.outline.@width[0] != null) ? lyrList.symbology.simplefillsymbol.outline.@width : 2;
+					retSym = new SimpleFillSymbol(SimpleFillSymbol.STYLE_SOLID, resultFillSymbolColor, resultFillSymbolAlpha, new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, resultFillSymbolOutlineColor, resultFillSymbolOutlineAlpha, resultFillSymbolOutlineWidth));
+				}
+				return retSym;
+			}
+			
 			/* 
 			* when a new search is selected, validate the new search
-			* @method
-			* @private
 			*/
 			private function onSearchFormChanged():void
 			{
@@ -1035,8 +1080,6 @@
 			/* 
 			* when a value is changed (such as each character in textbox or value selected from combo)
 			*  validate the Search
-			* @method
-			* @private
 			*/
 			private function onValueChanged(evt:Event):void
 			{
@@ -1045,11 +1088,9 @@
 			}
 			
 			/* 
-			 * when a value triggers a submit such as when Enter is pressed in text box
-			 * perform the search
-			 * @method
-			 * @private
-			 */
+			* when a value triggers a submit such as when Enter is pressed in text box
+			* perform the search
+			*/
 			private function onSearchSubmitted(evt:Event):void
 			{
 				// TODO: validate here?
@@ -1059,6 +1100,13 @@
 				if(searchGroup.numElements == 1){
 					equeryFeaturesText(null);
 				};
+			}
+			
+			private function valueItemEvent(evt:Event):void
+			{
+				if(searchGroup.numElements == 1){
+					equeryFeaturesText(null);
+				}
 			}
 			
 			private function equeryFeaturesText(evt:Event):void
@@ -1101,21 +1149,24 @@
 						sItemVal = searchGroup.getElementAt(0) as SearchExpValueItem;
 						sItemVal.setPrompt = cfg.prompt;
 						// set the required property from the config
-						sItemVal.isValueRequired = cfg.isValueRequired;
-						if (cfg.prepend)
-						{
-							sItemVal.prepend = cfg.prepend;
+						sItemVal.isValueRequired = cfg.isvaluerequired;
+						sItemVal.setRequiredText = requiredLbl;
+						sItemVal.setRequiredTooltip = requiredTooltip;
+						if (cfg.operator){
+							sItemVal.operator = cfg.operator;
 						};
 						sItemVal.changeToTextBox();
 					}else{
 						sItemVal = new SearchExpValueItem;
 						sItemVal.wTemplateWidth = wTemplate.width;
 						sItemVal.percentWidth = 100;
-						sItemVal.setPrompt = cfg.prompt;						
-						sItemVal.isValueRequired = cfg.isValueRequired;// set the required property from the config
-						if (cfg.prepend)
-						{
-							sItemVal.prepend = cfg.prepend;
+						sItemVal.setPrompt = cfg.prompt;
+						// set the required property from the config
+						sItemVal.isValueRequired = cfg.isvaluerequired;
+						sItemVal.setRequiredText = requiredLbl;
+						sItemVal.setRequiredTooltip = requiredTooltip;
+						if (cfg.operator){
+							sItemVal.operator = cfg.operator;
 						};
 						sItemVal.addEventListener("valueChanged", onValueChanged);
 						sItemVal.addEventListener("submitSearch", onSearchSubmitted);
@@ -1330,7 +1381,7 @@
 					// on result
 					function onResult(featureSet:FeatureSet, token:XMLList = null):void                 
 					{   
-						try{
+						//try{
 							var gid:Number = 0;
 							for each (var gra:Graphic in featureSet.features){   
 								var obj:Object = gra.attributes;
@@ -1407,10 +1458,10 @@
 								addSharedData("configFixedDatagrid", dgconfigArr);
 							}
 							executingURLquery = false;
-						}
-						catch (error:Error){
-							showMessage(error.message, false);
-						}
+						//}
+						//catch (error:Error){
+						//	showMessage(error.message, false);
+						//}
 					}
 					//on fault
 					function onFault(info:Object, token:Object = null) : void
@@ -1476,14 +1527,16 @@
 				var i:Number = (cboLayerText.selectedIndex < 0) ? 0 : cboLayerText.selectedIndex;
 				var sItemVal:SearchExpValueItem;
 				for(v=0; v<configSearchText[i].expr[0].values.length; v++){
-					var cfg = configSearchText[i].expr[0].values[v];
+					var cfg:Object = configSearchText[i].expr[0].values[v];
 					if(v == 0){
 						sItemVal = searchGroup.getElementAt(0) as SearchExpValueItem;
 						sItemVal.setPrompt = cfg.prompt;
-						sItemVal.isValueRequired = cfg.isValueRequired;// set the required property from the config
-						if (cfg.prepend)
-						{
-							sItemVal.prepend = cfg.prepend;
+						// set the required property from the config
+						sItemVal.isValueRequired = cfg.isvaluerequired;
+						sItemVal.setRequiredText = requiredLbl;
+						sItemVal.setRequiredTooltip = requiredTooltip;
+						if (cfg.operator){
+							sItemVal.operator = cfg.operator;
 						};
 						sItemVal.changeToTextBox();
 					}else{
@@ -1491,10 +1544,12 @@
 						sItemVal.wTemplateWidth = wTemplate.width;
 						sItemVal.percentWidth = 100;
 						sItemVal.setPrompt = cfg.prompt;
-						sItemVal.isValueRequired = cfg.isValueRequired;// set the required property from the config
-						if (cfg.prepend)
-						{
-							sItemVal.prepend = cfg.prepend;
+						// set the required property from the config
+						sItemVal.isValueRequired = cfg.isvaluerequired;
+						sItemVal.setRequiredText = requiredLbl;
+						sItemVal.setRequiredTooltip = requiredTooltip;
+						if (cfg.operator){
+							sItemVal.operator = cfg.operator;
 						};
 						sItemVal.addEventListener("valueChanged", onValueChanged);
 						sItemVal.addEventListener("submitSearch", onSearchSubmitted);
@@ -1523,7 +1578,6 @@
 					boxTextexpr.visible = true;
 					boxTextexpr.includeInLayout = true;
 				}
-				
 				// a new (default) search form is shown for the selected layer
 				onSearchFormChanged();
 			}
@@ -1539,14 +1593,15 @@
 				}
 				var sItemVal:SearchExpValueItem;
 				for(var v:int=0; v<configSearchText[i].expr[j].values.length; v++){
-					var cfg = configSearchText[i].expr[j].values[v];
+					var cfg:Object = configSearchText[i].expr[j].values[v];
 					if(v == 0){
 						sItemVal = searchGroup.getElementAt(0) as SearchExpValueItem;
 						sItemVal.setPrompt = cfg.prompt;
-						sItemVal.isValueRequired = cfg.isValueRequired;// set the required property from the config
-						if (cfg.prepend)
-						{
-							sItemVal.prepend = cfg.prepend;
+						sItemVal.isValueRequired = cfg.isvaluerequired;// set the required property from the config
+						sItemVal.setRequiredText = requiredLbl;
+						sItemVal.setRequiredTooltip = requiredTooltip;
+						if (cfg.operator){
+							sItemVal.operator = cfg.operator;
 						};
 						sItemVal.changeToTextBox();
 					}else{
@@ -1554,10 +1609,11 @@
 						sItemVal.wTemplateWidth = wTemplate.width;
 						sItemVal.percentWidth = 100;
 						sItemVal.setPrompt = cfg.prompt;
-						sItemVal.isValueRequired = cfg.isValueRequired;// set the required property from the config
-						if (cfg.prepend)
-						{
-							sItemVal.prepend = cfg.prepend;
+						sItemVal.isValueRequired = cfg.isvaluerequired;// set the required property from the config
+						sItemVal.setRequiredText = requiredLbl;
+						sItemVal.setRequiredTooltip = requiredTooltip;
+						if (cfg.operator){
+							sItemVal.operator = cfg.operator;
 						};
 						sItemVal.addEventListener("valueChanged", onValueChanged);
 						sItemVal.addEventListener("submitSearch", onSearchSubmitted);
@@ -1980,29 +2036,14 @@
 				queryAttachments = configSearchText[i].attachments;
 				queryEnableExport = configSearchText[i].enableexport;
 				openDataGrid = configSearchText[i].opendg;
-				//var isAllInputsfilled:Boolean;
 				var sItemVal:SearchExpValueItem;
-				/* if(searchGroup.numElements > 1){
-					isAllInputsfilled = true;
-					for(var sgi:Number = 0; sgi < searchGroup.numElements; sgi++){
-						sItemVal = searchGroup.getElementAt(sgi) as SearchExpValueItem;
-						if(sItemVal.textValue == ""){
-							isAllInputsfilled = false;
-							break;
-						}
-					}
-				}else{
-					sItemVal = searchGroup.getElementAt(0) as SearchExpValueItem;
-					isAllInputsfilled = (sItemVal.textValue !="")?true:false;
-				} */
-				
 				var fields:XMLList;
-				//if ((queryLayer) && (isAllInputsfilled))
 				if(queryLayer){
 					var query:Query = new Query();
 					var myPattern:RegExp = /\[value\]/g;
 					var expr:String = "";
 					var eVal:String = "";
+					var criteriaFromValue:String;
 					
 					for(var sg:Number = 0; sg < searchGroup.numElements; sg++){
 						sItemVal = searchGroup.getElementAt(sg) as SearchExpValueItem;
@@ -2012,10 +2053,9 @@
 							eVal = sItemVal.textValue.replace("'","''");
 						}else{
 							eVal = sItemVal.textValue;
-						}
+						};
 						
-						if (sItemVal.isValueRequired && !sItemVal.hasAValue())
-						{
+						if (sItemVal.isValueRequired && !sItemVal.hasAValue()){
 							// no value specified so skip this part of where clause
 							continue;
 						};
@@ -2030,16 +2070,14 @@
 							if(mExpr.indexOf("'[value]'") > -1){
 								uList = uaList.join("','");
 							}
-							var criteriaFromValue:String = mExpr.replace(myPattern, uList);
-							expr = AppendTo(expr, criteriaFromValue, sItemVal.prepend);
-						}
-						else
-						{
+							criteriaFromValue = mExpr.replace(myPattern, uList);
+							expr = AppendTo(expr, criteriaFromValue, sItemVal.operator);
+						}else{
 							//don't add the expression if there is no user input
 							if(eVal != ""){
-								var criteriaFromValue:String = queryExpr.replace(myPattern, eVal);
-								expr = AppendTo(expr, criteriaFromValue, sItemVal.prepend);
-							};
+								criteriaFromValue = queryExpr.replace(myPattern, eVal);
+								expr = AppendTo(expr, criteriaFromValue, sItemVal.operator);
+							}
 						}
 					}
 					
@@ -2175,26 +2213,24 @@
 						showMessage(info.toString(), false);         
 					}
 				}  
-			}				
+			}
+			
 			/*
-			 * Append string2 to string1 (if set) using conjunction 
-			 * @param String string1 the first string
-		     * @param String string2 the 2nd string
-			 * @param String conjunction string to put between the strings
-			 * @returns String
-			 */
-		   private function AppendTo(string1:String, string2:String, conjunction:String = "AND"): String 
-		   {
-			   var combined:String = "";
-			   if (string1.length > 0)
-			   {
-				   return string1 + " " + conjunction + " " + string2;
-			   }
-			   else
-			   {
-			   	 return string2;
-			   };
-		   }
+			* Append string2 to string1 (if set) using operator 
+			* @param String string1 the first string
+			* @param String string2 the 2nd string
+			* @param String operator string to put between the strings
+			* @returns String
+			*/
+			private function AppendTo(string1:String, string2:String, operator:String = "AND"): String 
+			{
+				var combined:String = "";
+				if (string1.length > 0){
+					return string1 + " " + operator + " " + string2;
+				}else{
+					return string2;
+				};
+			}
 			
 			//query features graphical
 			private function queryFeaturesGraphical(geom:Geometry, querySpatialRel:String, layerConfig:Object):void
@@ -2358,22 +2394,7 @@
 					if(includeTextQuery.selected && includeTextQuery.enabled){
 						var i:Number = (cboLayerText.selectedIndex < 0) ? 0 : cboLayerText.selectedIndex;
 						var j:Number = (cboLayerExpr.selectedIndex < 0) ? 0 : cboLayerExpr.selectedIndex;
-						//var isAllInputsfilled:Boolean;
 						var sItemVal:SearchExpValueItem;
-						/* if(searchGroup.numElements > 1){
-							isAllInputsfilled = true;
-							for(var sgi:Number = 0; sgi < searchGroup.numElements; sgi++){
-								sItemVal = searchGroup.getElementAt(sgi) as SearchExpValueItem;
-								if(sItemVal.textValue == ""){
-									isAllInputsfilled = false;
-									break;
-								}
-							}
-						}else{
-							sItemVal = searchGroup.getElementAt(0) as SearchExpValueItem;
-							isAllInputsfilled = (sItemVal.textValue !="")?true:false;
-						} */
-						
 						var myPattern:RegExp = /\[value\]/g;
 						var expr:String = "";
 						var eVal:String = "";
@@ -2830,7 +2851,21 @@
 						var link:String = "";
 						var alias:String = "";
 						var linkicon:String = "";
-						link = com.esri.ags.utils.StringUtil.substitute(qLinks[a].link, graphic.attributes);
+						var linkFieldNull:Boolean;
+						if(qLinks[a].diablelinksifnull){
+							var lfields:Array = getFieldsFromCDATA(qLinks[a].link);
+							for (var lf:int=0; lf<lfields.length; lf++){
+								if(!graphic.attributes[lfields[lf]]){
+									linkFieldNull = true;
+									break;
+								}
+							}
+						}
+						if(linkFieldNull){
+							link = "";
+						}else{
+							link = com.esri.ags.utils.StringUtil.substitute(qLinks[a].link, graphic.attributes);
+						}
 						alias = qLinks[a].alias;
 						linkicon = com.esri.ags.utils.StringUtil.substitute(qLinks[a].icon, graphic.attributes);
 						
@@ -2876,8 +2911,9 @@
 								curFormat = fieldXML.@currencyformat[0];
 								useUTC = fieldXML.@useutc[0] == "true";
 								dateFormat = fieldXML.@dateformat[0];
-								if (dateFormat)
+								if (dateFormat){
 									isDateField = true;
+								}
 							}
 							if (!isDateField && field){
 								isDateField = field.type == Field.TYPE_DATE;
@@ -2886,7 +2922,9 @@
 								var dateMS:Number = Number(value);
 								if (!isNaN(dateMS)){
 									//Fix the date format to use the Spark format
-									dateFormat = dateFormat.replace(/D/g, "d").replace(/Y/g, "y");
+									if(dateFormat){
+										dateFormat = dateFormat.replace(/D/g, "d").replace(/Y/g, "y");
+									}
 									value = msToDate(dateMS, dateFormat, useUTC);
 								}
 							}
@@ -3013,19 +3051,31 @@
 						searchResult.relateicon = queryRelates[0].icon;
 					}
 					searchResult.relatetooltip = relateToolTip;
-					
+					var i:int = (cboLayerText.selectedIndex < 0) ? 0 : cboLayerText.selectedIndex;
 					if(graphic.geometry){
 						switch (graphic.geometry.type){
 							case Geometry.MAPPOINT:{
-								graphic.symbol = resultMarkerSymbol;
+								if(configSearchText[i].symbology){
+									graphic.symbol = configSearchText[i].symbology;
+								}else{
+									graphic.symbol = resultMarkerSymbol;
+								};
 								break;
 							}
 							case Geometry.POLYLINE:{
-								graphic.symbol = resultLineSymbol;
+								if(configSearchText[i].symbology){
+									graphic.symbol = configSearchText[i].symbology;
+								}else{
+									graphic.symbol = resultLineSymbol;
+								};
 								break;
 							}
 							case Geometry.POLYGON:{
-								graphic.symbol = resultFillSymbol;
+								if(configSearchText[i].symbology){
+									graphic.symbol = configSearchText[i].symbology;
+								}else{
+									graphic.symbol = resultFillSymbol;
+								};
 								break;
 							}
 						}
@@ -3066,6 +3116,23 @@
 					graphic.infoWindowRenderer = infoWindowRenderer;
 				}
 				return result;
+			}
+			
+			private function getFieldsFromCDATA(strCDATA:String):Array
+			{
+				var retArr:Array = [];
+				var b1:int = 0;
+				var e1:int = 0;
+				var fldName:String;
+				do{
+					b1 = strCDATA.indexOf("{", e1);
+					if(b1 == -1 ){break;};
+					e1 = strCDATA.indexOf("}", b1);
+					fldName = strCDATA.substring(b1 + 1,e1);
+					retArr.push(fldName);
+				} while(e1 < strCDATA.length - 1)
+				
+				return retArr;
 			}
 			
 			private function getFieldXML(fieldName:String, fields:XMLList):XML
@@ -3200,8 +3267,7 @@
 				var uArray:Array = mx.utils.StringUtil.trimArrayElements(userList,",").split(",");
 				
 				// add an empty entry if the value is not required
-				if (!sItemVal.isValueRequired)
-				{
+				if (!sItemVal.isValueRequired){
 					configUserVals.push({
 						value: sItemVal.noValue,
 						label: sItemVal.noValue
@@ -4495,60 +4561,48 @@
 			
 			/*
 			* gets the configuration object for the currently selected search expression
-			* 	@method
-			*   @private
 			*   @returns Object			
 			*/
 			private function currentSearchExpression(): Object{
 				
 				var i:Number = (cboLayerText.selectedIndex < 0) ? 0 : cboLayerText.selectedIndex;
 				var j:Number = (cboLayerExpr.selectedIndex < 0) ? 0 : cboLayerExpr.selectedIndex;
-
+				
 				return configSearchText[i].expr[j];
 			}
 			
 			/*
-			 * checks that requirements have been met to allow a search 
-			 *  and enables the search button
-			 * 	@method
-			 *  @public		
+			* checks that requirements have been met to allow a search 
+			*  and enables the search button		
 			*/
 			public function validateSearch():void
 			{
 				// check that child searchexpvalueitems are valid
-				
 				var sItemVal:SearchExpValueItem;
 				var isValid:Boolean = true;
 				var hasAValue:Boolean = false; // does at least one criteria have a value
 				for(var sgi:Number = 0; sgi < searchGroup.numElements; sgi++){
 					sItemVal = searchGroup.getElementAt(sgi) as SearchExpValueItem;
-					if (!sItemVal.isValid())
-					{
+					if (!sItemVal.isValid()){
 						isValid = false;
 					};
 					
-					if (sItemVal.hasAValue())
-					{
+					if (sItemVal.hasAValue()){
 						hasAValue = true;
 					}
 				};
 				
 				var expression:Object = currentSearchExpression();
-				var isRequired:Boolean = expression.isValueRequired; // does the expression require that at least 1 value is given
+				var isRequired:Boolean = expression.isvaluerequired; // does the expression require that at least 1 value is given
 				
 				var canSearch:Boolean = false;
-				if (isRequired && !hasAValue)
-				{
+				if (isRequired && !hasAValue){
 					canSearch = false;
-				}
-				else
-				{
+				}else{
 					canSearch = true;
 				};
-				
 				searchBtn.enabled = (canSearch && isValid);	
 			}
-			
 			
 		]]>
 	</fx:Script>
@@ -4578,7 +4632,7 @@
 					  width="100%"
 					  gap="15"
 					  horizontalAlign="center"  verticalAlign="middle">
-				<s:Label id="lblExprText" text="{layerExprLabel}" />
+				<s:Label id="lblExprText" text="{layerExprLabel}"/>
 				<s:DropDownList id="cboLayerExpr" change="searchLayerExprChangedText()"/>
 			</s:HGroup>
 			<s:RichEditableText id="txtLabelText"
@@ -4702,7 +4756,7 @@
 			</s:Group>
 			<s:HGroup verticalAlign="middle">
 				<s:CheckBox id="bufferUserGraphic" selected="false" label="{lblbufferUserGraphic}"/>
-				<s:TextInput id="textGraInputBuffer" text="50" width="40" />
+				<s:TextInput id="textGraInputBuffer" text="50" width="40" needsSoftKeyboard="true"/>
 				<s:DropDownList id="cboGraBufferUnit" />
 				<s:Group>
 					<s:Image source="{WIDGET_URL + 'i_gearsmall.png'}" width="22" height="22" smooth="true"
@@ -4762,7 +4816,7 @@
 			</s:layout>
 			<s:Label id="lblBuffer" text="{bufferLabel}" width="100%"/>
 			<s:HGroup verticalAlign="middle">
-				<s:TextInput id="textInputBuffer" text="50" width="40" />
+				<s:TextInput id="textInputBuffer" text="50" width="40" needsSoftKeyboard="true" />
 				<s:DropDownList id="cboBufferUnit" />
 				<s:Group>
 					<s:Image source="{WIDGET_URL + 'i_gearsmall.png'}" width="22" height="22" smooth="true"

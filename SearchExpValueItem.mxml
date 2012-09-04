@@ -37,10 +37,14 @@
 			
 			[Bindable] private var _prompt:String;
 			
+			[Bindable] private var _RequiredLbl:String;
+			
+			[Bindable] private var _RequiredTooltip:String;
+			
 			/*
-			 * conjuction to use when this value si comb
-			 */
-			public var prepend:String = "AND";
+			* operator to use when this value
+			*/
+			public var operator:String = "AND";
 			
 			[Bindable] private var _isValueRequired:Boolean = true;
 			
@@ -148,10 +152,20 @@
 				_prompt = value;
 			}
 			
+			public function set setRequiredText(value:String):void
+			{
+				_RequiredLbl = value;
+			}
+			
+			public function set setRequiredTooltip(value:String):void
+			{
+				_RequiredTooltip = value;
+			}
+			
 			public function set textValue(value:String):void
 			{
 				_textValue = value;
-				if (txtSearch.visible){
+				if (isTextBox()){
 					txtSearch.text = _textValue;
 				}else{
 					cbSearch.selectedItem = _textValue;
@@ -160,7 +174,7 @@
 			
 			public function get textValue():String
 			{
-				if (this.isTextBox()){
+				if (txtSearch.visible){
 					_textValue = txtSearch.text;
 				}else{
 					_textValue = cbSearch.selectedItem.value;
@@ -186,7 +200,7 @@
 			*/
 			public function hasAValue():Boolean
 			{
-				return (this.textValue != this.noValue);
+				return (textValue != noValue);
 			}
 			
 			/*
@@ -194,9 +208,9 @@
 			*/
 			public function isValid():Boolean
 			{
-				if (this.isValueRequired)
+				if (isValueRequired)
 				{
-					return this.hasAValue();	
+					return hasAValue();	
 				}
 				else
 				{
@@ -209,6 +223,7 @@
 			{
 				// when the user types each character in textbox fire change event
 				txtSearch.addEventListener(flash.events.Event.CHANGE, RaiseValueChanged);
+				
 				// when new entry is selected
 				cbSearch.addEventListener(IndexChangeEvent.CHANGE, RaiseValueChanged);
 				
@@ -218,6 +233,8 @@
 				// automatically submit search when entry is selected
 				cbSearch.addEventListener(IndexChangeEvent.CHANGE, AutoSubmitSearch);
 				
+				//Set the font size to make the asterisk more visible
+				txtIsRequired.setStyle("fontSize", 22);
 			}
 			
 		]]>
@@ -225,14 +242,13 @@
 	<s:HGroup horizontalAlign="left" width="100%">
 		<s:RichEditableText id="prompt" text="{_prompt}" paddingLeft="2" selectable="true" editable="false" tabEnabled="false" tabFocusEnabled="false"/>
 		<s:Label id="txtIsRequired"
-				 text="*"
+				 text="{_RequiredLbl}"
 				 color="0xFF0000"
 				 includeInLayout="{txtIsRequired.visible}"
 				 visible="{_isValueRequired}"
-				 toolTip="This field is required.&#13;Enter a value to enable search button"
-				 />		
+				 toolTip="{_RequiredTooltip}"/>		
 	</s:HGroup>
-	<s:TextInput id="txtSearch" width="99%" />
+	<s:TextInput id="txtSearch" width="99%" needsSoftKeyboard="true" />
 	<s:DropDownList id="cbSearch" creationComplete="{cbSearch.width = _wTemplateWidth - 62; }"
 				 visible="false" includeInLayout="false"
 				 labelField="label">

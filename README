@@ -1,4 +1,11 @@
-﻿Version 3.0.7 - 8/21/2012
+Version 3.0.8 - 9/4/2012
+* Added attribute to not display links that have null values.
+* Fixed bug with sorting on joined data.
+* Fixed bug with datefomat not being spacified throwing error.
+* Added a isvaluerequired attribute to expression values and expressions (see documentation for details).
+* Added ability to define symbology at the layer level and widget level. 
+
+Version 3.0.7 - 8/21/2012
 * Tab labels are now configurable in the Fixed data grid (use the SearchWidgetFixedDG.xml).
 * Fixed nobufferoutlincolor label being ignored in the eSearchWidget.xml
 * Fixed show and hide animation on Fixed Datagrid.
@@ -521,7 +528,7 @@ Finalize the install for Uncompiled version:
    and gridhyperfields (these are optional if you do not want a datagrid for a particular layer then just leave these
    elements empty.
 
-That’s it enjoy, if you have any comments or suggestions just post a comment on the code gallery.
+That�s it enjoy, if you have any comments or suggestions just post a comment on the code gallery.
 
 Robert Scheitlin
 GIS Manager

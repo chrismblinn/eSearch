@@ -16,7 +16,8 @@ package widgets.eSearch
 			sortCompareFunction=labelCompareFunction1;
 		}
 		
-		public function labelCompareFunction1(obj1:Object, obj2:Object):int{  
+		public function labelCompareFunction1(obj1:Object, obj2:Object, column:GridColumn = null):int
+		{  
 			var lab1:Object;  
 			var lab2:Object;  
 			

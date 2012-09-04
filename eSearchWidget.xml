@@ -8,21 +8,20 @@
 			<name>Louisville Zoning</name>
 			<url>http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Louisville/LOJIC_LandRecords_Louisville/MapServer/2</url>
 			<expressions>
-				<expression alias="Zoning Code" textsearchlabel="Search Zoning:" isValueRequired="true">
+				<expression alias="Zoning Code" textsearchlabel="Search Zoning:" isvaluerequired="false">
 					<values>
-                        <value prompt="Zoning Code: " userlist="OR1,C2,OTF,all" isValueRequired="false" prepend="AND">ZONING_CODE = '[value]'</value>
-						<value prompt="Zoning Type:" userlist="OFFICE,RESIDENTIAL,all" isValueRequired="false">upper(ZONING_TYPE) = upper('[value]')</value>
-						<value prompt="Zoning Name: RES MULTI-FAMILY" isValueRequired="false">upper(ZONING_NAME) LIKE upper('%[value]%')</value>
+						<value prompt="Example: OR1" userlist="OR1,C2,OTF,all" isvaluerequired="false">ZONING_CODE = '[value]'</value>
+						<value prompt="Example: OFFICE" userlist="OFFICE,RESIDENTIAL,all"  isvaluerequired="false" operator="AND">ZONING_TYPE = '[value]'</value>
 					</values>
 				</expression>
 				<expression alias="Zoning Type" textsearchlabel="Search Zoning Type:">
 					<values>
-						<value prompt="Example: RESIDENTIAL">upper(ZONING_TYPE) = upper('[value]')</value>
+						<value prompt="Example: RESIDENTIAL" isvaluerequired="true">upper(ZONING_TYPE) = upper('[value]')</value>
 					</values>
 				</expression>
 				<expression alias="Zoning Name" textsearchlabel="Search Zoning Name [ Example: RES MULTI-FAMILY ]:">
 					<values>
-						<value prompt="Example: RES MULTI-FAMILY">upper(ZONING_NAME) LIKE upper('%[value]%')</value>
+						<value prompt="Example: RES MULTI-FAMILY" isvaluerequired="true">upper(ZONING_NAME) LIKE upper('%[value]%')</value>
 					</values>
 				</expression>
 			</expressions>
@@ -32,6 +31,14 @@
 			<fields all="true" />
 			<links/>
 			<zoomscale usegeometry="true" zoompercent="2"></zoomscale>
+			<autoopendatagrid>false</autoopendatagrid>
+			<queryattachments>false</queryattachments>
+			<relates/>
+			<symbology>
+				<simplefillsymbol color="0x0000ff" alpha="0.5">
+					<outline color="0x00ffff" alpha="0.8" width="2" />
+				</simplefillsymbol>
+			</symbology>
 		</layer>
 		<layer>
 			<definitionexpression></definitionexpression>
@@ -58,7 +65,7 @@
 					gridfieldonly="false" dateformat="MM/DD/YYYY" useutc="true" />
 			</fields>
 			<links>
-				<link alias="View Traffic Photo">
+				<link alias="View Traffic Photo" diablelinksifnull="true">
 					<![CDATA[{URL}]]>
 					<icon><![CDATA[assets/images/i_camera.png]]></icon>
 				</link>
@@ -72,14 +79,14 @@
 			<name>SanFransisco 311</name>
 			<url>http://sampleserver3.arcgisonline.com/ArcGIS/rest/services/SanFrancisco/311Incidents/MapServer/0</url>
 			<expressions>
-				<expression alias="Incident Status" textsearchlabel="Search by Incident Status:">
+				<expression alias="Incident Status" textsearchlabel="Search by Incident Status:" isvaluerequired="true">
 					<values>
 						<value prompt="Example: New" field="status" usedomain="true">status = '[value]'</value>
 					</values>
 				</expression>
-				<expression alias="Request ID" textsearchlabel="Search by Request ID:">
+				<expression alias="Request ID" textsearchlabel="Search by Request ID:" isvaluerequired="true">
 					<values>
-						<value prompt="Example: 508844">req_id = '[value]'</value>
+						<value prompt="Example: 508844" isvaluerequired="true">req_id = '[value]'</value>
 					</values>
 				</expression>
 			</expressions>
@@ -105,13 +112,13 @@
 			<definitionexpression></definitionexpression>
 			<enableexport>true</enableexport>
 			<name>Road Centerlines</name>
-			<url>http://gislap134/ArcGIS/rest/services/Highway/MapServer/5</url>
+			<url>http://gislap183/ArcGIS/rest/services/Highway/MapServer/5</url>
 			<expressions>
 				<expression alias="Road Name and Zip" textsearchlabel="Search by Road Name and Left Zipcode and Right Zip:">
 					<values>
-						<value prompt="Example: ANDREW">RD_NAME = '[value]'</value>
-						<value prompt="Example: 36201">AND ZIP_L = [value]</value>
-						<value prompt="Example: 36201">AND ZIP_R = [value]</value>
+						<value prompt="Example: ANDREW" isValueRequired="true">RD_NAME = '[value]'</value>
+						<value prompt="Example: 36201" isValueRequired="true" operator="AND">ZIP_L = [value]</value>
+						<value prompt="Example: 36201" isValueRequired="true" operator="AND">ZIP_R = [value]</value>
 					</values>
 				</expression>
 				<expression alias="Road Surface" textsearchlabel="Search by Surface Type:">
@@ -146,8 +153,8 @@
 				<field name="ZIP_R" gridfield="true" />
 			</fields>
 			<links>
-				<link alias="View Mon. Ref Sheet">
-					<![CDATA[http://surveyor.slco.org/gis/map/map_search/mrs_test.cfm?mrspoint={Name}&lat={ZIP_L}&long={ZIP_R}]]>
+				<link alias="View Mon. Ref Sheet" diablelinksifnull="true">
+					<![CDATA[http://somesite/gis/map/map_search/mrs_test.cfm?mrspoint={xxx}&lat={ZIP_L}&long={ZIP_R}]]>
 					<icon><![CDATA[assets/images/w_link.png]]></icon>
 				</link> 
 			</links>
@@ -201,56 +208,15 @@
 				</relate>
 			</relates>
 			<queryattachments>false</queryattachments>
-		</layer>
-		<layer>
-			<definitionexpression></definitionexpression>
-			<enableexport>true</enableexport>
-			<name>Graphical Calhoun Parcels</name>
-			<url>http://gislap134/ArcGIS/rest/services/ParcelViewer/MapServer/67</url>
-			<expressions />
-			<graphicalsearchlabel>Use one of the graphical search tools to select a Parcel</graphicalsearchlabel>
-			<spatialsearchlayer>true</spatialsearchlayer>
-			<titlefield>Name</titlefield>
-			<fields all="true" />
-			<links />
-			<zoomscale usegeometry="true" zoompercent="1.6" />
-			<autoopendatagrid>true</autoopendatagrid>
-			<relates />
-			<queryattachments>false</queryattachments>
-		</layer>
-		<layer>
-			<definitionexpression></definitionexpression>
-			<enableexport>true</enableexport>
-			<name>Calhoun Soils</name>
-			<url>http://gislap183/webgis/rest/services/Soils_join/MapServer/0</url>
-			<expressions>
-				<expression alias="soil type" textsearchlabel="Search by soil type:">
-					<values>
-						<value prompt="Example: AaA">Calhoun_Soils.MUSYM = '[value]'</value>
-					</values>
-				</expression>
-			</expressions>
-			<graphicalsearchlabel>Use one of the graphical search tools to select a Parcel</graphicalsearchlabel>
-			<spatialsearchlayer>true</spatialsearchlayer>
-			<titlefield>Calhoun_Soils.MUSYM</titlefield>
-			<fields all="false">
-				<field name="Calhoun_Soils.MUSYM" />
-				<field name="mapunit.muname" gridfield="true"/>
-				<field name="mapunit.mukind" gridfield="true"/>
-				<field name="mapunit.mustatus" gridfield="true"/>
-				<field name="mapunit.muacres" gridfield="true" numberformat="0|,|."/>
-			</fields>
-			<links />
-			<zoomscale usegeometry="true" zoompercent="1.6" />
-			<autoopendatagrid>true</autoopendatagrid>
-			<relates />
-			<queryattachments>false</queryattachments>
+			<symbology>
+				<simplelinesymbol color="0x00ffff" alpha="0.8" width="2" />
+			</symbology>
 		</layer>
 		<layer>
 			<definitionexpression></definitionexpression>
 			<enableexport>true</enableexport>
 			<name>Calhoun Parcels</name>
-			<url>http://gislap134/ArcGIS/rest/services/ParcelViewer/MapServer/67</url>
+			<url>http://gislap183/ArcGIS/rest/services/ParcelViewer/MapServer/67</url>
 			<expressions>
 				<expression alias="PPIN" textsearchlabel="Search by Parcel Id Number:">
 					<values>
@@ -267,7 +233,7 @@
 			<spatialsearchlayer>true</spatialsearchlayer>
 			<titlefield>Name</titlefield>
 			<fields all="false">
-				<field name="PPIN" gridfield="true" />
+				<field name="PPIN" gridfield="true" alias="This is the Parcel Identifcation Number"/>
 				<field name="NAME" gridfield="true" sort="asc|1|string"/>
 				<field name="STREET_ADDRESS" gridfield="true" />
 				<field name="USE_CODE" gridfield="true" />
@@ -288,7 +254,6 @@
 				<field name="IMPR_PRICE" gridfield="true" currencyformat="$|2|,|." />
 				<field name="ADJ_PRICE" gridfield="true" currencyformat="$|2|,|." />
 				<field name="OVER_COND" gridfield="true"/>
-				<field name="ADJUSTMENT PRICE" gridfield="true"/>
 			</fields>
 			<links />
 			<zoomscale usegeometry="true" zoompercent="1.6" />
@@ -297,7 +262,7 @@
 			<queryattachments>false</queryattachments>
 		</layer>-->
 	</layers>
-	<tables><!-- This section is ONLY for tables (i.e. data that has no geometry)! -->
+	<tables>This section is ONLY for tables (i.e. data that has no geometry)!
 		<table>
 			<definitionexpression></definitionexpression>
 			<enableexport>true</enableexport>
@@ -306,7 +271,7 @@
 			<expressions>
 				<expression alias="Replacement Score Greater Than" textsearchlabel="Search Replacement Score Greater Than:">
 					<values>
-						<value prompt="Example: 100">REPLSCORE &gt; [value]</value>
+						<value prompt="Example: 100" userlist="60,70,80,90,100">REPLSCORE &gt; [value]</value>
 					</values>
 				</expression>
 			</expressions>
@@ -319,7 +284,7 @@
 				<field name="REPLSCORE" alias="Replacement Score" gridfield="true"/>
 			</fields>
 			<links>
-				<link alias="View Traffic Photo">
+				<link alias="View Traffic Photo" diablelinksifnull="true">
 					<![CDATA[{agree_with_incident}]]>
 					<icon><![CDATA[assets/images/i_camera.png]]></icon>
 				</link>
@@ -356,7 +321,7 @@
 				<field name="notes" alias="Notes" gridfield="true"/>
 			</fields>
 			<links>
-				<link alias="View Traffic Photo">
+				<link alias="View Traffic Photo" diablelinksifnull="true">
 					<![CDATA[{agree_with_incident}]]>
 					<icon><![CDATA[assets/images/i_camera.png]]></icon>
 				</link>
@@ -420,7 +385,7 @@
 	<enablebuffergraphicbutton>true</enablebuffergraphicbutton>
 	<selectedgraphicaltool></selectedgraphicaltool><!-- possible values are extent or polygon or mappoint or polyline or nothing -->
 	<multipartgraphicsearch>true</multipartgraphicsearch>
-	<floatorfixed>float</floatorfixed><!-- possible values are fixed and float -->
+	<floatorfixed>fixed</floatorfixed><!-- possible values are fixed and float -->
 	<relatetooltip>Show Relates</relatetooltip>
 	<relateicon>widgets/eSearch/assets/images/i_relate.png</relateicon>
 	<labels>
@@ -467,7 +432,8 @@
 		<nobufferoutlinecolor>No outline color</nobufferoutlinecolor>
 		<bufferoutlinewidth>Outline Width</bufferoutlinewidth>
 		<configbuffergra>Configure buffer graphic properties...</configbuffergra>
-		
+		<required>*</required>
+		<requiredtooltip>This field is required.&#13;Enter a value to enable search button</requiredtooltip>
 	</labels>
 	<symbols>
 		<simplefillsymbol color="0xff0000" alpha="0.5">
