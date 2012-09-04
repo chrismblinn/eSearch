@@ -1,7 +1,7 @@
 Version 3.0.8 - 9/4/2012
 * Added attribute to not display links that have null values.
 * Fixed bug with sorting on joined data.
-* Fixed bug with datefomat not being spacified throwing error.
+* Fixed bug with datefomat not being specified throwing error.
 * Added a isvaluerequired attribute to expression values and expressions (see documentation for details).
 * Added ability to define symbology at the layer level and widget level. 
 
