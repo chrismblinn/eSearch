@@ -98,6 +98,8 @@
 	
 	<fx:Script>
 		<![CDATA[
+			import flashx.textLayout.elements.LinkElement;
+			import flashx.textLayout.events.FlowElementMouseEvent;
 			import com.esri.ags.FeatureSet;
 			import com.esri.ags.Graphic;
 			import com.esri.ags.Map;
@@ -262,7 +264,6 @@
 			private var queryAttachments:Boolean;
 			private var openDataGrid:Boolean;
 			private var executingURLquery:Boolean;
-			private var disRelatesInFixed:Boolean;
 			private var qLayer:FeatureLayer;
 			private var queryLayer:FeatureLayer;
 			private var relqueryLayer:FeatureLayer;
@@ -325,8 +326,8 @@
 			private var overFillSymbol:Symbol;
 			
 			//Build Constants
-			protected const VERSION:String = "3.0.8";
-			protected const BUILDDATE:String = "9/4/2012";
+			protected const VERSION:String = "3.0.9";
+			protected const BUILDDATE:String = "9/13/2012";
 			
 			//Resources
 			[Embed(source="assets/images/i_about.png")]
@@ -441,7 +442,6 @@
 					multiPartGraphicSearch = configXML.multipartgraphicsearch && configXML.multipartgraphicsearch == "true";
 					(multiPartGraphicSearch.valueOf() == true) ? graFeatureQueryBtn.visible = true : graFeatureQueryBtn.visible = false;
 					floatorfixed = configXML.floatorfixed || "float";
-					disRelatesInFixed = configXML.floatorfixed.@disablerelatestabinfixed && configXML.floatorfixed.@disablerelatestabinfixed == "true";
 					
 					if(eDrawEnabled){
 						eDrawBtn.filters = [cOver];
@@ -1381,7 +1381,7 @@
 					// on result
 					function onResult(featureSet:FeatureSet, token:XMLList = null):void                 
 					{   
-						//try{
+						try{
 							var gid:Number = 0;
 							for each (var gra:Graphic in featureSet.features){   
 								var obj:Object = gra.attributes;
@@ -1451,17 +1451,17 @@
 									layerDetails: (queryLayer.layerDetails)?queryLayer.layerDetails:queryLayer.tableDetails,
 									enableExport: queryEnableExport,
 									widgetInteract: widgetAndGridIteract,
-									disableRelateTab: disRelatesInFixed
+									disableRelateTab: !(queryLayerRels && queryLayerRels.length > 0)
 								};
 								var dgconfigArr:ArrayCollection = new ArrayCollection();
 								dgconfigArr.addItem(dgConfig);
 								addSharedData("configFixedDatagrid", dgconfigArr);
 							}
 							executingURLquery = false;
-						//}
-						//catch (error:Error){
-						//	showMessage(error.message, false);
-						//}
+						}
+						catch (error:Error){
+							showMessage(error.message, false);
+						}
 					}
 					//on fault
 					function onFault(info:Object, token:Object = null) : void
@@ -1525,6 +1525,7 @@
 				}
 				var v:int;
 				var i:Number = (cboLayerText.selectedIndex < 0) ? 0 : cboLayerText.selectedIndex;
+				cboLayerGraphical.selectedItem = cboLayerText.selectedItem;
 				var sItemVal:SearchExpValueItem;
 				for(v=0; v<configSearchText[i].expr[0].values.length; v++){
 					var cfg:Object = configSearchText[i].expr[0].values[v];
@@ -2177,7 +2178,7 @@
 									layerDetails: (queryLayer.layerDetails)?queryLayer.layerDetails:queryLayer.tableDetails,
 									enableExport: queryEnableExport,
 									widgetInteract: widgetAndGridIteract,
-									disableRelateTab: disRelatesInFixed,
+									disableRelateTab: !(queryLayerRels && queryLayerRels.length > 0),
 									relateIcon: relateIcon,
 									relateToolTip: relateToolTip
 								};
@@ -2521,7 +2522,7 @@
 									layerDetails: (queryLayer.layerDetails)?queryLayer.layerDetails:queryLayer.tableDetails,
 									enableExport: queryEnableExport,
 									widgetInteract: widgetAndGridIteract,
-									disableRelateTab: disRelatesInFixed,
+									disableRelateTab: !(queryLayerRels && queryLayerRels.length > 0),
 									relateIcon: relateIcon,
 									relateToolTip: relateToolTip
 								};
@@ -2855,7 +2856,7 @@
 						if(qLinks[a].diablelinksifnull){
 							var lfields:Array = getFieldsFromCDATA(qLinks[a].link);
 							for (var lf:int=0; lf<lfields.length; lf++){
-								if(!graphic.attributes[lfields[lf]]){
+								if(!graphic.attributes[lfields[lf]] || graphic.attributes[lfields[lf]] == ""){
 									linkFieldNull = true;
 									break;
 								}
@@ -4364,7 +4365,9 @@
 							pminfos.push(popUpMediaInfo);
 						}else{
 							var lText:String = (links[l].alias != "") ? links[l].alias : links[l].link;
-							popUpInfo.description += "<br /><a href='" + links[l].link + "'>" + lText + "</a>"
+							popUpInfo.description += "<br /><a href='" + links[l].link + "'>" + lText + "</a>";
+							//var ops:String = "return !window.open(this.href,'', 'width=450,height=600,resizable=yes,scrollbars=yes,toolbar=yes,status=yes');";
+							//popUpInfo.description += '<br /><a href="' + links[l].link + '" onclick="doSomething(event)">' + lText + "</a>";
 						}
 					}
 				}
@@ -4372,6 +4375,16 @@
 				
 				return popUpInfo;
 			}
+			
+			private function doSomething(e:FlowElementMouseEvent):void {
+				e.stopImmediatePropagation();
+				e.preventDefault();
+				var linkTarget:String;
+				var le:LinkElement = e.flowElement as LinkElement;
+				linkTarget = le.href;
+				
+			}
+
 			
 			private function showStateGraphicalSearch():void
 			{

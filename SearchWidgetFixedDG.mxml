@@ -137,27 +137,37 @@
 			[Embed(source="widgets/eSearch/assets/images/i_relate.png")]
 			public var relateClass:Class;
 			
-			private var autoHide:Boolean;
+			[Bindable] private var autoHide:Boolean;
 			
 			private var movingPanel:Boolean;
 			
 			[Bindable] private var searchResultTab:String = "Search Results";
 			
 			[Bindable] private var relateResultTab:String = "Relate Results";
+
+			[Bindable] private var autoHideLabel:String = "Auto Hide";
 			
 			private function init():void
 			{
 				if (configXML){
+					var duration:Number = configXML.duration ? configXML.duration : panelIn.duration;
+					if (configXML.height){
+						height = configXML.height;
+					}
+					panelIn.yTo = height - 25;
 					autoHide = configXML.autohide && configXML.autohide == "true";
 					if(autoHide){
 						movingPanel = true;
 						panelIn.target = panel;
 						panelOut.target = panel;
+						panelIn.duration = 0;
 						panelIn.play();
+						panelIn.duration = duration;
 						panelIn.addEventListener(EffectEvent.EFFECT_END, addEvent);
 					}
 					searchResultTab = configXML.labels.searchresulttab || "Search Results";
 					relateResultTab = configXML.labels.relateresulttab || "Relate Results";
+					autoHideLabel = configXML.labels.autohidelabel || "Auto hide";
 				}
 				AppEvent.addListener(AppEvent.DATA_PUBLISH, sharedDataUpdated);
 				appWidth = FlexGlobals.topLevelApplication.width;
@@ -446,6 +456,13 @@
 				(relatesGrid.columns.getItemAt(relatesGrid.columnsLength - 1) as GridColumn).width = NaN;
 			}
 		
+			private function toggleAutoHide():void
+			{
+				autoHide = !autoHide;
+				panelIn.target = autoHide ? panel : null;
+				panelOut.target = autoHide ? panel : null;
+			}
+
 			private function exportTo(event:Event):void
 			{
 				try{
@@ -1537,7 +1554,7 @@
 				}else{
 					event.preventDefault();
 					event.stopImmediatePropagation();
-					event.target.y = 175;
+					event.target.y = height - 25;
 					panel.removeEventListener(MoveEvent.MOVE, panel_moveHandler);
 				}
 			}
@@ -1569,12 +1586,15 @@
 									 contentBackgroundAlpha="{getStyle('styleAlpha')}"
 									 contentBackgroundColor="{getStyle('chromeColor')}"
 									 alternatingRowColors="{[getStyle('chromeColor'),getStyle('chromeColor')]}"/>
-						<s:HGroup verticalAlign="middle" paddingLeft="4" paddingTop="3" paddingBottom="3" paddingRight="30" horizontalAlign="right" height="34" width="100%" visible="{_enableExport || sumVisible}" includeInLayout="{_enableExport || sumVisible}">
-							<s:Label id="lblSum" text="{_labelSum}" visible="{sumVisible}" includeInLayout="{sumVisible}"/>
-							<s:TextArea id="taSum" heightInLines="1" editable="false" borderVisible="false" visible="{sumVisible}" includeInLayout="{sumVisible}"/>
-							<s:RadioButton label="{_exp2csvBtnLbl}" groupName="optiongroup" selected="true" visible="{_enableExport}" includeInLayout="{_enableExport}"/>
-							<s:RadioButton label="{_exp2txtBtnLbl}" groupName="optiongroup" visible="{_enableExport}" includeInLayout="{_enableExport}"/>
-							<s:Button label="{_exportButtonLbl}" id="Export" click="exportTo(event)" skinClass="widgets.eSearch.skins.ExportButtonSkin" visible="{_enableExport}" includeInLayout="{_enableExport}"/>
+						<s:HGroup verticalAlign="middle" paddingLeft="4" width="100%">
+							<s:CheckBox selected="{autoHide}" change="toggleAutoHide()" label="{autoHideLabel}"/>
+							<s:HGroup verticalAlign="middle" paddingLeft="4" paddingTop="3" paddingBottom="3" paddingRight="30" horizontalAlign="right" height="34" width="100%" visible="{_enableExport || sumVisible}" includeInLayout="{_enableExport || sumVisible}">
+								<s:Label id="lblSum" text="{_labelSum}" visible="{sumVisible}" includeInLayout="{sumVisible}"/>
+								<s:TextArea id="taSum" heightInLines="1" editable="false" borderVisible="false" visible="{sumVisible}" includeInLayout="{sumVisible}"/>
+								<s:RadioButton label="{_exp2csvBtnLbl}" groupName="optiongroup" selected="true" visible="{_enableExport}" includeInLayout="{_enableExport}"/>
+								<s:RadioButton label="{_exp2txtBtnLbl}" groupName="optiongroup" visible="{_enableExport}" includeInLayout="{_enableExport}"/>
+								<s:Button label="{_exportButtonLbl}" id="Export" click="exportTo(event)" skinClass="widgets.eSearch.skins.ExportButtonSkin" visible="{_enableExport}" includeInLayout="{_enableExport}"/>
+							</s:HGroup>
 						</s:HGroup>
 					</s:VGroup>
 				</s:SkinnableContainer>

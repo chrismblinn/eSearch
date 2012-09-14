@@ -80,7 +80,7 @@ created by the TabBarSkin use the TabBarButtonSkin class.
         </s:layout>
         <s:itemRenderer>
             <fx:Component>
-                <s:ButtonBarButton skinClass="widgets.eSearch.skins.IconButtonSkin" enabled="{data.enabled}" />
+                <s:ButtonBarButton skinClass="widgets.eSearch.skins.IconButtonSkin" enabled="{data.enabled}" visible="{data.enabled}" />
             </fx:Component>
         </s:itemRenderer>
     </s:DataGroup>

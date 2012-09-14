@@ -1,3 +1,12 @@
+Version 3.0.9 - 9/13/2012
+* Added an auto sync between the text search layer and the graphical serach layer dropdowns.
+* Depreciated the disablerelatestabinfixed attribute infavor of automatically setting the
+  visibility of the relates tab for the fixed datagrid based on, if the layer has relates 
+  configured or not.
+* Fixed datagrid now has configuration options for height and animation duration. Thanks to Kenny Horan
+* Added an auto hide checkbox on the fixed datagrid to toggle the auto hide capability.
+* Disablelinksifnull attribute now checks for empty strings as well as null values in the link fields.
+
 Version 3.0.8 - 9/4/2012
 * Added attribute to not display links that have null values.
 * Fixed bug with sorting on joined data.
