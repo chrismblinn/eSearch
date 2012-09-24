@@ -141,6 +141,8 @@
 			
 			private var movingPanel:Boolean;
 			
+			private var panelIsOpen:Boolean;
+			
 			[Bindable] private var searchResultTab:String = "Search Results";
 			
 			[Bindable] private var relateResultTab:String = "Relate Results";
@@ -157,14 +159,16 @@
 					panelIn.yTo = height - 25;
 					autoHide = configXML.autohide && configXML.autohide == "true";
 					if(autoHide){
+						panelIsOpen = true;
 						movingPanel = true;
 						panelIn.target = panel;
 						panelOut.target = panel;
 						panelIn.duration = 0;
 						panelIn.play();
-						panelIn.duration = duration;
 						panelIn.addEventListener(EffectEvent.EFFECT_END, addEvent);
+						addEventListener(ResizeEvent.RESIZE, resizeEvent);
 					}
+					panelIn.duration = duration;
 					searchResultTab = configXML.labels.searchresulttab || "Search Results";
 					relateResultTab = configXML.labels.relateresulttab || "Relate Results";
 					autoHideLabel = configXML.labels.autohidelabel || "Auto hide";
@@ -175,8 +179,18 @@
 			
 			private function addEvent(event:Event):void
 			{
+				panelIsOpen = false;
 				panelIn.removeEventListener(EffectEvent.EFFECT_END, addEvent);
 				panel.addEventListener(MoveEvent.MOVE, panel_moveHandler);
+			}
+			
+			/** Close the datagrid when the browser/panel is resized */
+			private function resizeEvent(event:ResizeEvent):void
+			{
+				if(panelIsOpen == false){
+					panelIn.end();
+					panelIn.play();
+				}
 			}
 			
 			public function set zoomScale(value:Number):void
@@ -459,8 +473,15 @@
 			private function toggleAutoHide():void
 			{
 				autoHide = !autoHide;
-				panelIn.target = autoHide ? panel : null;
-				panelOut.target = autoHide ? panel : null;
+				if (autoHide){
+					panelIn.target = panel;
+					panelOut.target = panel;
+					addEventListener(ResizeEvent.RESIZE, resizeEvent);
+				}else{
+					panelIn.target = null;
+					panelOut.target = null;
+					removeEventListener(ResizeEvent.RESIZE, resizeEvent);
+				}
 			}
 
 			private function exportTo(event:Event):void
@@ -1264,6 +1285,7 @@
 			
 			private function panel_rollOutHandler(event:MouseEvent):void
 			{
+				panelIsOpen = false;
 				movingPanel = true;
 				panelOut.end();
 				panelIn.play();
@@ -1271,6 +1293,7 @@
 			
 			private function panel_rollOverHandler(event:MouseEvent):void
 			{
+				panelIsOpen = true;
 				movingPanel = true;
 				panelIn.end();
 				panelOut.play();
@@ -1280,8 +1303,9 @@
 			{
 				var data:Object = event.data;
 				
-				 if (data.key == "configFixedDatagrid"){
+				if (data.key == "configFixedDatagrid"){
 					if (data.collection[0]){
+						panel_rollOverHandler(null);
 						var theObj:Object = data.collection[0];
 						mWidgetTitle = theObj.widgetTitle;
 						_layerDetails = theObj.layerDetails;
@@ -1312,6 +1336,7 @@
 				}
 				if (data.key == "configRelateFixedDatagrid"){
 					if (data.collection[0]){
+						panel_rollOverHandler(null);
 						var therObj:Object = data.collection[0];
 						_rlayerDetails = therObj.layerDetails;
 						_rdgFieldAliases = therObj.dgFieldAliases;
@@ -1377,6 +1402,7 @@
 					}
 				}
 				if (data.key == "switch2RelateTabFixedDataGrid"){
+					panel_rollOverHandler(null);
 					if(tabs.selectedIndex != 1){
 						tabs.selectedIndex = 1;
 						if(!_disableRelateTab){
@@ -1567,10 +1593,11 @@
 	</fx:Declarations>
 	<s:VGroup gap="-1" height="100%" width="100%" id="panel">
 		<s:TabBar id="tabs" dataProvider="{vs}" skinClass="widgets.eSearch.skins.TabBarSkin"
-				  mouseOut="panel_rollOutHandler(event)" 
-				  mouseOver="panel_rollOverHandler(event)"/>
-		<mx:ViewStack id="vs" height="100%" width="100%" creationPolicy="all" mouseOut="panel_rollOutHandler(event)" 
-					  mouseOver="panel_rollOverHandler(event)">
+				  rollOver="panel_rollOverHandler(event)"
+				  rollOut="panel_rollOutHandler(event)"/>
+		<mx:ViewStack id="vs" height="100%" width="100%" creationPolicy="all"
+					  rollOver="panel_rollOverHandler(event)"
+					  rollOut="panel_rollOutHandler(event)">
 			<s:NavigatorContent label="{searchResultTab}" width="100%"  height="100%" backgroundColor="{getStyle('chromeColor')}" backgroundAlpha="{getStyle('backgroundAlpha')}">
 				<s:SkinnableContainer height="100%" width="100%" backgroundAlpha="{getStyle('backgroundAlpha')}" backgroundColor="{getStyle('chromeColor')}">
 					<s:VGroup gap="0" width="100%" height="100%" horizontalAlign="center" verticalAlign="middle" >

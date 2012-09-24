@@ -93,13 +93,27 @@
 					 duration="250"/>
 			<s:SetAction target="{graphicPopUp2}" property="displayPopUp" value="false"/>
 		</s:Sequence>
-		
+		<s:Parallel id="mouseOverGear">
+			<s:Rotate3D angleZFrom="0" angleZTo="45"
+						duration="500" autoCenterTransform="true" />
+			<s:SetAction property="filters" value="{[gf]}"  />
+		</s:Parallel>
+		<s:Parallel id="mouseOutGear">
+			<s:Rotate3D angleZFrom="45" angleZTo="0"
+						duration="500" autoCenterTransform="true" />
+			<s:SetAction property="filters" value="{[]}"  />
+		</s:Parallel>
+		<s:GlowFilter alpha="0.8"
+					  blurX="5"
+					  blurY="5"
+					  color="0xffffff"
+					  quality="{BitmapFilterQuality.MEDIUM}"
+					  strength="1"
+					  id="gf"/>
 	</fx:Declarations>
 	
 	<fx:Script>
 		<![CDATA[
-			import flashx.textLayout.elements.LinkElement;
-			import flashx.textLayout.events.FlowElementMouseEvent;
 			import com.esri.ags.FeatureSet;
 			import com.esri.ags.Graphic;
 			import com.esri.ags.Map;
@@ -149,6 +163,11 @@
 			import com.esri.viewer.ViewerContainer;
 			import com.esri.viewer.components.TitlebarButton;
 			import com.esri.viewer.components.toc.utils.MapUtil;
+			
+			import flash.filters.BitmapFilterQuality;
+			
+			import flashx.textLayout.elements.LinkElement;
+			import flashx.textLayout.events.FlowElementMouseEvent;
 			
 			import mx.collections.*;
 			import mx.controls.Alert;
@@ -241,6 +260,7 @@
 			private var configSearchGraphical:Array;
 			private var configSearchText:Array;
 			private var configDomainVals:Array;
+			private var configSubTypeVals:Array;
 			private var configUserVals:Array;
 			private var queryLayerRels:Array;
 			private var qLinks:Array = [];
@@ -326,8 +346,8 @@
 			private var overFillSymbol:Symbol;
 			
 			//Build Constants
-			protected const VERSION:String = "3.0.9";
-			protected const BUILDDATE:String = "9/13/2012";
+			protected const VERSION:String = "3.0.10";
+			protected const BUILDDATE:String = "9/24/2012";
 			
 			//Resources
 			[Embed(source="assets/images/i_about.png")]
@@ -542,6 +562,7 @@
 								var valField:String = lyrExprVals[v].@field;
 								var valUserList:String = lyrExprVals[v].@userlist;
 								var valDomain:Boolean = lyrExprVals[v].@usedomain && lyrExprVals[v].@usedomain == "true";
+								var valSubType:Boolean = lyrExprVals[v].@usesubtype && lyrExprVals[v].@usesubtype == "true";
 								// if config is given and set to false explicitly, then make it optional (aka not required). Otherwise, default to being required
 								var isOptional:Boolean = lyrExprVals[v].@isvaluerequired && lyrExprVals[v].@isvaluerequired == "false";
 								var operatorValue:String =  lyrExprVals[v].@operator;
@@ -552,7 +573,8 @@
 									usedomain: valDomain,
 									userlist: valUserList,
 									isvaluerequired : !isOptional,
-									operator : operatorValue
+									operator : operatorValue,
+									usesubtype: valSubType
 								};
 								configLayerExprsVals.push(exprVals)
 							}
@@ -603,7 +625,7 @@
 						}
 						
 						var lyrSpatialLabel:String = lyrList[i].spatialquerylabel;
-						var lyrSpatialSearchLyr:String = lyrList[i].spatialsearchlayer;
+						var lyrSpatialSearchLyr:Boolean = lyrList[i].spatialsearchlayer && lyrList[i].spatialsearchlayer == "true";
 						
 						const layer:FeatureLayer = new FeatureLayer(lyrURL);
 						layer.name = layer.id = lyrLabel;
@@ -649,7 +671,7 @@
 						};
 						configSearchGraphical.push(searchLayer);
 						
-						if (searchLayer.spatialsearchlayer == "true"){
+						if (searchLayer.spatialsearchlayer){
 							configSpatialSearchLayers.push(searchLayer);
 						}
 						if (configLayerExprs && configLayerExprs.length > 0){
@@ -692,6 +714,7 @@
 								var tblField:String = tblExprVals[v].@field;
 								var tblUserList:String = tblExprVals[v].@userlist;
 								var tblDomain:Boolean = tblExprVals[v].@usedomain && tblExprVals[v].@usedomain == "true";
+								var tblSubType:Boolean = tblExprVals[v].@usesubtype && tblExprVals[v].@usesubtype == "true";
 								// if config is given and set to false explicitly, then make it optional (aka not required). Otherwise, default to being required
 								var isOptionalt:Boolean = tblExprVals[v].@isvaluerequired && tblExprVals[v].@isvaluerequired == "false";
 								var operatorValuet:String =  tblExprVals[v].@operator;
@@ -702,7 +725,8 @@
 									usedomain: tblDomain,
 									userlist: tblUserList,
 									isvaluerequired: !isOptionalt,
-									operator: operatorValuet
+									operator: operatorValuet,
+									usesubtype: tblSubType
 								};
 								configTableExprsVals.push(tblexprVals)
 							}
@@ -940,6 +964,8 @@
 							popCBwithDomain(configSearchText[0].expr[0].values[v].field, sItemVal);
 						}else if(configSearchText[0].expr[0].values[v].userlist != ""){
 							popCBwithUserList(configSearchText[0].expr[0].values[v].userlist, sItemVal);
+						}else if(configSearchText[0].expr[0].values[v].usesubtype){
+							popCBwithSubType(sItemVal);
 						}
 					}
 					
@@ -1130,7 +1156,6 @@
 					queryLayer.addEventListener(LayerEvent.LOAD, queryLayer_loadHandler);
 					function queryLayer_loadHandler(event:LayerEvent):void
 					{
-						//queryFromURL(value, slayerId, exprNum);
 						callLater(queryFromURL,[value,slayerId,exprNum]);
 					}
 					return;
@@ -1177,6 +1202,8 @@
 						popCBwithDomain(configSearchText[slayerId].expr[exprNum].values[v].field, sItemVal);
 					}else if(configSearchText[slayerId].expr[exprNum].values[v].userlist != ""){
 						popCBwithUserList(configSearchText[slayerId].expr[exprNum].values[v].userlist, sItemVal);
+					}else if(configSearchText[slayerId].expr[exprNum].values[v].usesubtype){
+						popCBwithSubType(sItemVal);
 					}
 				}
 				searchBtn.addEventListener(MouseEvent.CLICK, equeryFeaturesText);
@@ -1561,6 +1588,8 @@
 						popCBwithDomain(configSearchText[i].expr[0].values[v].field, sItemVal);
 					}else if(configSearchText[i].expr[0].values[v].userlist != ""){
 						popCBwithUserList(configSearchText[i].expr[0].values[v].userlist, sItemVal); 
+					}else if(configSearchText[i].expr[0].values[v].usesubtype){
+						popCBwithSubType(sItemVal);
 					}
 				}
 				searchBtn.addEventListener(MouseEvent.CLICK, equeryFeaturesText);
@@ -1625,6 +1654,8 @@
 						popCBwithDomain(configSearchText[i].expr[j].values[v].field, sItemVal);
 					}else if(configSearchText[i].expr[j].values[v].userlist != ""){
 						popCBwithUserList(configSearchText[i].expr[j].values[v].userlist, sItemVal);
+					}else if(configSearchText[i].expr[j].values[v].usesubtype){
+						popCBwithSubType(sItemVal);
 					}
 				}
 				searchBtn.addEventListener(MouseEvent.CLICK, equeryFeaturesText);
@@ -3287,6 +3318,60 @@
 				sItemVal.setCBDataProvider(configUserVals);
 			}
 			
+			private function popCBwithSubType(sItemVal:SearchExpValueItem):void
+			{
+				configSubTypeVals = [];
+				
+				var i:int = (cboLayerText.selectedIndex < 0) ? 0 : cboLayerText.selectedIndex;
+				if (i == -1){
+					if(configSearchText[0].layer){
+						queryLayer = configSearchText[0].layer;
+					}else{
+						queryLayer = configSearchText[0].table;
+					}
+				}else{
+					if(configSearchText[i].layer){
+						queryLayer = configSearchText[i].layer;
+					}else{
+						queryLayer = configSearchText[i].table;
+					}
+				}
+				
+				if (queryLayer && !queryLayer.loaded){
+					queryLayer.addEventListener(LayerEvent.LOAD, queryLayer_loadHandler);
+					function queryLayer_loadHandler(event:LayerEvent):void
+					{
+						popCBwithSubType(sItemVal);
+					}
+					return;
+				}
+				
+				var stype:FeatureType;
+				if(queryLayer.layerDetails){
+					for each (stype in queryLayer.layerDetails.types){
+						var stVal:String = stype.id;
+						var stLbl:String = stype.name;
+						var stOVal:Object = {
+							value: stVal,
+							label: stLbl
+						};
+						configSubTypeVals.push(stOVal);
+					}
+					sItemVal.setCBDataProvider(configSubTypeVals);
+				}else{
+					for each (stype in queryLayer.tableDetails.types){
+						var stTVal:String = stype.id;
+						var stTLbl:String = stype.name;
+						var stTOVal:Object = {
+							value: stTVal,
+							label: stTLbl
+						};
+						configSubTypeVals.push(stTOVal);
+					}
+					sItemVal.setCBDataProvider(configSubTypeVals);
+				}
+			}
+			
 			private function popCBwithDomain(fieldName:String, sItemVal:SearchExpValueItem):void
 			{
 				configDomainVals = [];
@@ -3341,31 +3426,7 @@
 					}else if (field && field.domain && field.domain is RangeDomain){
 						rangeDomain = field.domain as RangeDomain;
 						domainsCache[domainsKey] = rangeDomain;						
-					}else{
-						var stype:FeatureType;
-						if(queryLayer.layerDetails){
-							for each (stype in queryLayer.layerDetails.types){
-								if(stype.domains[fieldName].hasOwnProperty("codedValues")){
-									codedValueDomain = stype.domains[fieldName];
-									domainsCache[domainsKey] = codedValueDomain;
-								}
-								else if (stype.domains[fieldName].hasOwnProperty("minValue")){
-									rangeDomain = stype.domains[fieldName];
-									domainsCache[domainsKey] = rangeDomain;
-								}
-							}
-						}else{
-							for each (stype in queryLayer.tableDetails.types){
-								if(stype.domains[fieldName].hasOwnProperty("codedValues")){
-									codedValueDomain = stype.domains[fieldName];
-									domainsCache[domainsKey] = codedValueDomain;
-								}else if (stype.domains[fieldName].hasOwnProperty("minValue")){
-									rangeDomain = stype.domains[fieldName];
-									domainsCache[domainsKey] = rangeDomain;
-								}
-							}
-						}
-					}					
+					}				
 				}
 				
 				if(codedValueDomain){
@@ -4227,7 +4288,7 @@
 						}
 						myfloatdg.RelateIcon = relateIcon;
 						myfloatdg.RelateToolTip = relateToolTip;
-						myfloatdg.enableExport = configSearchText[0].enableexport;
+						myfloatdg.enableExport = queryEnableExport;//configSearchText[0].enableexport;
 						myfloatdg.featLayer = queryLayer;
 						myfloatdg.layerDetails = (queryLayer.layerDetails)?queryLayer.layerDetails:queryLayer.tableDetails;
 						myfloatdg.csvSeperator = csvSep;
@@ -4366,8 +4427,6 @@
 						}else{
 							var lText:String = (links[l].alias != "") ? links[l].alias : links[l].link;
 							popUpInfo.description += "<br /><a href='" + links[l].link + "'>" + lText + "</a>";
-							//var ops:String = "return !window.open(this.href,'', 'width=450,height=600,resizable=yes,scrollbars=yes,toolbar=yes,status=yes');";
-							//popUpInfo.description += '<br /><a href="' + links[l].link + '" onclick="doSomething(event)">' + lText + "</a>";
 						}
 					}
 				}
@@ -4375,16 +4434,6 @@
 				
 				return popUpInfo;
 			}
-			
-			private function doSomething(e:FlowElementMouseEvent):void {
-				e.stopImmediatePropagation();
-				e.preventDefault();
-				var linkTarget:String;
-				var le:LinkElement = e.flowElement as LinkElement;
-				linkTarget = le.href;
-				
-			}
-
 			
 			private function showStateGraphicalSearch():void
 			{
@@ -4617,6 +4666,18 @@
 				searchBtn.enabled = (canSearch && isValid);	
 			}
 			
+			protected function buffCfgBtn_rollOutHandler(event:MouseEvent):void
+			{
+				mouseOverGear.stop();
+				mouseOutGear.play([event.target]);
+			}
+			
+			protected function buffCfgBtn_rollOverHandler(event:MouseEvent):void
+			{
+				mouseOutGear.stop();
+				mouseOverGear.play([event.target]);
+			}
+			
 		]]>
 	</fx:Script>
 	
@@ -4833,8 +4894,8 @@
 				<s:DropDownList id="cboBufferUnit" />
 				<s:Group>
 					<s:Image source="{WIDGET_URL + 'i_gearsmall.png'}" width="22" height="22" smooth="true"
-							 toolTip="{configbuffergraTip}" buttonMode="true" 
-							 useHandCursor="true" id="buffCfgBtn" click="buffCfgBtn_clickHandler(event)"/>
+							 toolTip="{configbuffergraTip}" buttonMode="true" rollOver="buffCfgBtn_rollOverHandler(event)"
+							 useHandCursor="true" id="buffCfgBtn" click="buffCfgBtn_clickHandler(event)" rollOut="buffCfgBtn_rollOutHandler(event)"/>
 					<s:PopUpAnchor id="graphicPopUp2" 
 								   left="0" bottom="22" 
 								   popUpPosition="right" 

@@ -111,6 +111,54 @@
 		<!--<layer>
 			<definitionexpression></definitionexpression>
 			<enableexport>true</enableexport>
+			<name>Sub Types</name>
+			<url>http://gislap183/webgis/rest/services/SubTypes/MapServer/0</url>
+			<expressions>
+				<expression alias="Fitting Type" textsearchlabel="Search Type:" isvaluerequired="false">
+					<values>
+						<value prompt="Example: TEE" usesubtype="true" isvaluerequired="false">TYPECODE = [value]</value>
+					</values>
+				</expression>
+			</expressions>
+			<graphicalsearchlabel>Use one of the graphical search tools to select Zoning</graphicalsearchlabel>
+			<spatialsearchlayer>true</spatialsearchlayer>
+			<titlefield>FACILITY_I</titlefield>
+			<fields all="false">
+				<field name="STOP_NUM" />
+				<field name="DCM_STOP_N" />
+				<field name="ANGLE" />
+				<field name="ELEVATION" />
+				<field name="H_CONFID" />
+				<field name="H_DATE" />
+				<field name="DEPTH_BURI" />
+				<field name="SIZE_ONE" />
+				<field name="SIZE_TWO" />
+				<field name="SIZE_THREE" />
+				<field name="SIZE_FOUR" />
+				<field name="FACILITY_I" />
+				<field name="WMN_TYPE" />
+				<field name="PWTYPE" />
+				<field name="SUB_TYPE" />
+				<field name="LOCATION" />
+				<field name="OPER_DISTR" />
+				<field name="MUNICIPALI" />
+				<field name="CONTRACTOR" />
+				<field name="OWNER" />
+				<field name="COVER_TYPE" />
+				<field name="STATUS" />
+				<field name="TYPECODE" />
+				<field name="MATERIAL" />
+				<field name="Enabled" />
+			</fields>
+			<links/>
+			<zoomscale usegeometry="true" zoompercent="2"></zoomscale>
+			<autoopendatagrid>false</autoopendatagrid>
+			<queryattachments>false</queryattachments>
+			<relates/>
+		</layer>
+		<layer>
+			<definitionexpression></definitionexpression>
+			<enableexport>true</enableexport>
 			<name>Road Centerlines</name>
 			<url>http://gislap183/ArcGIS/rest/services/Highway/MapServer/5</url>
 			<expressions>

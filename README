@@ -1,3 +1,10 @@
+Version 3.0.10 - 9/24/2012
+* Added annimation to buffer graphic properties button.
+* Added usesubtype as a source for search drop down (like usedomain option).
+* Updated Enhanced Search Widget XML Configuration.pdf to include info on visible property
+  of fields element.
+* Fixed bug with float datagrid not honoring enable export option in all situations.
+
 Version 3.0.9 - 9/13/2012
 * Added an auto sync between the text search layer and the graphical serach layer dropdowns.
 * Depreciated the disablerelatestabinfixed attribute infavor of automatically setting the
