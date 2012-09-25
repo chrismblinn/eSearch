@@ -347,7 +347,7 @@
 			
 			//Build Constants
 			protected const VERSION:String = "3.0.10";
-			protected const BUILDDATE:String = "9/24/2012";
+			protected const BUILDDATE:String = "9/25/2012";
 			
 			//Resources
 			[Embed(source="assets/images/i_about.png")]
@@ -2982,6 +2982,7 @@
 								var args2:Array = curFormat.split("|");
 								if(args2[0]){
 									currFormatter.currencySymbol = args2[0];
+									currFormatter.useCurrencySymbol = true;
 								}
 								if(args2[1])
 									currFormatter.fractionalDigits = args2[1];
