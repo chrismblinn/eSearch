@@ -4929,8 +4929,8 @@
 									<s:Label text="{bufferoutlinewidthlbl}" />
 									<s:NumericStepper id="linewidth2"
 													  maximum="5"
-													  minimum="0.1"
-													  stepSize="0.1"
+													  minimum="0"
+													  stepSize="1"
 													  value="1" width="50"/>
 								</s:HGroup>
 								<s:HGroup horizontalAlign="right" width="100%" paddingRight="5">
