@@ -243,6 +243,7 @@
 			private var requiredTooltip:String;
 			
 			//Properties
+			[Bindable] private var pagingQueryTask:PagingQueryTask = new PagingQueryTask;
 			[Bindable] private var graphicsLayer:GraphicsLayer;
 			[Bindable] public var searchResultAC:ArrayCollection;
 			[Bindable] private var eDrawEnabled:Boolean = false;
@@ -346,8 +347,8 @@
 			private var overFillSymbol:Symbol;
 			
 			//Build Constants
-			protected const VERSION:String = "3.0.10";
-			protected const BUILDDATE:String = "9/25/2012";
+			protected const VERSION:String = "3.0.11";
+			protected const BUILDDATE:String = "10/17/2012";
 			
 			//Resources
 			[Embed(source="assets/images/i_about.png")]
@@ -561,6 +562,7 @@
 								var valExpr:String = lyrExprVals[v];
 								var valField:String = lyrExprVals[v].@field;
 								var valUserList:String = lyrExprVals[v].@userlist;
+								var valUniqueFromField:String = lyrExprVals[v].@uniquevalsfromfield;
 								var valDomain:Boolean = lyrExprVals[v].@usedomain && lyrExprVals[v].@usedomain == "true";
 								var valSubType:Boolean = lyrExprVals[v].@usesubtype && lyrExprVals[v].@usesubtype == "true";
 								// if config is given and set to false explicitly, then make it optional (aka not required). Otherwise, default to being required
@@ -572,6 +574,7 @@
 									field: valField,
 									usedomain: valDomain,
 									userlist: valUserList,
+									uniquevalsfromfield: valUniqueFromField,
 									isvaluerequired : !isOptional,
 									operator : operatorValue,
 									usesubtype: valSubType
@@ -713,6 +716,7 @@
 								var tblExpr:String = tblExprVals[v];
 								var tblField:String = tblExprVals[v].@field;
 								var tblUserList:String = tblExprVals[v].@userlist;
+								var tblUniqueFromField:String = tblExprVals[v].@uniquevalsfromfield;
 								var tblDomain:Boolean = tblExprVals[v].@usedomain && tblExprVals[v].@usedomain == "true";
 								var tblSubType:Boolean = tblExprVals[v].@usesubtype && tblExprVals[v].@usesubtype == "true";
 								// if config is given and set to false explicitly, then make it optional (aka not required). Otherwise, default to being required
@@ -724,6 +728,7 @@
 									field: tblField,
 									usedomain: tblDomain,
 									userlist: tblUserList,
+									uniquevalsfromfield: tblUniqueFromField,
 									isvaluerequired: !isOptionalt,
 									operator: operatorValuet,
 									usesubtype: tblSubType
@@ -966,6 +971,9 @@
 							popCBwithUserList(configSearchText[0].expr[0].values[v].userlist, sItemVal);
 						}else if(configSearchText[0].expr[0].values[v].usesubtype){
 							popCBwithSubType(sItemVal);
+						}else if(configSearchText[0].expr[0].values[v].uniquevalsfromfield != ""){
+							var uFld:String = configSearchText[0].expr[0].values[v].uniquevalsfromfield;
+							popCBwithUnique(uFld, sItemVal);
 						}
 					}
 					
@@ -1204,6 +1212,9 @@
 						popCBwithUserList(configSearchText[slayerId].expr[exprNum].values[v].userlist, sItemVal);
 					}else if(configSearchText[slayerId].expr[exprNum].values[v].usesubtype){
 						popCBwithSubType(sItemVal);
+					}else if(configSearchText[slayerId].expr[exprNum].values[v].uniquevalsfromfield != ""){
+						var uFld:String = configSearchText[slayerId].expr[exprNum].values[v].uniquevalsfromfield;
+						popCBwithUnique(uFld, sItemVal);
 					}
 				}
 				searchBtn.addEventListener(MouseEvent.CLICK, equeryFeaturesText);
@@ -1431,9 +1442,9 @@
 							gridDataProvider = featureSet.attributes;
 							resultsFeatureSet = featureSet;
 							if(queryLayerRels && queryLayerRels.length > 0){
-								searchResultAC = createSearchResults(featureSet, token, queryLayerRels);
+								searchResultAC = createSearchResults(featureSet, token, queryLayerRels, "queryFromURL");
 							}else{
-								searchResultAC = createSearchResults(featureSet, token);
+								searchResultAC = createSearchResults(featureSet, token, null, "queryFromURL");
 							}
 							// share data
 							addSharedData(widgetTitle, searchResultAC);
@@ -1590,6 +1601,9 @@
 						popCBwithUserList(configSearchText[i].expr[0].values[v].userlist, sItemVal); 
 					}else if(configSearchText[i].expr[0].values[v].usesubtype){
 						popCBwithSubType(sItemVal);
+					}else if(configSearchText[i].expr[0].values[v].uniquevalsfromfield != ""){
+						var uFld:String = configSearchText[i].expr[0].values[v].uniquevalsfromfield;
+						popCBwithUnique(uFld, sItemVal);
 					}
 				}
 				searchBtn.addEventListener(MouseEvent.CLICK, equeryFeaturesText);
@@ -1656,6 +1670,9 @@
 						popCBwithUserList(configSearchText[i].expr[j].values[v].userlist, sItemVal);
 					}else if(configSearchText[i].expr[j].values[v].usesubtype){
 						popCBwithSubType(sItemVal);
+					}else if(configSearchText[i].expr[j].values[v].uniquevalsfromfield != ""){
+						var uFld:String = configSearchText[i].expr[j].values[v].uniquevalsfromfield;
+						popCBwithUnique(uFld, sItemVal);
 					}
 				}
 				searchBtn.addEventListener(MouseEvent.CLICK, equeryFeaturesText);
@@ -2148,9 +2165,9 @@
 							gridDataProvider = featureSet.attributes;
 							resultsFeatureSet = featureSet;
 							if(queryLayerRels && queryLayerRels.length > 0){
-								searchResultAC = createSearchResults(featureSet, token, queryLayerRels);
+								searchResultAC = createSearchResults(featureSet, token, queryLayerRels, "queryFeaturesText");
 							}else{
-								searchResultAC = createSearchResults(featureSet, token);
+								searchResultAC = createSearchResults(featureSet, token, null, "queryFeaturesText");
 							}
 							// share data
 							addSharedData(widgetTitle, searchResultAC);
@@ -2484,9 +2501,9 @@
 							gridDataProvider = featureSet.attributes;
 							resultsFeatureSet = featureSet;
 							if(queryLayerRels && queryLayerRels.length > 0){
-								searchResultAC = createSearchResults(featureSet, token, queryLayerRels);
+								searchResultAC = createSearchResults(featureSet, token, queryLayerRels, "queryFeaturesGraphical");
 							}else{
-								searchResultAC = createSearchResults(featureSet, token);
+								searchResultAC = createSearchResults(featureSet, token, null, "queryFeaturesGraphical");
 							}
 							showMessage(selectionLabel + " " + featureSet.features.length, false);
 							if(floatorfixed == "float"){
@@ -2855,7 +2872,7 @@
 			}
 			
 			//create Search Results
-			private function createSearchResults(featureSet:FeatureSet, queryFields:XMLList, queryRelates:Array = null):ArrayCollection
+			private function createSearchResults(featureSet:FeatureSet, queryFields:XMLList, queryRelates:Array = null, initiator:String = null):ArrayCollection
 			{
 				var a:int;
 				graphicsLayer.clear();
@@ -3084,31 +3101,63 @@
 						searchResult.relateicon = queryRelates[0].icon;
 					}
 					searchResult.relatetooltip = relateToolTip;
-					var i:int = (cboLayerText.selectedIndex < 0) ? 0 : cboLayerText.selectedIndex;
+					var i:int;
+					if(initiator == "queryFeaturesText"){
+						i = (cboLayerText.selectedIndex < 0) ? 0 : cboLayerText.selectedIndex;
+					}else if(initiator == "queryFeaturesGraphical"){
+						i = (cboSearchLayerSpatial.selectedIndex < 0) ? 0 : cboSearchLayerSpatial.selectedIndex;
+					}else if(initiator == "queryFromURL"){
+						i = (cboLayerText.selectedIndex < 0) ? 0 : cboLayerText.selectedIndex;
+					}
+					
 					if(graphic.geometry){
 						switch (graphic.geometry.type){
 							case Geometry.MAPPOINT:{
-								if(configSearchText[i].symbology){
-									graphic.symbol = configSearchText[i].symbology;
+								if(initiator == "queryFeaturesText" || initiator == "queryFromURL"){
+									if(configSearchText[i].symbology){
+										graphic.symbol = configSearchText[i].symbology;
+									}else{
+										graphic.symbol = resultMarkerSymbol;
+									};
 								}else{
-									graphic.symbol = resultMarkerSymbol;
-								};
+									if(configSpatialSearchLayers[i].symbology){
+										graphic.symbol = configSpatialSearchLayers[i].symbology;
+									}else{
+										graphic.symbol = resultMarkerSymbol;
+									};
+								}
 								break;
 							}
 							case Geometry.POLYLINE:{
-								if(configSearchText[i].symbology){
-									graphic.symbol = configSearchText[i].symbology;
+								if(initiator == "queryFeaturesText" || initiator == "queryFromURL"){
+									if(configSearchText[i].symbology){
+										graphic.symbol = configSearchText[i].symbology;
+									}else{
+										graphic.symbol = resultLineSymbol;
+									};
 								}else{
-									graphic.symbol = resultLineSymbol;
-								};
+									if(configSpatialSearchLayers[i].symbology){
+										graphic.symbol = configSpatialSearchLayers[i].symbology;
+									}else{
+										graphic.symbol = resultLineSymbol;
+									};
+								}
 								break;
 							}
 							case Geometry.POLYGON:{
-								if(configSearchText[i].symbology){
-									graphic.symbol = configSearchText[i].symbology;
+								if(initiator == "queryFeaturesText" || initiator == "queryFromURL"){
+									if(configSearchText[i].symbology){
+										graphic.symbol = configSearchText[i].symbology;
+									}else{
+										graphic.symbol = resultFillSymbol;
+									};
 								}else{
-									graphic.symbol = resultFillSymbol;
-								};
+									if(configSpatialSearchLayers[i].symbology){
+										graphic.symbol = configSpatialSearchLayers[i].symbology;
+									}else{
+										graphic.symbol = resultFillSymbol;
+									};
+								}
 								break;
 							}
 						}
@@ -3291,6 +3340,66 @@
 					}
 				}
 				return result;
+			}
+			
+			private var layerUniqueCache:Dictionary = new Dictionary(); // map from queryLayer to uniqueCache
+			
+			private function popCBwithUnique(targetField:String, sItemVal:*):void
+			{
+				this.cursorManager.setBusyCursor();
+				var i:int = (cboLayerText.selectedIndex < 0) ? 0 : cboLayerText.selectedIndex;
+				if (i == -1){
+					if(configSearchText[0].layer){
+						queryLayer = configSearchText[0].layer;
+					}else{
+						queryLayer = configSearchText[0].table;
+					}
+				}else{
+					if(configSearchText[i].layer){
+						queryLayer = configSearchText[i].layer;
+					}else{
+						queryLayer = configSearchText[i].table;
+					}
+				}
+				
+				if (queryLayer && !queryLayer.loaded){
+					queryLayer.addEventListener(LayerEvent.LOAD, queryLayer_loadHandler);
+					function queryLayer_loadHandler(event:LayerEvent):void
+					{
+						popCBwithUnique(targetField, sItemVal);
+					}
+					return;
+				}
+				
+				var uniqueCache:Object = layerUniqueCache[queryLayer];
+				if (!uniqueCache){
+					uniqueCache = {};
+					layerUniqueCache[queryLayer] = uniqueCache;
+				}
+				
+				var uniqueKey:String = targetField;
+				var UniqueValArr:Array;
+				
+				if (uniqueKey in uniqueCache){
+					UniqueValArr = uniqueCache[uniqueKey];
+					sItemVal.setCBDataProvider(UniqueValArr);
+					this.cursorManager.removeBusyCursor();
+				}else{
+					var vNum:Number = (queryLayer.layerDetails)?queryLayer.layerDetails.version:queryLayer.tableDetails.version;
+					var isTenOrGreater:Boolean = (vNum >= 10)
+					pagingQueryTask = new PagingQueryTask(queryLayer.url, targetField, isTenOrGreater, sItemVal, uniqueCache);
+					pagingQueryTask.addEventListener("pagingComplete",pagingQueryTask_complete);
+					pagingQueryTask.execute();
+				}
+			}
+			
+			private function pagingQueryTask_complete(event:Event):void
+			{
+				this.cursorManager.removeBusyCursor();
+				pagingQueryTask.token.setCBDataProvider(pagingQueryTask.uniqueValues);
+				if(!pagingQueryTask.pagingEscaped){
+					pagingQueryTask.uniqueCache[pagingQueryTask.fieldName] = pagingQueryTask.uniqueValues;
+				}
 			}
 			
 			private function popCBwithUserList(userList:String, sItemVal:SearchExpValueItem):void
@@ -4696,6 +4805,7 @@
 			<s:layout>
 				<s:VerticalLayout gap="4" horizontalAlign="center"/>
 			</s:layout>
+			
 			<s:HGroup id="boxText"
 					  width="100%"
 					  gap="15"
@@ -4717,6 +4827,12 @@
 					 text=""
 					 textAlign="center"
 					 tabEnabled="false" tabFocusEnabled="false"/>
+			<s:Label id="uniqueIDStatus"
+					 text="{'Processing Unique Values: ' + pagingQueryTask.featuresProcessed + 
+					 ' of ' + pagingQueryTask.featuresTotal + ' \n(Esc to Cancel)'}"
+					 width="100%"
+					 visible="{pagingQueryTask.isQuerying}" 
+					 includeInLayout="{pagingQueryTask.isQuerying}"/>
 			<s:Scroller width="100%" height="100%" hasFocusableChildren="true">
 				<s:VGroup id="searchGroup" width="100%" paddingTop="3" paddingBottom="3">
 					<Search:SearchExpValueItem width="100%" wTemplateWidth="{wTemplate.width}" />
@@ -4834,9 +4950,13 @@
 				<s:TextInput id="textGraInputBuffer" text="50" width="40" needsSoftKeyboard="true"/>
 				<s:DropDownList id="cboGraBufferUnit" />
 				<s:Group>
-					<s:Image source="{WIDGET_URL + 'i_gearsmall.png'}" width="22" height="22" smooth="true"
-						 toolTip="{configbuffergraTip}" buttonMode="true" 
-						 useHandCursor="true" id="buffGraCfgBtn" click="buffGraCfgBtn_clickHandler(event)"/>
+					<s:Image source="{WIDGET_URL + 'i_gearsmall.png'}"
+							 width="22" height="22" smooth="true"
+							 toolTip="{configbuffergraTip}" buttonMode="true"
+							 useHandCursor="true" id="buffGraCfgBtn"
+							 click="buffGraCfgBtn_clickHandler(event)"
+							 rollOver="buffCfgBtn_rollOverHandler(event)"
+							 rollOut="buffCfgBtn_rollOutHandler(event)"/>
 					<s:PopUpAnchor id="graphicPopUp" 
 								   left="0" bottom="22" 
 								   popUpPosition="right" 

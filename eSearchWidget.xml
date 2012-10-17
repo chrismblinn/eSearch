@@ -16,7 +16,7 @@
 				</expression>
 				<expression alias="Zoning Type" textsearchlabel="Search Zoning Type:">
 					<values>
-						<value prompt="Example: RESIDENTIAL" isvaluerequired="true">upper(ZONING_TYPE) = upper('[value]')</value>
+						<value prompt="Example: RESIDENTIAL" uniquevalsfromfield="ZONING_TYPE" isvaluerequired="true">ZONING_TYPE = '[value]'</value>
 					</values>
 				</expression>
 				<expression alias="Zoning Name" textsearchlabel="Search Zoning Name [ Example: RES MULTI-FAMILY ]:">
@@ -423,7 +423,7 @@
 	<enabledatagridinteractionwithwidget>true</enabledatagridinteractionwithwidget>
 	<toleranceforpointgraphicalselection>6</toleranceforpointgraphicalselection><!-- value is in screen pixels -->
 	<tolerancebydefault>false</tolerancebydefault>
-	<spatialreference>102003</spatialreference>
+	<spatialreference>102100</spatialreference>
 	<zoomscale>2400</zoomscale>
 	<geometryservice>http://tasks.arcgisonline.com/ArcGIS/rest/services/Geometry/GeometryServer</geometryservice>
 	<csvseparator>,</csvseparator>
