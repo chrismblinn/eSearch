@@ -1,3 +1,10 @@
+Version 3.0.11 - 10/17/2012
+* Added uniquevalsfromfield as a source for search drop down (like usedomain and userlist options).
+* Changed the default spatialreference in the xml to 102100.
+* Fixed bug with spatial search using symbology from first text search layer instead of chosen spatial
+  search layer.
+* Changed the line width stepper in the GUI to use whole numbers (thanks to Bjorn for point this out).
+
 Version 3.0.10 - 9/24/2012
 * Added annimation to buffer graphic properties button.
 * Added usesubtype as a source for search drop down (like usedomain option).
