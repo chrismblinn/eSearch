@@ -347,8 +347,8 @@
 			private var overFillSymbol:Symbol;
 			
 			//Build Constants
-			protected const VERSION:String = "3.0.11";
-			protected const BUILDDATE:String = "10/17/2012";
+			protected const VERSION:String = "3.0.12";
+			protected const BUILDDATE:String = "10/19/2012";
 			
 			//Resources
 			[Embed(source="assets/images/i_about.png")]
@@ -2121,6 +2121,11 @@
 							}
 							criteriaFromValue = mExpr.replace(myPattern, uList);
 							expr = AppendTo(expr, criteriaFromValue, sItemVal.operator);
+						}else if(sItemVal.textValue.toLowerCase() == "allu" && !sItemVal.isTextBox()){
+							expr = AppendTo(expr, "1=1", sItemVal.operator);
+						}else if(sItemVal.textValue.toLowerCase() == "null"){
+							var mExpr2:String = queryExpr.substr(0, queryExpr.indexOf("=")) + " is null";
+							expr = AppendTo(expr, mExpr2, sItemVal.operator);
 						}else{
 							//don't add the expression if there is no user input
 							if(eVal != ""){
@@ -2447,6 +2452,7 @@
 						var myPattern:RegExp = /\[value\]/g;
 						var expr:String = "";
 						var eVal:String = "";
+						var criteriaFromValue:String;
 						
 						for(var sg:Number = 0; sg < searchGroup.numElements; sg++){
 							sItemVal = searchGroup.getElementAt(sg) as SearchExpValueItem;
@@ -2465,11 +2471,18 @@
 								if(mExpr.indexOf("'[value]'") > -1){
 									uList = uList.replace(",", "','");
 								}
-								expr += mExpr.replace(myPattern, uList);
+								criteriaFromValue = mExpr.replace(myPattern, uList);
+								expr = AppendTo(expr, criteriaFromValue, sItemVal.operator);
+							}else if(sItemVal.textValue.toLowerCase() == "allu" && !sItemVal.isTextBox()){
+								expr = AppendTo(expr, "1=1", sItemVal.operator);
+							}else if(sItemVal.textValue.toLowerCase() == "null"){
+								var mExpr2:String = queryExpr.substr(0, queryExpr.indexOf("=")) + " is null";
+								expr = AppendTo(expr, mExpr2, sItemVal.operator);
 							}else{
 								if(eVal != ""){
 									//don't add the expression if there is no user input
-									expr += queryExpr.replace(myPattern, eVal);
+									criteriaFromValue = queryExpr.replace(myPattern, eVal);
+									expr = AppendTo(expr, criteriaFromValue, sItemVal.operator);
 								}
 							}
 						}
@@ -3346,7 +3359,6 @@
 			
 			private function popCBwithUnique(targetField:String, sItemVal:*):void
 			{
-				this.cursorManager.setBusyCursor();
 				var i:int = (cboLayerText.selectedIndex < 0) ? 0 : cboLayerText.selectedIndex;
 				if (i == -1){
 					if(configSearchText[0].layer){
@@ -3370,7 +3382,7 @@
 					}
 					return;
 				}
-				
+				this.cursorManager.setBusyCursor();
 				var uniqueCache:Object = layerUniqueCache[queryLayer];
 				if (!uniqueCache){
 					uniqueCache = {};
@@ -4618,10 +4630,16 @@
 						map.centerAt(mp);
 					}else{
 						var graphicsExtent:Extent = GraphicUtil.getGraphicsExtent(resultsFeatureSet.features);
-						map.extent = graphicsExtent.expand(zoomPercent);
-						// make sure the whole extent is visible
-						if (!map.extent.contains(graphicsExtent.expand(zoomPercent))){
-							map.level--;
+						if(graphicsExtent){
+							map.extent = graphicsExtent.expand(zoomPercent);
+							// make sure the whole extent is visible
+							if (!map.extent.contains(graphicsExtent.expand(zoomPercent))){
+								map.level--;
+							}
+						}else{
+							var mp2:MapPoint = resultsFeatureSet.features[0].geometry as MapPoint;
+							map.zoom(1 / 16, mp2);
+							map.centerAt(mp2);
 						}
 					}
 				}
