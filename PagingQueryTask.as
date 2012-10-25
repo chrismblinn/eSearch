@@ -359,7 +359,6 @@ package widgets.eSearch
 			}
 			
 			distinctValuesCollection.source.sortOn("value");
-			//Ads the all option to the list
 			distinctValuesCollection.addItem({value: "allu", label: "all"});
 			//return the collection of distinct values
 			return distinctValuesCollection.source;

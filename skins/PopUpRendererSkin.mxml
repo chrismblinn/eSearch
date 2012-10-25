@@ -217,8 +217,15 @@
                     if (map && geometry){
                         vGroup.addElement(zoomToButton);
                     }
+					trace(hostComponent.parent.parent.parent.parent.parent);
+					hostComponent.parent.parent.parent.parent.addEventListener("close",infoWinClose_Handler);
                 }
             }
+			
+			private function infoWinClose_Handler(event:Event):void
+			{
+				trace(event.type);
+			}
 
             private function setTextFlow(textComp:RichEditableText, htmlText:String):void
             {

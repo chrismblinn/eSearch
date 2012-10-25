@@ -1,3 +1,11 @@
+Version 3.0.13 - 10/25/2012
+* You can now print from the datagrid (floating or fixed). The Print output is properly paginated
+  based on the number of columns (and their widths) and the number of rows. The print output has
+  several configurable option for header colors, footer elements, etc. The print honors any sort
+  applied to the datagrid.
+* Export to csv and text now honors the sort applied to the datagrid.
+* Fixed bug with resetting required fields when the search is cleared.
+
 Version 3.0.11 - 10/17/2012
 * Added uniquevalsfromfield as a source for search drop down (like usedomain and userlist options).
 * Changed the default spatialreference in the xml to 102100.

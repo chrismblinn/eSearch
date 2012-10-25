@@ -281,6 +281,8 @@
 			private var autoZoom:Boolean;
 			private var queryLinkIconIsField:Boolean;
 			private var queryEnableExport:Boolean;
+			private var queryEnablePrint:Boolean;
+			private var queryPrintTitle:String;
 			private var queryExprForSpatRel:Boolean;
 			private var queryAttachments:Boolean;
 			private var openDataGrid:Boolean;
@@ -332,6 +334,15 @@
 			private var timer:Timer;
 			private var myTip:ToolTip;
 			private var queryFields:XMLList;
+			
+			//Print DG Properties
+			private var dgheaderbgcolor:uint;
+			private var dgrepeatheader:Boolean;
+			private var dgheaderfontcolor:uint;
+			private var dgfooterincdate:Boolean;
+			private var dgfooterdateformat:String;
+			private var dgfooterpageofpage:String;
+			private var dgfooterdisclaimer:String;
 
 			//Formatters
 			private var dateFormatter:DateTimeFormatter = new DateTimeFormatter();
@@ -347,8 +358,8 @@
 			private var overFillSymbol:Symbol;
 			
 			//Build Constants
-			protected const VERSION:String = "3.0.12";
-			protected const BUILDDATE:String = "10/19/2012";
+			protected const VERSION:String = "3.0.13";
+			protected const BUILDDATE:String = "10/24/2012";
 			
 			//Resources
 			[Embed(source="assets/images/i_about.png")]
@@ -426,6 +437,13 @@
 					widgetAndGridIteract = configXML.enabledatagridinteractionwithwidget && configXML.enabledatagridinteractionwithwidget == "true";
 					requiredLbl = configXML.labels.required || "*";
 					requiredTooltip = configXML.labels.requiredtooltip || "This field is required.&#13;Enter a value to enable search button";
+					dgheaderbgcolor = configXML.printdatagrid.columnheaderbgcolor || 0xa7a7a7;
+					dgrepeatheader = configXML.printdatagrid.addheadertoeachpage && configXML.printdatagrid.addheadertoeachpage == "true";
+					dgheaderfontcolor = configXML.printdatagrid.columnheaderfontcolor || 0x000000;
+					dgfooterincdate = configXML.printdatagrid.footer.includeprintdate && configXML.printdatagrid.footer.includeprintdate == "true";
+					dgfooterdateformat = configXML.printdatagrid.footer.includeprintdate.@format || "MM-DD-YYYY L:NN A";
+					dgfooterpageofpage = configXML.printdatagrid.footer.pageoftext || "page ## of ##";
+					dgfooterdisclaimer = configXML.printdatagrid.footer.disclaimer || "";
 					
 					configSpatialSearchRelation = [];
 					var operList:XMLList = configXML..spatialrelationship;
@@ -541,12 +559,16 @@
 							var lyrRelIcon:String = lyrRelList[r].@icon || WIDGET_URL + "i_relate.png";
 							var lyrRelFields:XMLList = lyrRelList[r].fields;
 							var lyrRelEnableExport:Boolean = lyrRelList[r].@enableexport && lyrRelList[r].@enableexport == "true";
+							var lyrRelEnablePrint:Boolean = lyrRelList[r].@enableprintgrid && lyrRelList[r].@enableprintgrid == "true";
+							var lyrRelPrintTitle:String = lyrRelList[r].@printtitle || "";
 							var lyrRel:Object = {
 								id: lyrRelId,
 								fields: lyrRelFields,
 								label: lyrRelLabel,
 								enableexport: lyrRelEnableExport,
-								icon: lyrRelIcon
+								enableprint: lyrRelEnablePrint,
+								icon: lyrRelIcon,
+								printtitle: lyrRelPrintTitle
 							};
 							configLayerRels.push(lyrRel);
 						}
@@ -610,6 +632,11 @@
 						}
 						var lyrQueryAttach:Boolean = lyrList[i].queryattachments && lyrList[i].queryattachments == "true";
 						var lyrEnableExport:Boolean = lyrList[i].enableexport && lyrList[i].enableexport == "true";
+						var lyrEnablePrint:Boolean = lyrList[i].enableprintgrid && lyrList[i].enableprintgrid == "true";
+						var lyrPrintTitle:String = "";
+						if(lyrEnablePrint){
+							lyrPrintTitle = lyrList[i].enableprintgrid.@title || "";
+						}
 						var lyrMultiImgField:String = lyrList[i].multiimagefield;
 						var useProxy:Boolean = lyrList[i].useproxy && lyrList[i].useproxy == "true";
 						var useAMF:String = lyrList[i].useamf;
@@ -666,6 +693,8 @@
 							zoomscale: zoomScale,
 							zoompercent: zoomPercent,
 							enableexport: lyrEnableExport,
+							enableprint: lyrEnablePrint,
+							printtitle: lyrPrintTitle,
 							defexpr: lyrDefExpr,
 							opendg: openDG,
 							relates: configLayerRels,
@@ -695,12 +724,16 @@
 							var tblRelIcon:String = tblRelList[r].@icon || WIDGET_URL + "i_relate.png";
 							var tblRelFields:XMLList = tblRelList[r].fields;
 							var tblRelEnableExport:Boolean = tblRelList[r].@enableexport && tblRelList[r].@enableexport == "true";
+							var tblRelEnablePrint:Boolean = tblRelList[r].@enableprintgrid && tblRelList[r].@enableprintgrid == "true";
+							var tblRelPrintTitle:String = tblRelList[r].@printtitle;
 							var tblRel:Object = {
 								id: tblRelId,
 								fields: tblRelFields,
 								label: tblRelLabel,
 								enableexport: tblRelEnableExport,
-								icon: tblRelIcon
+								enableprint: tblRelEnablePrint,
+								icon: tblRelIcon,
+								printtitle: tblRelPrintTitle
 							};
 							configTableRels.push(tblRel);
 						}
@@ -763,6 +796,11 @@
 							tblLinks.push(tbllinkObj);
 						}	
 						var tblEnableExport:Boolean = tblList[i].enableexport && tblList[i].enableexport == "true";
+						var tblEnablePrint:Boolean = tblList[i].enableprintgrid && tblList[i].enableprintgrid == "true";
+						var tblPrintTitle:String ="";
+						if(tblEnablePrint){
+							tblPrintTitle = tblList[i].enableprintgrid.@title || "";
+						}
 						var tblMultiImgField:String = tblList[i].multiimagefield;
 						var tbluseProxy:Boolean = tblList[i].useproxy && tblList[i].useproxy == "true";
 						var tbluseAMF:String = tblList[i].useamf;
@@ -797,6 +835,8 @@
 							links: tblLinks,
 							multi: tblMultiImgField,
 							enableexport: tblEnableExport,
+							enableprint: tblEnablePrint,
+							printtitle: tblPrintTitle,
 							defexpr: tblDefExpr,
 							opendg: tblopenDG,
 							relates: configTableRels,
@@ -1387,6 +1427,8 @@
 				queryMultiImgField = configSearchText[slayerId].multi;
 				queryAttachments = configSearchText[slayerId].attachments;
 				queryEnableExport = configSearchText[slayerId].enableexport;
+				queryEnablePrint = configSearchText[slayerId].enableprint;
+				queryPrintTitle = (configSearchText[slayerId].printtitle != "")?configSearchText[slayerId].printtitle:configSearchText[slayerId].label;
 				var fields:XMLList;
 				
 				if(configSearchText[slayerId].layer){
@@ -1469,7 +1511,7 @@
 							
 							if(floatorfixed == "fixed"){
 								var dgConfig:Object = {
-									widgetTitle: widgetTitle,
+									widgetTitle: queryPrintTitle,
 									csvExportOptionLbl: exp2csvOptLbl,
 									txtExportOptionLbl: exp2txtOptLbl,
 									ExportButtonLbl: expBtnLbl,
@@ -1488,8 +1530,16 @@
 									ownerWidget: sWidget,
 									layerDetails: (queryLayer.layerDetails)?queryLayer.layerDetails:queryLayer.tableDetails,
 									enableExport: queryEnableExport,
+									enablePrint: queryEnablePrint,
 									widgetInteract: widgetAndGridIteract,
-									disableRelateTab: !(queryLayerRels && queryLayerRels.length > 0)
+									disableRelateTab: !(queryLayerRels && queryLayerRels.length > 0),
+									headerBGColor: dgheaderbgcolor,
+									repeatHeader: dgrepeatheader,
+									headerFontColor: dgheaderfontcolor,
+									includeDateInFooter: dgfooterincdate,
+									footerDateFormat : dgfooterdateformat,
+									footerPageofPage: dgfooterpageofpage,
+									footerDisclaimer: dgfooterdisclaimer
 								};
 								var dgconfigArr:ArrayCollection = new ArrayCollection();
 								dgconfigArr.addItem(dgConfig);
@@ -2084,6 +2134,8 @@
 				queryMultiImgField = configSearchText[i].multi;
 				queryAttachments = configSearchText[i].attachments;
 				queryEnableExport = configSearchText[i].enableexport;
+				queryEnablePrint = configSearchText[i].enableprint;
+				queryPrintTitle = (configSearchText[i].printtitle != "")?configSearchText[i].printtitle:configSearchText[i].label;
 				openDataGrid = configSearchText[i].opendg;
 				var sItemVal:SearchExpValueItem;
 				var fields:XMLList;
@@ -2203,14 +2255,24 @@
 									myfloatdg.featLayer = queryLayer;
 									myfloatdg.layerDetails = (queryLayer.layerDetails)?queryLayer.layerDetails:queryLayer.tableDetails;
 									myfloatdg.enableExport = queryEnableExport;
+									myfloatdg.printLabel = getDefaultString('printSubmitLabel');
+									myfloatdg.enablePrint = queryEnablePrint;
 									myfloatdg.widgetInteract = widgetAndGridIteract;
+									myfloatdg.headerBGColor = dgheaderbgcolor;
+									myfloatdg.repeatHeader = dgrepeatheader;
+									myfloatdg.headerFontColor = dgheaderfontcolor;
+									myfloatdg.footerIncludeDate = dgfooterincdate;
+									myfloatdg.footerDateFormat = dgfooterdateformat;
+									myfloatdg.footerDisclaimer = dgfooterdisclaimer;
+									myfloatdg.footerPageofPage = dgfooterpageofpage;
+									myfloatdg.dgtitle = queryPrintTitle;
 								}
 							}else if(floatorfixed == "fixed"){
 								if(!gridFields){
 									gridFields = configSearchText[i].gridfields;
 								}
 								var dgConfig:Object = {
-									widgetTitle: widgetTitle,
+									widgetTitle: (configSearchText[i].printtitle != "")?configSearchText[i].printtitle:configSearchText[i].label,
 									csvExportOptionLbl: exp2csvOptLbl,
 									txtExportOptionLbl: exp2txtOptLbl,
 									ExportButtonLbl: expBtnLbl,
@@ -2230,10 +2292,18 @@
 									featLayer: queryLayer,
 									layerDetails: (queryLayer.layerDetails)?queryLayer.layerDetails:queryLayer.tableDetails,
 									enableExport: queryEnableExport,
+									enablePrint: queryEnablePrint,
 									widgetInteract: widgetAndGridIteract,
 									disableRelateTab: !(queryLayerRels && queryLayerRels.length > 0),
 									relateIcon: relateIcon,
-									relateToolTip: relateToolTip
+									relateToolTip: relateToolTip,
+									headerBGColor: dgheaderbgcolor,
+									repeatHeader: dgrepeatheader,
+									headerFontColor: dgheaderfontcolor,
+									includeDateInFooter: dgfooterincdate,
+									footerDateFormat : dgfooterdateformat,
+									footerPageofPage: dgfooterpageofpage,
+									footerDisclaimer: dgfooterdisclaimer
 								};
 								var dgconfigArr:ArrayCollection = new ArrayCollection();
 								dgconfigArr.addItem(dgConfig);
@@ -2437,6 +2507,8 @@
 				queryAttachments = layerConfig.attachments;
 				queryExprForSpatRel = layerConfig.useforspatial;
 				queryEnableExport = layerConfig.enableexport;
+				queryEnablePrint = layerConfig.enableprint;
+				queryPrintTitle = queryPrintTitle = (layerConfig.printtitle != "")?layerConfig.printtitle:layerConfig.label;
 				queryDefExpr = layerConfig.defexpr;
 				openDataGrid = layerConfig.opendg;
 				queryLayerRels = layerConfig.relates;
@@ -2545,7 +2617,17 @@
 									myfloatdg.layerDetails = queryLayer.layerDetails;
 									myfloatdg.featLayer = queryLayer;
 									myfloatdg.enableExport = queryEnableExport;
+									myfloatdg.printLabel = getDefaultString('printSubmitLabel');
+									myfloatdg.enablePrint = queryEnablePrint;
 									myfloatdg.widgetInteract = widgetAndGridIteract;
+									myfloatdg.headerBGColor = dgheaderbgcolor;
+									myfloatdg.repeatHeader = dgrepeatheader;
+									myfloatdg.headerFontColor = dgheaderfontcolor;
+									myfloatdg.footerIncludeDate = dgfooterincdate;
+									myfloatdg.footerDateFormat = dgfooterdateformat;
+									myfloatdg.footerDisclaimer = dgfooterdisclaimer;
+									myfloatdg.footerPageofPage = dgfooterpageofpage;
+									myfloatdg.dgtitle = queryPrintTitle;
 								}
 								if (openDataGrid && floatorfixed != "fixed"){
 									showGridResults();
@@ -2562,7 +2644,7 @@
 								}
 							}else if(floatorfixed == "fixed"){
 								var dgConfig:Object = {
-									widgetTitle: widgetTitle,
+									widgetTitle: (layerConfig.printtitle != "")?layerConfig.printtitle:layerConfig.label,
 									csvExportOptionLbl: exp2csvOptLbl,
 									txtExportOptionLbl: exp2txtOptLbl,
 									ExportButtonLbl: expBtnLbl,
@@ -2582,10 +2664,18 @@
 									featLayer: queryLayer,
 									layerDetails: (queryLayer.layerDetails)?queryLayer.layerDetails:queryLayer.tableDetails,
 									enableExport: queryEnableExport,
+									enablePrint: queryEnablePrint,
 									widgetInteract: widgetAndGridIteract,
 									disableRelateTab: !(queryLayerRels && queryLayerRels.length > 0),
 									relateIcon: relateIcon,
-									relateToolTip: relateToolTip
+									relateToolTip: relateToolTip,
+									headerBGColor: dgheaderbgcolor,
+									repeatHeader: dgrepeatheader,
+									headerFontColor: dgheaderfontcolor,
+									includeDateInFooter: dgfooterincdate,
+									footerDateFormat : dgfooterdateformat,
+									footerPageofPage: dgfooterpageofpage,
+									footerDisclaimer: dgfooterdisclaimer
 								};
 								var dgconfigArr:ArrayCollection = new ArrayCollection();
 								dgconfigArr.addItem(dgConfig);
@@ -3359,6 +3449,7 @@
 			
 			private function popCBwithUnique(targetField:String, sItemVal:*):void
 			{
+				
 				var i:int = (cboLayerText.selectedIndex < 0) ? 0 : cboLayerText.selectedIndex;
 				if (i == -1){
 					if(configSearchText[0].layer){
@@ -3382,6 +3473,7 @@
 					}
 					return;
 				}
+				
 				this.cursorManager.setBusyCursor();
 				var uniqueCache:Object = layerUniqueCache[queryLayer];
 				if (!uniqueCache){
@@ -3744,6 +3836,7 @@
 				if(floatorfixed == "fixed"){
 					addSharedData("clearRelateFixedDatagrid", null);
 				}
+				searchLayerExprChangedText();
 			}
 			
 			private function clearBuffer():void
@@ -3787,8 +3880,10 @@
 			{
 				var relId:int;
 				var relLbl:String;
+				var relPrintTitle:String;
 				var relFields:XMLList;
 				var relExportEnabled:Boolean;
+				var relPrintEnabled:Boolean;
 				var rFields:XMLList;
 				qrelateFields = [];
 				relateFields = [];
@@ -3826,9 +3921,11 @@
 					}
 					
 					relId = searchResult.relates[0].id;
+					relPrintTitle = searchResult.relates[0].printtitle;
 					relLbl = searchResult.relates[0].label;
 					relFields = searchResult.relates[0].fields;
 					relExportEnabled = searchResult.relates[0].enableexport;
+					relPrintEnabled = searchResult.relates[0].enableprint;
 					if(relFields.@all[0] == "true"){
 						relatesQuery.outFields = ["*"];
 						relatesQuery.relationshipId = relId;
@@ -3967,8 +4064,10 @@
 						relRslt.name = searchResult.relates[r].label;
 						relRslt.fields = searchResult.relates[r].fields;
 						relRslt.enableexport = searchResult.relates[r].enableexport;
+						relRslt.enableprint = searchResult.relates[r].enableprint;
 						relRslt.oid = searchResult.oid;
 						relRslt.icon = searchResult.relates[r].icon;
+						relRslt.printtitle = searchResult.relates[r].printtitle;
 						relArrayColl.addItem(relRslt);
 					}
 					
@@ -3996,25 +4095,33 @@
 					rWindow.dProvider = relArrayColl;
 				}
 				
-				function relateChoosen(evt:Event):void{
+				function relateChoosen(evt:RelateChosenEvent):void{
 					var relArr:Array;
 					if(queryLayer.layerDetails){
 						relArr = queryLayer.layerDetails.relationships;
 					}else{
 						relArr = queryLayer.tableDetails.relationships;
 					}
+					
+					var crelRslt:RelateResult = evt.data as RelateResult;
+					
+					relId = crelRslt.id;
 					var relation:Relationship;
 					for (var ri:int=0; ri < relArr.length; ri++){
-						if(relArr[ri].id == rWindow.selectedRelateId){
+						if(relArr[ri].id == relId){
 							relation = relArr[ri] as Relationship;
 							break;
 						}
 					}
-					relId = rWindow.selectedRelateId;
-					relLbl = rWindow.selectedRelateName;
-					relFields = rWindow.selectedRelateFields;
-					relExportEnabled = rWindow.selectedRelateExportEnabled;
-					var relOid:Number = rWindow.oid;
+					
+					var relOid:Number;
+					relLbl = crelRslt.name;
+					relPrintTitle = crelRslt.printtitle;
+					relFields = crelRslt.fields;
+					relExportEnabled = crelRslt.enableexport;
+					relPrintEnabled = crelRslt.enableprint;
+					relOid = crelRslt.oid;
+
 					PopUpManager.removePopUp(rWindow);
 					 
 					selRelateURL = queryLayer.url.substring(0,queryLayer.url.lastIndexOf("/")) + "/" + (relation.relatedTableId);
@@ -4219,7 +4326,16 @@
 							relfloatdg.layerDetails = (relqueryLayer.layerDetails)?relqueryLayer.layerDetails:relqueryLayer.tableDetails;
 							relfloatdg.dProvider = fset.attributes;
 							relfloatdg.enableExport = relExportEnabled;
-							relfloatdg.dgtitle = relLbl;
+							relfloatdg.enablePrint = relPrintEnabled;
+							relfloatdg.dgtitle = (relPrintTitle != "")?relPrintTitle:relLbl;
+							relfloatdg.printLabel = getDefaultString('printSubmitLabel');
+							relfloatdg.repeatHeader = dgrepeatheader;
+							relfloatdg.headerBGColor = 	dgheaderbgcolor;
+							relfloatdg.headerFontColor = dgheaderfontcolor;
+							relfloatdg.footerDateFormat = dgfooterdateformat;
+							relfloatdg.footerDisclaimer = dgfooterdisclaimer;
+							relfloatdg.footerIncludeDate = dgfooterincdate;
+							relfloatdg.footerPageofPage = dgfooterpageofpage;
 						}else if(floatorfixed == "fixed"){
 							var dgConfig:Object = {
 								dgFieldAliases: relfldAliases,
@@ -4231,7 +4347,16 @@
 								dProvider: fset.attributes,
 								featLayer: queryLayer,
 								layerDetails: (relqueryLayer.layerDetails)?relqueryLayer.layerDetails:relqueryLayer.tableDetails,
-								enableExport: relExportEnabled
+								enableExport: relExportEnabled,
+								enablePrint: relPrintEnabled,
+								headerBGColor: dgheaderbgcolor,
+								repeatHeader: dgrepeatheader,
+								headerFontColor: dgheaderfontcolor,
+								includeDateInFooter: dgfooterincdate,
+								footerDateFormat : dgfooterdateformat,
+								footerPageofPage: dgfooterpageofpage,
+								footerDisclaimer: dgfooterdisclaimer,
+								widgetTitle: relPrintTitle
 							};
 							var dgconfigArr:ArrayCollection = new ArrayCollection();
 							dgconfigArr.addItem(dgConfig);
@@ -4410,7 +4535,9 @@
 						}
 						myfloatdg.RelateIcon = relateIcon;
 						myfloatdg.RelateToolTip = relateToolTip;
-						myfloatdg.enableExport = queryEnableExport;//configSearchText[0].enableexport;
+						myfloatdg.enableExport = queryEnableExport;
+						myfloatdg.printLabel = getDefaultString('printSubmitLabel');
+						myfloatdg.enablePrint = queryEnablePrint;
 						myfloatdg.featLayer = queryLayer;
 						myfloatdg.layerDetails = (queryLayer.layerDetails)?queryLayer.layerDetails:queryLayer.tableDetails;
 						myfloatdg.csvSeperator = csvSep;
@@ -4427,16 +4554,29 @@
 						myfloatdg.dProvider = gridDataProvider;
 						myfloatdg.graphicslayer = graphicsLayer;
 						myfloatdg.widgetInteract = widgetAndGridIteract;
+						myfloatdg.headerBGColor = dgheaderbgcolor;
+						myfloatdg.repeatHeader = dgrepeatheader;
+						myfloatdg.headerFontColor = dgheaderfontcolor;
+						myfloatdg.footerIncludeDate = dgfooterincdate;
+						myfloatdg.footerDateFormat = dgfooterdateformat;
+						myfloatdg.footerDisclaimer = dgfooterdisclaimer;
+						myfloatdg.footerPageofPage = dgfooterpageofpage;
+						myfloatdg.dgtitle = queryPrintTitle;
+						
 						if(lState == "graphicalInput"){
 							var i2:Number = (cboLayerGraphical.selectedIndex<0)?0:cboLayerGraphical.selectedIndex;
 							zoomScale = configSearchGraphical[i2].zoomscale;
 							zoomPercent = configSearchGraphical[i2].zoompercent;
 							myfloatdg.enableExport = configSearchGraphical[i2].enableexport;
+							myfloatdg.enablePrint = configSearchGraphical[i2].enableprint;
+							myfloatdg.dgtitle = (configSearchGraphical[i2].printtitle != "")?configSearchGraphical[i2].printtitle:configSearchGraphical[i2].label;
 						}else if (lState == "textInput"){
 							var i:Number = (cboLayerText.selectedIndex < 0) ? 0 : cboLayerText.selectedIndex;
 							zoomScale = configSearchText[i].zoomscale;
 							zoomPercent = configSearchText[i].zoompercent;
 							myfloatdg.enableExport = configSearchText[i].enableexport;
+							myfloatdg.enablePrint = configSearchText[i].enableprint;
+							myfloatdg.dgtitle = (configSearchText[i].printtitle != "")?configSearchText[i].printtitle:configSearchText[i].label;
 						}
 						myfloatdg.zoomPercent = zoomPercent;
 						myfloatdg.zoomScale = zoomScale;

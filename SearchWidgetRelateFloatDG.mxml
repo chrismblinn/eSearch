@@ -20,6 +20,7 @@
 	</Search:layout>
 	<fx:Script>
 		<![CDATA[
+			import widgets.eSearch.utils.PrintProperties;
 			import com.esri.ags.Map;
 			import com.esri.ags.layers.supportClasses.CodedValue;
 			import com.esri.ags.layers.supportClasses.CodedValueDomain;
@@ -50,6 +51,8 @@
 			import spark.formatters.DateTimeFormatter;
 			import spark.formatters.NumberFormatter;
 			import spark.skins.spark.DefaultGridItemRenderer;
+			
+			import widgets.eSearch.utils.PrintUtil;
 		
 			private var _data:Array;
 			private var _resultsGrid:DataGrid;
@@ -72,29 +75,75 @@
 			[Bindable] private var _enableExport:Boolean;
 			[Bindable] private var sumVisible:Boolean;
 			[Bindable] private var _labelSum:String;
+			[Bindable] private var _labelPrint:String;
+			[Bindable] private var _enablePrint:Boolean;
 			private var _sumField:String = "";
 			private var sumFormat:String;
 			private var useUTC:Boolean;
 			[Bindable] private var _title:String;
-			
 			private var sortAC:ArrayCollection;
 			private var dgSort:Sort = new Sort();
 			private var sortDetails:String = "";
-			
 			private var uic:UIComponent;
-			
 			private var map:Map = ViewerContainer.getInstance().mapManager.map;
-			
+			private var columnIndexes:Vector.<int>;
+			private var _headerBGColor:uint;
+			private var _headerFontColor:uint;
+			private var _repeatHeader:Boolean;
+			private var _footerIncludeDate:Boolean;
+			private var _footerDateFormat:String;
+			private var _footerPageofPage:String;
+			private var _footerDisclaimer:String;
 			
 			public function set dgtitle(value:String):void
 			{
-				_title = value;
-				this.title = "Related " + _title + " Features" ;
+				_title = title = value;
+				//title = "Related " + _title + " Features" ;
 			}
 			
 			public function set labelSum(value:String):void
 			{
 				_labelSum = value;
+			}
+			
+			public function set printLabel(value:String):void
+			{
+				_labelPrint = value;
+			}
+			
+			public function set headerBGColor(value:uint):void
+			{
+				_headerBGColor = value;
+			}
+			
+			public function set headerFontColor(value:uint):void
+			{
+				_headerFontColor = value;
+			}
+			
+			public function set repeatHeader(value:Boolean):void
+			{
+				_repeatHeader = value;
+			}
+			
+			public function set footerIncludeDate(value:Boolean):void
+			{
+				_footerIncludeDate = value;
+			}
+			
+			public function set footerDateFormat(value:String):void
+			{
+				_footerDateFormat = value;
+			}
+			
+			public function set footerPageofPage(value:String):void
+			{
+				_footerPageofPage = value;
+			}
+			
+			public function set footerDisclaimer(value:String):void
+			{
+				_footerDisclaimer = value;
 			}
 			
 			public function set sumField(value:String):void
@@ -111,6 +160,11 @@
 			public function set enableExport(value:Boolean):void
 			{
 				_enableExport = value;
+			}
+			
+			public function set enablePrint(value:Boolean):void
+			{
+				_enablePrint = value;
 			}
 			
 			public function set csvName(value:String):void
@@ -271,10 +325,10 @@
 					var data:String;
 					var defaultFileName:String;
 					if(optiongroup.selectedValue == _exp2csvBtnLbl){
-						data = exportCSV(resultsGrid,_csvSep);
+						data = exportCSV(resultsGrid,_csvSep,"\n",columnIndexes);
 						defaultFileName = _csvName + ".csv";
 					}else{
-						data = exportTXT(resultsGrid);
+						data = exportTXT(resultsGrid,"\n",columnIndexes);
 						defaultFileName = _csvName + ".txt";
 					}
 					
@@ -327,7 +381,7 @@
 				return retVal;
 			}
 			
-			private function exportCSV(dataGrid:DataGrid, csvSeparator:String=",", lineSeparator:String="\n"):String
+			private function exportCSV(dataGrid:DataGrid, csvSeparator:String=",", lineSeparator:String="\n", sortVector:Vector.<int>=null):String
 			{
 				try{
 					var data:String = "";
@@ -337,6 +391,17 @@
 					var header:String = "";
 					var headerGenerated:Boolean = false;
 					var dataProvider:ArrayCollection = ObjectUtil.copy(dataGrid.dataProvider) as ArrayCollection;
+					
+					//Set the sorting
+					var sortFields:Array = [];
+					var dpSort:Sort = new Sort();
+					for (var v:int = 0; v < sortVector.length; v++){
+						dataGridColumn = columnArray.getItemAt(sortVector[v]) as GridColumn;
+						sortFields.push(dataGridColumn.sortField);
+					}
+					dpSort.fields = sortFields;
+					dataProvider.sort = dpSort;
+					dataProvider.refresh();
 					
 					//trace(ObjectUtil.toString(dataProvider));
 					var rowCount:int = dataProvider.length;
@@ -397,7 +462,7 @@
 				return (header + lineSeparator + data);
 			}
 			
-			private function exportTXT(dataGrid:DataGrid, lineSeparator:String="\n"):String
+			private function exportTXT(dataGrid:DataGrid, lineSeparator:String="\n", sortVector:Vector.<int>=null):String
 			{
 				try{
 					var data:String = "";
@@ -407,6 +472,17 @@
 					var header:String = "";
 					var headerGenerated:Boolean = false;
 					var dataProvider:ArrayCollection = ObjectUtil.copy(dataGrid.dataProvider) as ArrayCollection;
+					
+					//Set the sorting
+					var sortFields:Array = [];
+					var dpSort:Sort = new Sort();
+					for (var v:int = 0; v < sortVector.length; v++){
+						dataGridColumn = columnArray.getItemAt(sortVector[v]) as GridColumn;
+						sortFields.push(dataGridColumn.sortField);
+					}
+					dpSort.fields = sortFields;
+					dataProvider.sort = dpSort;
+					dataProvider.refresh();
 					
 					var rowCount:int = dataProvider.length;
 					var dp:Object = null;
@@ -777,7 +853,7 @@
 					sortArr.push(resultsGrid.columns.getItemIndex(sortAC[s].data));
 				} 
 				
-				var columnIndexes:Vector.<int> = Vector.<int>(sortArr);
+				columnIndexes = Vector.<int>(sortArr);
 				resultsGrid.sortByColumns(columnIndexes, true);
 			}
 			
@@ -817,6 +893,22 @@
 				}
 			}
 			
+			protected function PrintDDGBtn_clickHandler(event:MouseEvent):void
+			{
+				var printProps:PrintProperties = new PrintProperties();
+				printProps.dataGrid = resultsGrid;
+				printProps.title = _title;
+				printProps.sortCols = columnIndexes;
+				printProps.headerBGColor = _headerBGColor;
+				printProps.repeatHeader = _repeatHeader;
+				printProps.headerFontColor = _headerFontColor;
+				printProps.dateformat = _footerDateFormat;
+				printProps.pageofpage = _footerPageofPage;
+				printProps.disclaimer = _footerDisclaimer;
+				printProps.includedate = _footerIncludeDate;
+				PrintUtil.printDataGrid(printProps);
+			}
+			
 		]]>
 	</fx:Script>
 	<fx:Declarations>
@@ -831,7 +923,8 @@
 			<s:TextArea id="taSum" heightInLines="1" editable="false" borderVisible="false" visible="{sumVisible}" includeInLayout="{sumVisible}"/>
 			<s:RadioButton label="{_exp2csvBtnLbl}" groupName="optiongroup" selected="true" visible="{_enableExport}" includeInLayout="{_enableExport}"/>
 			<s:RadioButton label="{_exp2txtBtnLbl}" groupName="optiongroup" visible="{_enableExport}" includeInLayout="{_enableExport}"/>
-			<s:Button label="{_exportButtonLbl}" id="Export" click="exportTo(event)" skinClass="widgets.eSearch.skins.ExportButtonSkin" visible="{_enableExport}" includeInLayout="{_enableExport}"/>
+			<s:Button id="Export" height="24" label="{_exportButtonLbl}" click="exportTo(event)" skinClass="widgets.eSearch.skins.ExportButtonSkin" visible="{_enableExport}" includeInLayout="{_enableExport}"/>
+			<s:Button id="PrintDDGBtn" height="24" label="{_labelPrint}" click="PrintDDGBtn_clickHandler(event)" skinClass="widgets.eSearch.skins.PrintButtonSkin" visible="{_enablePrint}" includeInLayout="{_enablePrint}"/>
 		</s:HGroup>
 	</Search:controlBarContent>
 	<Search:controlBarLayout>

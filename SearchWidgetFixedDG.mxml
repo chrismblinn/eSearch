@@ -5,7 +5,7 @@
 				   xmlns:viewer="com.esri.viewer.*"
 				   xmlns:Search="widgets.eSearch.*"
 				   height="200" width="800"
-				   widgetConfigLoaded="init()" verticalScrollPolicy="off">
+				   widgetConfigLoaded="init()" verticalScrollPolicy="off">	
 	
 	<fx:Declarations>
 		<s:Move id="panelOut" yTo="0" duration="0" startDelay="0"/>
@@ -61,6 +61,8 @@
 			import spark.formatters.NumberFormatter;
 			
 			import widgets.eSearch.skins.PopUpRendererSkin;
+			import widgets.eSearch.utils.PrintProperties;
+			import widgets.eSearch.utils.PrintUtil;
 			
 			[Bindable]
 			private var appWidth:Number;
@@ -97,6 +99,8 @@
 			[Bindable] private var _exp2txtBtnLbl:String;
 			[Bindable] private var _exportButtonLbl:String;
 			[Bindable] private var _enableExport:Boolean;
+			[Bindable] private var _enablePrint:Boolean;
+			[Bindable] private var _renablePrint:Boolean;
 			[Bindable] private var sumVisible:Boolean;
 			[Bindable] private var _labelSum:String;
 			[Bindable] private var _hasRelates:Boolean;
@@ -149,6 +153,16 @@
 
 			[Bindable] private var autoHideLabel:String = "Auto Hide";
 			
+			private var columnIndexes:Vector.<int>;
+			private var rcolumnIndexes:Vector.<int>;
+			private var _headerBGColor:uint;
+			private var _headerFontColor:uint;
+			private var _repeatHeader:Boolean;
+			private var _footerIncludeDate:Boolean;
+			private var _footerDateFormat:String;
+			private var _footerPageofPage:String;
+			private var _footerDisclaimer:String;
+			
 			private function init():void
 			{
 				if (configXML){
@@ -176,7 +190,7 @@
 				AppEvent.addListener(AppEvent.DATA_PUBLISH, sharedDataUpdated);
 				appWidth = FlexGlobals.topLevelApplication.width;
 			}
-			
+
 			private function addEvent(event:Event):void
 			{
 				panelIsOpen = false;
@@ -490,10 +504,10 @@
 					var data:String;
 					var defaultFileName:String;
 					if(optiongroup.selectedValue == _exp2csvBtnLbl){
-						data = exportCSV(resultsGrid,_csvSep);
+						data = exportCSV(resultsGrid,_csvSep,"\n",columnIndexes);
 						defaultFileName = _csvName + ".csv";
 					}else{
-						data = exportTXT(resultsGrid);
+						data = exportTXT(resultsGrid,"\n",columnIndexes);
 						defaultFileName = _csvName + ".txt";
 					}
 					
@@ -511,10 +525,10 @@
 					var data:String;
 					var defaultFileName:String;
 					if(roptiongroup.selectedValue == _exp2csvBtnLbl){
-						data = exportCSV(relatesGrid,_csvSep);
+						data = exportCSV(relatesGrid,_csvSep,"\n",rcolumnIndexes);
 						defaultFileName = _rcsvName + ".csv";
 					}else{
-						data = exportTXT(relatesGrid);
+						data = exportTXT(relatesGrid,"\n",rcolumnIndexes);
 						defaultFileName = _rcsvName + ".txt";
 					}
 					
@@ -549,7 +563,7 @@
 				}
 			}
 			
-			private function exportCSV(dataGrid:DataGrid, csvSeparator:String=",", lineSeparator:String="\n"):String
+			private function exportCSV(dataGrid:DataGrid, csvSeparator:String=",", lineSeparator:String="\n", sortVector:Vector.<int>=null):String
 			{
 				try{
 					var data:String = "";
@@ -559,6 +573,17 @@
 					var header:String = "";
 					var headerGenerated:Boolean = false;
 					var dataProvider:ArrayCollection = ObjectUtil.copy(dataGrid.dataProvider) as ArrayCollection;
+					
+					//Set the sorting
+					var sortFields:Array = [];
+					var dpSort:Sort = new Sort();
+					for (var v:int = 0; v < sortVector.length; v++){
+						dataGridColumn = columnArray.getItemAt(sortVector[v]) as GridColumn;
+						sortFields.push(dataGridColumn.sortField);
+					}
+					dpSort.fields = sortFields;
+					dataProvider.sort = dpSort;
+					dataProvider.refresh();
 					
 					//trace(ObjectUtil.toString(dataProvider));
 					var rowCount:int = dataProvider.length;
@@ -623,7 +648,7 @@
 				return (header + lineSeparator + data);
 			}
 			
-			private function exportTXT(dataGrid:DataGrid, lineSeparator:String="\n"):String
+			private function exportTXT(dataGrid:DataGrid, lineSeparator:String="\n", sortVector:Vector.<int>=null):String
 			{
 				try{
 					var data:String = "";
@@ -633,6 +658,17 @@
 					var header:String = "";
 					var headerGenerated:Boolean = false;
 					var dataProvider:ArrayCollection = ObjectUtil.copy(dataGrid.dataProvider) as ArrayCollection;
+					
+					//Set the sorting
+					var sortFields:Array = [];
+					var dpSort:Sort = new Sort();
+					for (var v:int = 0; v < sortVector.length; v++){
+						dataGridColumn = columnArray.getItemAt(sortVector[v]) as GridColumn;
+						sortFields.push(dataGridColumn.sortField);
+					}
+					dpSort.fields = sortFields;
+					dataProvider.sort = dpSort;
+					dataProvider.refresh();
 					
 					var rowCount:int = dataProvider.length;
 					var dp:Object = null;
@@ -1151,7 +1187,7 @@
 					sortArr.push(resultsGrid.columns.getItemIndex(sortAC[s].data));
 				}
 				
-				var columnIndexes:Vector.<int> = Vector.<int>(sortArr);
+				columnIndexes = Vector.<int>(sortArr);
 				resultsGrid.sortByColumns(columnIndexes, true);
 			}
 			
@@ -1279,8 +1315,8 @@
 					rsortArr.push(relatesGrid.columns.getItemIndex(rsortAC[s].data));
 				}
 				
-				var columnIndexes:Vector.<int> = Vector.<int>(rsortArr);
-				relatesGrid.sortByColumns(columnIndexes, true);
+				rcolumnIndexes = Vector.<int>(rsortArr);
+				relatesGrid.sortByColumns(rcolumnIndexes, true);
 			}
 			
 			private function panel_rollOutHandler(event:MouseEvent):void
@@ -1327,11 +1363,19 @@
 						_zoomPercent = theObj.zoomPercent;
 						_bWidget = theObj.ownerWidget;
 						_enableExport = theObj.enableExport;
+						_enablePrint = theObj.enablePrint;
 						_widgetInteract = theObj.widgetInteract;
 						_disableRelateTab = (theObj.disableRelateTab)?false:true;
 						_relateIcon = theObj.relateIcon;
 						_relateTooltip = theObj.relateToolTip;
+						_headerBGColor = theObj.headerBGColor;
+						_repeatHeader = theObj.repeatHeader;
+						_headerFontColor = theObj.headerFontColor;
 						tabs.selectedIndex = 0;
+						_footerIncludeDate = theObj.includeDateInFooter;
+						_footerDateFormat = theObj.footerDateFormat;
+						_footerPageofPage = theObj.footerPageofPage;
+						_footerDisclaimer = theObj.footerDisclaimer;
 					}
 				}
 				if (data.key == "configRelateFixedDatagrid"){
@@ -1347,8 +1391,17 @@
 						rdgHyperColumns(therObj.dgHyperColumns);
 						rdProvider(therObj.dProvider);
 						_renableExport = therObj.enableExport;
+						_renablePrint = therObj.enablePrint;
 						_relateIcon = therObj.relateIcon;
 						_relateTooltip = therObj.relateToolTip;
+						_headerBGColor = therObj.headerBGColor;
+						_repeatHeader = therObj.repeatHeader;
+						_headerFontColor = therObj.headerFontColor;
+						_footerIncludeDate = therObj.includeDateInFooter;
+						_footerDateFormat = therObj.footerDateFormat;
+						_footerPageofPage = therObj.footerPageofPage;
+						_footerDisclaimer = therObj.footerDisclaimer;
+						mWidgetTitle = therObj.widgetTitle;
 						if(!_disableRelateTab){
 							_disableRelateTab == true;
 						}
@@ -1364,6 +1417,7 @@
 						var rreset:Vector.<int> = Vector.<int>([]);
 						relatesGrid.columnHeaderGroup.visibleSortIndicatorIndices = rreset;
 						_renableExport = false;
+						_renablePrint = false;
 						panel_rollOutHandler(null);
 					}
 				}
@@ -1377,6 +1431,7 @@
 						sumVisible = false;
 						_labelSum = "";
 						_enableExport = false;
+						_enablePrint = false;
 						panel_rollOutHandler(null);
 					}
 				}
@@ -1585,6 +1640,38 @@
 				}
 			}
 			
+			protected function PrintDDGBtn_clickHandler(event:MouseEvent):void
+			{
+				var printProps:PrintProperties = new PrintProperties();
+				printProps.dataGrid = resultsGrid;
+				printProps.title = mWidgetTitle;
+				printProps.sortCols = columnIndexes;
+				printProps.headerBGColor = _headerBGColor;
+				printProps.repeatHeader = _repeatHeader;
+				printProps.headerFontColor = _headerFontColor;
+				printProps.dateformat = _footerDateFormat;
+				printProps.pageofpage = _footerPageofPage;
+				printProps.disclaimer = _footerDisclaimer;
+				printProps.includedate = _footerIncludeDate;
+				PrintUtil.printDataGrid(printProps);
+			}
+			
+			protected function rPrintDDGBtn_clickHandler(event:MouseEvent):void
+			{
+				var printProps:PrintProperties = new PrintProperties();
+				printProps.dataGrid = relatesGrid;
+				printProps.title = mWidgetTitle;
+				printProps.sortCols = rcolumnIndexes;
+				printProps.headerBGColor = _headerBGColor;
+				printProps.repeatHeader = _repeatHeader;
+				printProps.headerFontColor = _headerFontColor;
+				printProps.dateformat = _footerDateFormat;
+				printProps.pageofpage = _footerPageofPage;
+				printProps.disclaimer = _footerDisclaimer;
+				printProps.includedate = _footerIncludeDate;
+				PrintUtil.printDataGrid(printProps);
+			}
+			
 		]]>
 	</fx:Script>
 	<fx:Declarations>
@@ -1607,20 +1694,21 @@
 									 gridClick="clickRow(event)"
 									 gridRollOut="onItemRollOut(event)"
 									 gridRollOver="onItemRollOver(event)"
-									 rollOut="highLightSel(event)" 
+									 rollOut="highLightSel(event)"
 									 rollOver="unhighLightSel(event)"
 									 horizontalScrollPolicy="auto"
 									 contentBackgroundAlpha="{getStyle('styleAlpha')}"
 									 contentBackgroundColor="{getStyle('chromeColor')}"
 									 alternatingRowColors="{[getStyle('chromeColor'),getStyle('chromeColor')]}"/>
-						<s:HGroup verticalAlign="middle" paddingLeft="4" width="100%">
+						<s:HGroup verticalAlign="middle" paddingLeft="4" width="100%" paddingBottom="2" paddingTop="2">
 							<s:CheckBox selected="{autoHide}" change="toggleAutoHide()" label="{autoHideLabel}"/>
-							<s:HGroup verticalAlign="middle" paddingLeft="4" paddingTop="3" paddingBottom="3" paddingRight="30" horizontalAlign="right" height="34" width="100%" visible="{_enableExport || sumVisible}" includeInLayout="{_enableExport || sumVisible}">
+							<s:HGroup verticalAlign="middle" paddingLeft="4" paddingTop="3" paddingBottom="3" paddingRight="30" horizontalAlign="right" height="34" width="100%" visible="{_enableExport || sumVisible || _enablePrint}" includeInLayout="{_enableExport || sumVisible || _enablePrint}">
 								<s:Label id="lblSum" text="{_labelSum}" visible="{sumVisible}" includeInLayout="{sumVisible}"/>
 								<s:TextArea id="taSum" heightInLines="1" editable="false" borderVisible="false" visible="{sumVisible}" includeInLayout="{sumVisible}"/>
 								<s:RadioButton label="{_exp2csvBtnLbl}" groupName="optiongroup" selected="true" visible="{_enableExport}" includeInLayout="{_enableExport}"/>
 								<s:RadioButton label="{_exp2txtBtnLbl}" groupName="optiongroup" visible="{_enableExport}" includeInLayout="{_enableExport}"/>
-								<s:Button label="{_exportButtonLbl}" id="Export" click="exportTo(event)" skinClass="widgets.eSearch.skins.ExportButtonSkin" visible="{_enableExport}" includeInLayout="{_enableExport}"/>
+								<s:Button id="Export" height="24" label="{_exportButtonLbl}" click="exportTo(event)" skinClass="widgets.eSearch.skins.ExportButtonSkin" visible="{_enableExport}" includeInLayout="{_enableExport}"/>
+								<s:Button id="PrintDDGBtn" height="24" label="{getDefaultString('printSubmitLabel')}" click="PrintDDGBtn_clickHandler(event)" skinClass="widgets.eSearch.skins.PrintButtonSkin" visible="{_enablePrint}" includeInLayout="{_enablePrint}"/>
 							</s:HGroup>
 						</s:HGroup>
 					</s:VGroup>
@@ -1640,12 +1728,13 @@
 									updateComplete="dataGridResizeHandler(event)"
 									resize="dataGridResizeHandler(event)"/>
 						<s:HGroup verticalAlign="middle" paddingLeft="4" paddingTop="3" paddingBottom="3" paddingRight="30" horizontalAlign="right" height="34" width="100%"
-								  visible="{_renableExport || rsumVisible}" includeInLayout="{_renableExport || rsumVisible}">
+								  visible="{_renableExport || rsumVisible || _renablePrint}" includeInLayout="{_renableExport || rsumVisible || _renablePrint}">
 							<s:Label id="rlblSum" text="{_rlabelSum}" visible="{rsumVisible}" includeInLayout="{rsumVisible}"/>
 							<s:TextArea id="rtaSum" heightInLines="1" editable="false" borderVisible="false" visible="{rsumVisible}" includeInLayout="{rsumVisible}"/>
 							<s:RadioButton label="{_exp2csvBtnLbl}" groupName="roptiongroup" selected="true" visible="{_renableExport}" includeInLayout="{_renableExport}"/>
 							<s:RadioButton label="{_exp2txtBtnLbl}" groupName="roptiongroup" visible="{_renableExport}" includeInLayout="{_renableExport}"/>
-							<s:Button label="{_exportButtonLbl}" id="rExport" click="rexportTo(event)" skinClass="widgets.eSearch.skins.ExportButtonSkin" visible="{_renableExport}" includeInLayout="{_renableExport}"/>
+							<s:Button id="rExport" height="24" label="{_exportButtonLbl}"  click="rexportTo(event)" skinClass="widgets.eSearch.skins.ExportButtonSkin" visible="{_renableExport}" includeInLayout="{_renableExport}"/>
+							<s:Button id="rPrintDDGBtn" height="24" label="{getDefaultString('printSubmitLabel')}" click="rPrintDDGBtn_clickHandler(event)" skinClass="widgets.eSearch.skins.PrintButtonSkin" visible="{_renablePrint}" includeInLayout="{_renablePrint}"/>
 						</s:HGroup>
 					</s:VGroup>
 				</s:SkinnableContainer>

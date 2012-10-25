@@ -28,8 +28,12 @@ package widgets.eSearch
 		
 		public var enableexport:Boolean;
 		
+		public var enableprint:Boolean;
+		
 		public var oid:Number;
 		
 		public var icon:String;
+		
+		public var printtitle: String;
 	}
 }
