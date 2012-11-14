@@ -1,3 +1,19 @@
+Version 3.0.14 - 11/14/2012
+* Fixed bug where if more than one uniquevalsfromfield was used in an expression
+  Only one would populate the dropdown.
+* uniquevalsfromfield now are aware of isrequired attribute and add a blank entry
+  in the drop down if necessary.
+* Added delay for mouseover in datagrids to allow user to exit datagrid and choose
+  a button from the popup
+* The popup shown from the search results and datagrid is the same popup that gets
+  displayed when you click on the search graphic on the map.
+* Added the ability to add and remove from current selection as well as create a new
+  selection (which is the default).
+* Fix bug where individual layers symbology specified in the eSearchWidget.xml was
+  not being used with certain spatial searches.
+* Added support for disabling search widget results (just use <disablebuttons>result</disablebuttons>).
+* Added support for disabling popups completely for this widget.
+
 Version 3.0.13 - 10/25/2012
 * You can now print from the datagrid (floating or fixed). The Print output is properly paginated
   based on the number of columns (and their widths) and the number of rows. The print output has
