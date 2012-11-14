@@ -19,35 +19,27 @@
 			import com.esri.ags.geometry.Geometry;
 			import com.esri.ags.geometry.MapPoint;
 			import com.esri.ags.layers.FeatureLayer;
-			import com.esri.ags.layers.GraphicsLayer;
 			import com.esri.ags.layers.supportClasses.CodedValue;
 			import com.esri.ags.layers.supportClasses.CodedValueDomain;
 			import com.esri.ags.layers.supportClasses.FeatureType;
 			import com.esri.ags.layers.supportClasses.LayerDetails;
-			import com.esri.ags.layers.supportClasses.TableDetails;
 			import com.esri.ags.portal.PopUpRenderer;
 			import com.esri.ags.portal.supportClasses.PopUpInfo;
 			import com.esri.ags.portal.supportClasses.PopUpMediaInfo;
 			import com.esri.viewer.AppEvent;
 			import com.esri.viewer.BaseWidget;
-			import com.esri.viewer.IBaseWidget;
 			import com.esri.viewer.ViewerContainer;
 			
 			import mx.collections.ArrayCollection;
 			import mx.collections.ArrayList;
 			import mx.collections.IViewCursor;
 			import mx.controls.Alert;
-			import mx.controls.Menu;
 			import mx.core.FlexGlobals;
-			import mx.core.Repeater;
 			import mx.core.UIComponent;
 			import mx.events.EffectEvent;
 			import mx.events.FlexEvent;
-			import mx.events.ListEvent;
-			import mx.events.MenuEvent;
 			import mx.events.MoveEvent;
 			import mx.events.ResizeEvent;
-			import mx.managers.PopUpManager;
 			import mx.utils.ObjectUtil;
 			
 			import spark.collections.Sort;
@@ -60,7 +52,6 @@
 			import spark.formatters.DateTimeFormatter;
 			import spark.formatters.NumberFormatter;
 			
-			import widgets.eSearch.skins.PopUpRendererSkin;
 			import widgets.eSearch.utils.PrintProperties;
 			import widgets.eSearch.utils.PrintUtil;
 			
@@ -69,7 +60,7 @@
 			
 			private var _data:Array;
 			private var _rdata:Array;
-			private var _graLyr:GraphicsLayer;
+			private var _qFeatLyr:FeatureLayer;
 			private var _featLayer:FeatureLayer;
 			private var highlightedGraphic:Graphic;
 			private var _zoomScale:Number = 5000;
@@ -78,6 +69,7 @@
 			private var _dgColumns:Array=[];
 			private var _dgFieldAliases:Object;
 			private var _dgHyperColumns:Array=[];
+			private var hitimer:uint;
 			
 			private var _rdgColumns:Array=[];
 			private var _rdgFieldAliases:Object;
@@ -111,6 +103,7 @@
 			private var rsortDetails:String = "";
 			
 			[Bindable] private var _widgetInteract:Boolean;
+			[Bindable] private var _popupsdiabled:Boolean;
 			[Bindable] private var _disableRelateTab:Boolean;
 			
 			[Bindable] private var _renableExport:Boolean;
@@ -1358,13 +1351,14 @@
 						dgColumns(theObj.dgColumns);
 						dgHyperColumns(theObj.dgHyperColumns);
 						dProvider(theObj.dProvider);
-						_graLyr = theObj.graphicslayer;
+						_qFeatLyr = theObj.featLayer;
 						_zoomScale = theObj.zoomScale;
 						_zoomPercent = theObj.zoomPercent;
 						_bWidget = theObj.ownerWidget;
 						_enableExport = theObj.enableExport;
 						_enablePrint = theObj.enablePrint;
 						_widgetInteract = theObj.widgetInteract;
+						_popupsdiabled = theObj.popupsdisabled;
 						_disableRelateTab = (theObj.disableRelateTab)?false:true;
 						_relateIcon = theObj.relateIcon;
 						_relateTooltip = theObj.relateToolTip;
@@ -1466,20 +1460,32 @@
 					}
 				} 
 			}
-	
+
+			private function onItemRollOut(event:GridEvent):void
+			{
+				clearTimeout(hitimer);
+				if(_widgetInteract && _bWidget){
+					_bWidget.unhighlightDataGroupItems();
+				}
+			}
+			
+			//private var rowOID:Number;
 			private function onItemRollOver(event:GridEvent):void
 			{
+				clearTimeout(hitimer);
 				if(_widgetInteract  && _bWidget){
 					if(!event.itemRenderer || !event.itemRenderer.data){
 						return;
 					}
 					_bWidget.highlightDataGroupItemByOID(event.itemRenderer.data.oid);
-					var searchResult:* = findSearchResultByOID(event.itemRenderer.data.oid);
-					if(searchResult.graphic && searchResult.point){
-						if (map.extent.containsXY(searchResult.point.x, searchResult.point.y)){
-							showInfoWindow2(searchResult);
-						}else{
-							hideInfoWindow();
+					var searchResult:Object = findSearchResultByOID(event.itemRenderer.data.oid);
+					if(_popupsdiabled == false){
+						if(searchResult.graphic && searchResult.point){
+							if (map.extent.containsXY(searchResult.point.x, searchResult.point.y)){
+								hitimer = setTimeout(showInfoWindow, 300, searchResult);
+							}else{
+								hideInfoWindow();
+							}
 						}
 					}
 				}
@@ -1488,31 +1494,28 @@
 			private function hideInfoWindow():void
 			{
 				if (map.infoWindow.contentOwner &&
-					((map.infoWindow.contentOwner is Graphic && Graphic(map.infoWindow.contentOwner).graphicsLayer === _graLyr) || map.infoWindow.contentOwner is Map))
+					((map.infoWindow.contentOwner is Graphic && Graphic(map.infoWindow.contentOwner).parent === _qFeatLyr) || map.infoWindow.contentOwner is Map))
 				{
 					map.infoWindow.hide();
 				}
 			}
 			
-			private function showInfoWindow2(infoData:Object):void
+			override public function showInfoWindow(infoData:Object):void
 			{
 				var showHighlightPoint:MapPoint = infoData.point as MapPoint;
 				popUpRenderer.popUpInfo = configurePopUpInfo(infoData.links);
 				popUpRenderer.graphic = infoData.graphic;
-				popUpRenderer.setStyle("skinClass", widgets.eSearch.skins.PopUpRendererSkin);
 				map.infoWindow.content = popUpRenderer;
 				map.infoWindow.contentOwner = popUpRenderer.graphic;
 				map.infoWindow.show(showHighlightPoint);
 			}
 			
-			private function configurePopUpInfo(links:Array):EnhancedPopUpInfo
+			private function configurePopUpInfo(links:Array):PopUpInfo
 			{
-				var popUpInfo:EnhancedPopUpInfo = new EnhancedPopUpInfo;
-				
-				popUpInfo.title = "{title}";
-				popUpInfo.description = "{content}";
+				var popUpInfo:PopUpInfo = new PopUpInfo;
+				popUpInfo.title = "{title__pu__sr}";
+				popUpInfo.description = "{content__pu__sr}";
 				popUpInfo.showAttachments = true;
-				popUpInfo.featLayer = _featLayer;
 				var pminfos:Array = [];
 				
 				for(var l:int=0; l<links.length; l++){
@@ -1537,7 +1540,7 @@
 			
 			private function highLightSel(event:Event):void
 			{
-				resultsGrid.selectedItem
+				clearTimeout(hitimer);
 				if(resultsGrid.selectedItem && _bWidget){
 					_bWidget.highlightDataGroupItemByOID(resultsGrid.selectedItem.oid);
 				}
@@ -1546,13 +1549,6 @@
 			private function unhighLightSel(event:Event):void
 			{
 				if(resultsGrid.selectedItem && _bWidget){
-					_bWidget.unhighlightDataGroupItems();
-				}
-			}
-			
-			private function onItemRollOut(event:GridEvent):void
-			{
-				if(_widgetInteract && _bWidget){
 					_bWidget.unhighlightDataGroupItems();
 				}
 			}
@@ -1612,7 +1608,9 @@
 							map.centerAt(searchResult.point);
 						}
 					}
-					callLater(showInfoWindow2, [searchResult]);
+					if(_popupsdiabled == false){
+						callLater(showInfoWindow, [searchResult]);
+					}
 				}
 			}
 			

@@ -437,6 +437,7 @@
 	</printdatagrid>
 	<keepgraphicalsearchenabled>true</keepgraphicalsearchenabled>
 	<autozoomtoresults>true</autozoomtoresults>
+	<popupsdisabled>false</popupsdisabled>
 	<enabledatagridinteractionwithwidget>true</enabledatagridinteractionwithwidget>
 	<toleranceforpointgraphicalselection>6</toleranceforpointgraphicalselection><!-- value is in screen pixels -->
 	<tolerancebydefault>false</tolerancebydefault>
@@ -499,6 +500,10 @@
 		<configbuffergra>Configure buffer graphic properties...</configbuffergra>
 		<required>*</required>
 		<requiredtooltip>This field is required.&#13;Enter a value to enable search button</requiredtooltip>
+		<selectmethodtip>Click to change the selection method</selectmethodtip>
+		<newselectionmethodtip>Create new selection</newselectionmethodtip>
+		<addselectionmethodtip>Add to current selection</addselectionmethodtip>
+		<removeselectionmethodtip>Remove from current selection</removeselectionmethodtip>
 	</labels>
 	<symbols>
 		<simplefillsymbol color="0xff0000" alpha="0.5">

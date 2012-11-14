@@ -15,7 +15,6 @@ package widgets.eSearch.utils
 	import mx.core.ClassFactory;
 	import mx.formatters.DateFormatter;
 	import mx.utils.ObjectUtil;
-	import mx.utils.object_proxy;
 	
 	import spark.collections.Sort;
 	import spark.components.DataGrid;
@@ -23,7 +22,6 @@ package widgets.eSearch.utils
 	
 	import widgets.eSearch.HyperLinkColumn;
 	import widgets.eSearch.HyperLinkIconColumn;
-	import widgets.eSearch.utils.PrintProperties;
 	
 	public class PrintUtil
 	{

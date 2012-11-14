@@ -45,6 +45,7 @@ package widgets.eSearch
 		private var _uniqueCache:Object;
 		private var _useAMF:Boolean;
 		private var _pagingEscaped:Boolean;
+		private var _isRequired:Boolean;
 		
 		private var query:Query = new Query;
 		private var queryTask:QueryTask = new QueryTask();
@@ -56,14 +57,16 @@ package widgets.eSearch
 		private var iStart:int = 0;
 		private var iMaxRecords:int = 0;
 		
-		public function PagingQueryTask(url:String="", fieldName:String="", useAMF:Boolean = false, 
-										token:SearchExpValueItem=null, uniqueCache:Object=null)
+		public function PagingQueryTask(url:String="", fieldName:String="", useAMF:Boolean=false, 
+										token:SearchExpValueItem=null, uniqueCache:Object=null, 
+										isRequired:Boolean=false)
 		{
 			_url = url;
 			_fieldName = fieldName;
 			_token = token;
 			_uniqueCache = uniqueCache;
 			_useAMF = useAMF;
+			_isRequired = isRequired
 		}
 
 		/**
@@ -85,6 +88,14 @@ package widgets.eSearch
 		public function set useAMF(value:Boolean):void
 		{
 			_useAMF = value;
+		}
+		
+		/**
+		 * Boolean as whether to value is required or not.
+		 */
+		public function set isRequired(value:Boolean):void
+		{
+			_isRequired = value;
 		}
 		
 		/**
@@ -275,6 +286,12 @@ package widgets.eSearch
 			if (featuresProcessed >= objectIdsArray.length){
 				// get the unique values
 				uniqueValues = getDistinctValues(allValues, _fieldName);
+				if(_isRequired == false){
+					if(uniqueValues.indexOf({value: "", label: ""}) >0){
+						uniqueValues.splice(0,0,{value: "", label: ""});
+					}
+				}
+				uniqueValues.push({value: "allu", label: "all"});
 				dispatchEvent(new FlexEvent("pagingComplete"));
 				isQuerying = false;
 				return;
@@ -359,7 +376,6 @@ package widgets.eSearch
 			}
 			
 			distinctValuesCollection.source.sortOn("value");
-			distinctValuesCollection.addItem({value: "allu", label: "all"});
 			//return the collection of distinct values
 			return distinctValuesCollection.source;
 		}

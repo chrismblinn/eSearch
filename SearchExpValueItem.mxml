@@ -15,15 +15,12 @@
 			
 			import mx.collections.ArrayCollection;
 			import mx.controls.ToolTip;
-			import mx.core.IToolTip;
 			import mx.events.FlexEvent;
 			import mx.events.ValidationResultEvent;
-			import mx.managers.ToolTipManager;
 			import mx.validators.NumberValidator;
 			
 			import spark.components.TextInput;
 			import spark.events.IndexChangeEvent;
-			import spark.events.ListEvent;
 		
 			private var _type:String;
 			
@@ -134,6 +131,7 @@
 			{
 				cbSearch.visible = false;
 				cbSearch.includeInLayout = false;
+				cbSearch.dataProvider = null;
 				txtSearch.visible = true;
 				txtSearch.includeInLayout = true;
 				resetTxtSearch();

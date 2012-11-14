@@ -21,36 +21,24 @@
 		<![CDATA[
 			import com.esri.ags.Graphic;
 			import com.esri.ags.Map;
-			import com.esri.ags.events.PanEvent;
-			import com.esri.ags.events.ZoomEvent;
 			import com.esri.ags.geometry.Geometry;
 			import com.esri.ags.geometry.MapPoint;
 			import com.esri.ags.layers.FeatureLayer;
-			import com.esri.ags.layers.GraphicsLayer;
 			import com.esri.ags.layers.supportClasses.CodedValue;
 			import com.esri.ags.layers.supportClasses.CodedValueDomain;
 			import com.esri.ags.layers.supportClasses.FeatureType;
-			import com.esri.ags.layers.supportClasses.Field;
-			import com.esri.ags.layers.supportClasses.LayerDetails;
-			import com.esri.ags.layers.supportClasses.TableDetails;
 			import com.esri.ags.portal.PopUpRenderer;
 			import com.esri.ags.portal.supportClasses.PopUpInfo;
 			import com.esri.ags.portal.supportClasses.PopUpMediaInfo;
-			import com.esri.viewer.AppEvent;
 			import com.esri.viewer.BaseWidget;
-			import com.esri.viewer.IBaseWidget;
 			import com.esri.viewer.ViewerContainer;
 			
 			import mx.collections.ArrayCollection;
 			import mx.collections.ArrayList;
 			import mx.collections.IViewCursor;
 			import mx.controls.Alert;
-			import mx.controls.Menu;
-			import mx.core.Repeater;
 			import mx.core.UIComponent;
 			import mx.events.FlexEvent;
-			import mx.events.ListEvent;
-			import mx.events.MenuEvent;
 			import mx.managers.PopUpManager;
 			import mx.utils.ObjectUtil;
 			
@@ -62,15 +50,13 @@
 			import spark.formatters.CurrencyFormatter;
 			import spark.formatters.DateTimeFormatter;
 			import spark.formatters.NumberFormatter;
-			import spark.utils.DataItem;
 			
-			import widgets.eSearch.eSearchWidget;
-			import widgets.eSearch.skins.PopUpRendererSkin;
 			import widgets.eSearch.utils.PrintProperties;
 			import widgets.eSearch.utils.PrintUtil;
 		
 			private var _data:Array;
-			private var _graLyr:GraphicsLayer;
+			private var hitimer:uint;
+			private var _qFeatLyr:FeatureLayer;
 			private var _featLayer:FeatureLayer;
 			private var _resultsGrid:DataGrid;
 			private var highlightedGraphic:Graphic;
@@ -97,6 +83,7 @@
 			[Bindable] private var _enableExport:Boolean;
 			[Bindable] private var _enablePrint:Boolean;
 			[Bindable] private var _widgetInteract:Boolean;
+			[Bindable] private var _popupsdiabled:Boolean;
 			[Bindable] private var sumVisible:Boolean;
 			[Bindable] private var _labelSum:String;
 			[Bindable] private var _labelPrint:String;
@@ -122,9 +109,9 @@
 			private var _footerPageofPage:String;
 			private var _footerDisclaimer:String;
 			
-			public function set graphicslayer(value:GraphicsLayer):void
+			public function set featlayer(value:FeatureLayer):void
 			{
-				_graLyr = value;
+				_qFeatLyr = value;
 			}
 			
 			public function set dgtitle(value:String):void
@@ -187,6 +174,11 @@
 			public function set widgetInteract(value:Boolean):void
 			{
 				_widgetInteract = value;
+			}
+			
+			public function set popupsdiabled(value:Boolean):void
+			{
+				_popupsdiabled = value;
 			}
 			
 			public function set ownerWidget(value:BaseWidget):void
@@ -999,16 +991,20 @@
 			
 			private function onItemRollOver(event:GridEvent):void
             {
+				clearTimeout(hitimer);
 				if(_widgetInteract  && _bWidget){
-					if(!event.itemRenderer || !event.itemRenderer.data)
+					if(!event.itemRenderer || !event.itemRenderer.data){
 						return;
+					}
 					_bWidget.highlightDataGroupItemByOID(event.itemRenderer.data.oid);
-					var searchResult:SearchResult = findSearchResultByOID(event.itemRenderer.data.oid);
-					if(!searchResult.graphic && searchResult.point){
-						if (map.extent.containsXY(searchResult.point.x, searchResult.point.y)){
-							showInfoWindow(searchResult);
-						}else{
-							hideInfoWindow();
+					var searchResult:Object = findSearchResultByOID(event.itemRenderer.data.oid);
+					if(_popupsdiabled == false){
+						if(searchResult.graphic && searchResult.point){
+							if (map.extent.containsXY(searchResult.point.x, searchResult.point.y)){
+								hitimer = setTimeout(showInfoWindow, 300, searchResult);
+							}else{
+								hideInfoWindow();
+							}
 						}
 					}
 				}
@@ -1016,6 +1012,7 @@
 			
 			private function onItemRollOut(event:GridEvent):void
 			{
+				clearTimeout(hitimer);
 				if(_widgetInteract && _bWidget){
 					_bWidget.unhighlightDataGroupItems();
 				}
@@ -1025,7 +1022,7 @@
 			{
 				if (map.infoWindow.contentOwner &&
 						((map.infoWindow.contentOwner is Graphic && 
-						Graphic(map.infoWindow.contentOwner).graphicsLayer === _graLyr) ||
+						Graphic(map.infoWindow.contentOwner).parent === _qFeatLyr) ||
 						map.infoWindow.contentOwner is Map)){
 					map.infoWindow.hide();
 				}
@@ -1036,20 +1033,17 @@
 				var showHighlightPoint:MapPoint = infoData.point as MapPoint;
 				popUpRenderer.popUpInfo = configurePopUpInfo(infoData.links);
 				popUpRenderer.graphic = infoData.graphic;
-				popUpRenderer.setStyle("skinClass", widgets.eSearch.skins.PopUpRendererSkin);
 				map.infoWindow.content = popUpRenderer;
 				map.infoWindow.contentOwner = popUpRenderer.graphic;
 				map.infoWindow.show(showHighlightPoint);
 			}
 			
-			private function configurePopUpInfo(links:Array):EnhancedPopUpInfo
+			private function configurePopUpInfo(links:Array):PopUpInfo
 			{
-				var popUpInfo:EnhancedPopUpInfo = new EnhancedPopUpInfo;
-				
-				popUpInfo.title = "{title}";
-				popUpInfo.description = "{content}";
+				var popUpInfo:PopUpInfo = new PopUpInfo;
+				popUpInfo.title = "{title__pu__sr}";
+				popUpInfo.description = "{content__pu__sr}";
 				popUpInfo.showAttachments = true;
-				popUpInfo.featLayer = _featLayer;
 				var pminfos:Array = [];
 				
 				for(var l:int=0; l<links.length; l++){
@@ -1074,7 +1068,7 @@
             
             private function highLightSel(event:Event):void
             {
-            	resultsGrid.selectedItem
+				clearTimeout(hitimer);
             	if(resultsGrid.selectedItem && _bWidget){
 					_bWidget.highlightDataGroupItemByOID(resultsGrid.selectedItem.oid);
             	}
@@ -1141,7 +1135,9 @@
 							map.centerAt(searchResult.point);
 						}
 					}
-					callLater(showInfoWindow, [searchResult]);
+					if(_popupsdiabled == false){
+						callLater(showInfoWindow, [searchResult]);
+					}
 				}
             }
 			

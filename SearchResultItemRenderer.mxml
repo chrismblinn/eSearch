@@ -24,10 +24,9 @@
 
     <fx:Script>
         <![CDATA[
-			import flashx.textLayout.conversion.TextConverter;
-			import flashx.textLayout.elements.TextFlow;
-			
 			import com.esri.ags.symbols.Symbol;
+			
+			import flashx.textLayout.conversion.TextConverter;
 			
 			import mx.controls.Image;
 			import mx.events.FlexEvent;
