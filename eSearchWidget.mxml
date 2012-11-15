@@ -352,8 +352,8 @@
 			private var overFillSymbol:Symbol;
 			
 			//Build Constants
-			protected const VERSION:String = "3.0.14";
-			protected const BUILDDATE:String = "11/9/2012";
+			protected const VERSION:String = "3.0.14f";
+			protected const BUILDDATE:String = "11/15/2012";
 			
 			//Resources
 			[Embed(source="assets/images/i_about.png")]
@@ -1015,7 +1015,7 @@
 							popCBwithSubType(sItemVal);
 						}else if(configSearchText[0].expr[0].values[v].uniquevalsfromfield != ""){
 							var uFld:String = configSearchText[0].expr[0].values[v].uniquevalsfromfield;
-							if(!pagingQueryTask.isQuerying){
+							if(!pagingQueryTask.isQuerying && configSearchText[0].layer.loaded){
 								popCBwithUnique(uFld, sItemVal);
 							}else{
 								//add this field to the Que
@@ -1105,6 +1105,17 @@
 				
 				// a new (default) search form is shown
 				onSearchFormChanged();
+				
+				/* If the first layer has qued popCBwithUniques and is yet to be loaded then
+				once it is loaded get those popCBwithUniques */
+				configSearchText[0].layer.addEventListener(LayerEvent.LOAD, queryLayer_loadHandler);
+				function queryLayer_loadHandler(event:LayerEvent):void
+				{
+					if(popCBwithUniqueQue.length > 0){
+						var arr:Object = popCBwithUniqueQue.shift();
+						popCBwithUnique(arr.uFld, arr.sItemVal);
+					}
+				}
 			}
 			
 			/* 

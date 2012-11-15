@@ -1,3 +1,10 @@
+Version 3.0.14f - 11/15/2012
+** Hot fix for uniquevalsfromfield now are aware of isrequired attribute and add a blank entry
+   in the drop down if necessary.
+** Hot fix for Added support for disabling popups completely for this widget.
+** Hot fix for bug where if more than one uniquevalsfromfield is used in the first expression
+   only one will populate the dropdown.
+
 Version 3.0.14 - 11/14/2012
 * Fixed bug where if more than one uniquevalsfromfield was used in an expression
   Only one would populate the dropdown.
@@ -13,10 +20,6 @@ Version 3.0.14 - 11/14/2012
   not being used with certain spatial searches.
 * Added support for disabling search widget results (just use <disablebuttons>result</disablebuttons>).
 * Added support for disabling popups completely for this widget.
-**11/15/2012
-** Hot fix for uniquevalsfromfield now are aware of isrequired attribute and add a blank entry
-  in the drop down if necessary.
-** Hot fix for Added support for disabling popups completely for this widget.
 
 Version 3.0.13 - 10/25/2012
 * You can now print from the datagrid (floating or fixed). The Print output is properly paginated
