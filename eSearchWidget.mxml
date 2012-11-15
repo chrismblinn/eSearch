@@ -3266,10 +3266,12 @@
 						
 					result.addItem(searchResult);
 
-					// infoWindowRenderer on each graphic
-					var infoWindowRenderer:ClassFactory = new ClassFactory(PopUpRenderer);
-					infoWindowRenderer.properties = {popUpInfo:configurePopUpInfo(lyrQLinks)};
-					graphic.infoWindowRenderer = infoWindowRenderer;
+					if(PopUpsDisabled == false){
+						// infoWindowRenderer on each graphic
+						var infoWindowRenderer:ClassFactory = new ClassFactory(PopUpRenderer);
+						infoWindowRenderer.properties = {popUpInfo:configurePopUpInfo(lyrQLinks)};
+						graphic.infoWindowRenderer = infoWindowRenderer;
+					}
 					
 				}
 				return result;

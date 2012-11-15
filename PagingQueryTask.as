@@ -46,6 +46,7 @@ package widgets.eSearch
 		private var _useAMF:Boolean;
 		private var _pagingEscaped:Boolean;
 		private var _isRequired:Boolean;
+		private var blankStringExists:Boolean;
 		
 		private var query:Query = new Query;
 		private var queryTask:QueryTask = new QueryTask();
@@ -233,7 +234,7 @@ package widgets.eSearch
 		public function execute():void
 		{
 			FlexGlobals.topLevelApplication.addEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
-			
+			blankStringExists = false;
 			iStart = 0;
 			iMaxRecords = 0;
 			featuresProcessed = 0;
@@ -287,7 +288,7 @@ package widgets.eSearch
 				// get the unique values
 				uniqueValues = getDistinctValues(allValues, _fieldName);
 				if(_isRequired == false){
-					if(uniqueValues.indexOf({value: "", label: ""}) >0){
+					if(!blankStringExists){
 						uniqueValues.splice(0,0,{value: "", label: ""});
 					}
 				}
@@ -372,6 +373,9 @@ package widgets.eSearch
 			for (var propertyName:String in tempPropertyArray) {
 				//add the propertyName (which is actually a distinct property value) 
 				//to the distinct values collection
+				if(propertyName == "" || propertyName == " "){
+					blankStringExists = true;
+				}
 				distinctValuesCollection.addItem({value: propertyName, label: propertyName});
 			}
 			
