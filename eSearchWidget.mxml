@@ -212,7 +212,6 @@
 			[Bindable] private var bufferGraLabel:String;
 			[Bindable] private var msgVisible:Boolean = false;
 			[Bindable] private var searchLayerLabel:String;
-			[Bindable] private var relatLayerWhereLabel:String;
 			[Bindable] private var bufferLabel:String;
 			private var graphicalsearchLabel:String;
 			private var textsearchLabel:String;
@@ -268,10 +267,8 @@
 			private var configSpatialSearchLayers:Array;
 			private var configSpatialSearchRelation:Array;
 			private var geomArr:Array;
-			private var wFields:ArrayCollection;
 			private var keepGraSearchEnabled:Boolean;
 			private var autoZoom:Boolean;
-			private var queryLinkIconIsField:Boolean;
 			private var queryEnableExport:Boolean;
 			private var queryEnablePrint:Boolean;
 			private var queryPrintTitle:String;
@@ -288,7 +285,6 @@
 			private var zoomScale:Number = 5000;
 			private var zoomPercent:Number = 1.2;
 			private var pointSearchTolerance:Number = 6;
-			private var numberValidator:NumberValidator;
 			private var gridDataProvider:Object;
 			private var fldAliases:Object;
 			private var relfldAliases:Object;
@@ -321,13 +317,11 @@
 			private var lState:String = "textInput";
 			private var queryTitleField:String;
 			private var defaultSelectionOption:String;
-			private var timer:Timer;
-			private var myTip:ToolTip;
 			private var queryFields:XMLList;
-			private var selMethod:String;
 			private var disResult:Boolean = false;
 			private var disGrid:Boolean = false;
 			[Bindable] private var featLyrLen:int;
+			[Bindable] private var featSethasGeom:Boolean;
 			
 			//Print DG Properties
 			private var dgheaderbgcolor:uint;
@@ -349,11 +343,10 @@
 			private var resultLineSymbol:Symbol;
 			private var resultFillSymbol:Symbol;
 			private var resultSATSymbol:Symbol;
-			private var overFillSymbol:Symbol;
 			
 			//Build Constants
-			protected const VERSION:String = "3.0.14f";
-			protected const BUILDDATE:String = "11/15/2012";
+			protected const VERSION:String = "3.0.15";
+			protected const BUILDDATE:String = "11/29/2012";
 			
 			//Resources
 			[Embed(source="assets/images/i_about.png")]
@@ -534,6 +527,47 @@
 						cboGraBufferUnit.width = (wTemplate.width - (102 + bufferUserGraphic.measureText(lblbufferUserGraphic).width + 37));
 					}
 					cboGraBufferUnit.selectedIndex = 0;
+					
+					//marker symbol
+					if(configXML.symbols.picturemarkersymbol.@url[0] != null){
+						const resultMarkerSymbolURL:String = configXML.symbols.picturemarkersymbol.@url || widgetIcon;
+						const resultMarkerSymbolHeight:Number = (configXML.symbols.picturemarkersymbol.@height[0] != null) ? configXML.symbols.picturemarkersymbol.@height : 30;
+						const resultMarkerSymbolWidth:Number = (configXML.symbols.picturemarkersymbol.@width[0] != null) ? configXML.symbols.picturemarkersymbol.@width : 30;
+						const resultMarkerSymbolXOffset:Number = (configXML.symbols.picturemarkersymbol.@xoffset[0] != null) ? configXML.symbols.picturemarkersymbol.@xoffset : 0;
+						const resultMarkerSymbolYOffset:Number = (configXML.symbols.picturemarkersymbol.@yoffset[0] != null) ? configXML.symbols.picturemarkersymbol.@yoffset : 0;
+						const resultMarkerSymbolAngle:Number = (configXML.symbols.simplemarkersymbol.@angle[0] != null) ? configXML.symbols.simplemarkersymbol.@angle : 0;
+						resultMarkerSymbol = new PictureMarkerSymbol(resultMarkerSymbolURL, resultMarkerSymbolWidth, resultMarkerSymbolHeight, resultMarkerSymbolXOffset, resultMarkerSymbolYOffset, resultMarkerSymbolAngle);
+					}else{
+						const resultMarkerSymbolStyle:String = configXML.symbols.simplemarkersymbol.@style || "circle";
+						const resultMarkerSymbolSize:Number = (configXML.symbols.simplemarkersymbol.@size[0] != null) ? configXML.symbols.simplemarkersymbol.@size : 15;
+						const resultMarkerSymbolColor:uint = (configXML.symbols.simplemarkersymbol.@color[0] != null) ? configXML.symbols.simplemarkersymbol.@color : 0xFF0000;
+						const resultMarkerSymbolAlpha:Number = (configXML.symbols.simplemarkersymbol.@alpha[0] != null) ? configXML.symbols.simplemarkersymbol.@alpha : 0.8;
+						const resultMarkerSymbolXOffset2:Number = (configXML.symbols.simplemarkersymbol.@xoffset[0] != null) ? configXML.symbols.simplemarkersymbol.@xoffset : 0;
+						const resultMarkerSymbolYOffset2:Number = (configXML.symbols.simplemarkersymbol.@yoffset[0] != null) ? configXML.symbols.simplemarkersymbol.@yoffset : 0;
+						const resultMarkerSymbolAngle2:Number = (configXML.symbols.simplemarkersymbol.@angle[0] != null) ? configXML.symbols.simplemarkersymbol.@angle : 0;
+						const resultMarkerSymbolOutlineStyle:String = configXML.symbols.simplemarkersymbol.outline.@style || "solid";
+						const resultMarkerSymbolOutlineColor:uint = (configXML.symbols.simplemarkersymbol.outline.@color[0] != null) ? configXML.symbols.simplemarkersymbol.outline.@color : 0x0000ff;
+						const resultMarkerSymbolOutlineAlpha:Number = (configXML.symbols.simplemarkersymbol.outline.@alpha[0] != null) ? configXML.symbols.simplemarkersymbol.outline.@alpha : 0.8;
+						const resultMarkerSymbolOutlineWidth:Number = (configXML.symbols.simplemarkersymbol.outline.@width[0] != null) ? configXML.symbols.simplemarkersymbol.outline.@width : 2;
+						resultMarkerSymbol = new SimpleMarkerSymbol(resultMarkerSymbolStyle,resultMarkerSymbolSize,resultMarkerSymbolColor,resultMarkerSymbolAlpha,resultMarkerSymbolXOffset2,resultMarkerSymbolYOffset2,resultMarkerSymbolAngle2,new SimpleLineSymbol(resultMarkerSymbolOutlineStyle, resultMarkerSymbolOutlineColor, resultMarkerSymbolOutlineAlpha, resultMarkerSymbolOutlineWidth));
+					}
+					
+					//Symbol for stand alone tables
+					resultSATSymbol = new PictureMarkerSymbol(satClass,20,20);
+					
+					//line symbol
+					const resultLineSymbolColor:uint = (configXML.symbols.simplelinesymbol.@color[0] != null) ? configXML.symbols.simplelinesymbol.@color : 0xFF0000;
+					const resultLineSymbolAlpha:Number = (configXML.symbols.simplelinesymbol.@alpha[0] != null) ? configXML.symbols.simplelinesymbol.@alpha : 0.8;
+					const resultLineSymbolWidth:Number = (configXML.symbols.simplelinesymbol.@width[0] != null) ? configXML.symbols.simplelinesymbol.@width : 2;
+					resultLineSymbol = new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, resultLineSymbolColor, resultLineSymbolAlpha, resultLineSymbolWidth);
+					
+					// fill symbol
+					const resultFillSymbolColor:uint = (configXML.symbols.simplefillsymbol.@color[0] != null) ? configXML.symbols.simplefillsymbol.@color : 0xFF0000;
+					const resultFillSymbolAlpha:Number = (configXML.symbols.simplefillsymbol.@alpha[0] != null) ? configXML.symbols.simplefillsymbol.@alpha : 0.5; 
+					const resultFillSymbolOutlineColor:uint = (configXML.symbols.simplefillsymbol.outline.@color[0] != null) ? configXML.symbols.simplefillsymbol.outline.@color : 0xFF0000;
+					const resultFillSymbolOutlineAlpha:Number = (configXML.symbols.simplefillsymbol.outline.@alpha[0] != null) ? configXML.symbols.simplefillsymbol.outline.@alpha : 0.8;
+					const resultFillSymbolOutlineWidth:Number = (configXML.symbols.simplefillsymbol.outline.@width[0] != null) ? configXML.symbols.simplefillsymbol.outline.@width : 2;
+					resultFillSymbol = new SimpleFillSymbol(SimpleFillSymbol.STYLE_SOLID, resultFillSymbolColor, resultFillSymbolAlpha, new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, resultFillSymbolOutlineColor, resultFillSymbolOutlineAlpha, resultFillSymbolOutlineWidth));
 										
 					configSearchGraphical = [];
 					configSearchText = [];
@@ -678,7 +712,9 @@
 						}
 						
 						var lyrSymbol:Symbol = getLayerSymbology(lyrList[i]);
-						layer.renderer = new SimpleRenderer(lyrSymbol);
+						if(lyrSymbol){
+							layer.renderer = new SimpleRenderer(lyrSymbol);
+						}
 						
 						var searchLayer:Object = {
 							layer: layer,
@@ -849,47 +885,6 @@
 						}
 					}
 					
-					//marker symbol
-					if(configXML.symbols.picturemarkersymbol.@url[0] != null){
-						const resultMarkerSymbolURL:String = configXML.symbols.picturemarkersymbol.@url || widgetIcon;
-						const resultMarkerSymbolHeight:Number = (configXML.symbols.picturemarkersymbol.@height[0] != null) ? configXML.symbols.picturemarkersymbol.@height : 30;
-						const resultMarkerSymbolWidth:Number = (configXML.symbols.picturemarkersymbol.@width[0] != null) ? configXML.symbols.picturemarkersymbol.@width : 30;
-						const resultMarkerSymbolXOffset:Number = (configXML.symbols.picturemarkersymbol.@xoffset[0] != null) ? configXML.symbols.picturemarkersymbol.@xoffset : 0;
-						const resultMarkerSymbolYOffset:Number = (configXML.symbols.picturemarkersymbol.@yoffset[0] != null) ? configXML.symbols.picturemarkersymbol.@yoffset : 0;
-						const resultMarkerSymbolAngle:Number = (configXML.symbols.simplemarkersymbol.@angle[0] != null) ? configXML.symbols.simplemarkersymbol.@angle : 0;
-						resultMarkerSymbol = new PictureMarkerSymbol(resultMarkerSymbolURL, resultMarkerSymbolWidth, resultMarkerSymbolHeight, resultMarkerSymbolXOffset, resultMarkerSymbolYOffset, resultMarkerSymbolAngle);
-					}else{
-						const resultMarkerSymbolStyle:String = configXML.symbols.simplemarkersymbol.@style || "circle";
-						const resultMarkerSymbolSize:Number = (configXML.symbols.simplemarkersymbol.@size[0] != null) ? configXML.symbols.simplemarkersymbol.@size : 15;
-						const resultMarkerSymbolColor:uint = (configXML.symbols.simplemarkersymbol.@color[0] != null) ? configXML.symbols.simplemarkersymbol.@color : 0xFF0000;
-						const resultMarkerSymbolAlpha:Number = (configXML.symbols.simplemarkersymbol.@alpha[0] != null) ? configXML.symbols.simplemarkersymbol.@alpha : 0.8;
-						const resultMarkerSymbolXOffset2:Number = (configXML.symbols.simplemarkersymbol.@xoffset[0] != null) ? configXML.symbols.simplemarkersymbol.@xoffset : 0;
-						const resultMarkerSymbolYOffset2:Number = (configXML.symbols.simplemarkersymbol.@yoffset[0] != null) ? configXML.symbols.simplemarkersymbol.@yoffset : 0;
-						const resultMarkerSymbolAngle2:Number = (configXML.symbols.simplemarkersymbol.@angle[0] != null) ? configXML.symbols.simplemarkersymbol.@angle : 0;
-						const resultMarkerSymbolOutlineStyle:String = configXML.symbols.simplemarkersymbol.outline.@style || "solid";
-						const resultMarkerSymbolOutlineColor:uint = (configXML.symbols.simplemarkersymbol.outline.@color[0] != null) ? configXML.symbols.simplemarkersymbol.outline.@color : 0x0000ff;
-						const resultMarkerSymbolOutlineAlpha:Number = (configXML.symbols.simplemarkersymbol.outline.@alpha[0] != null) ? configXML.symbols.simplemarkersymbol.outline.@alpha : 0.8;
-						const resultMarkerSymbolOutlineWidth:Number = (configXML.symbols.simplemarkersymbol.outline.@width[0] != null) ? configXML.symbols.simplemarkersymbol.outline.@width : 2;
-						resultMarkerSymbol = new SimpleMarkerSymbol(resultMarkerSymbolStyle,resultMarkerSymbolSize,resultMarkerSymbolColor,resultMarkerSymbolAlpha,resultMarkerSymbolXOffset2,resultMarkerSymbolYOffset2,resultMarkerSymbolAngle2,new SimpleLineSymbol(resultMarkerSymbolOutlineStyle, resultMarkerSymbolOutlineColor, resultMarkerSymbolOutlineAlpha, resultMarkerSymbolOutlineWidth));
-					}
-					
-					//Symbol for stand alone tables
-					resultSATSymbol = new PictureMarkerSymbol(satClass,20,20);
-					
-					//line symbol
-					const resultLineSymbolColor:uint = (configXML.symbols.simplelinesymbol.@color[0] != null) ? configXML.symbols.simplelinesymbol.@color : 0xFF0000;
-					const resultLineSymbolAlpha:Number = (configXML.symbols.simplelinesymbol.@alpha[0] != null) ? configXML.symbols.simplelinesymbol.@alpha : 0.8;
-					const resultLineSymbolWidth:Number = (configXML.symbols.simplelinesymbol.@width[0] != null) ? configXML.symbols.simplelinesymbol.@width : 2;
-					resultLineSymbol = new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, resultLineSymbolColor, resultLineSymbolAlpha, resultLineSymbolWidth);
-					
-					// fill symbol
-					const resultFillSymbolColor:uint = (configXML.symbols.simplefillsymbol.@color[0] != null) ? configXML.symbols.simplefillsymbol.@color : 0xFF0000;
-					const resultFillSymbolAlpha:Number = (configXML.symbols.simplefillsymbol.@alpha[0] != null) ? configXML.symbols.simplefillsymbol.@alpha : 0.5; 
-					const resultFillSymbolOutlineColor:uint = (configXML.symbols.simplefillsymbol.outline.@color[0] != null) ? configXML.symbols.simplefillsymbol.outline.@color : 0xFF0000;
-					const resultFillSymbolOutlineAlpha:Number = (configXML.symbols.simplefillsymbol.outline.@alpha[0] != null) ? configXML.symbols.simplefillsymbol.outline.@alpha : 0.8;
-					const resultFillSymbolOutlineWidth:Number = (configXML.symbols.simplefillsymbol.outline.@width[0] != null) ? configXML.symbols.simplefillsymbol.outline.@width : 2;
-					resultFillSymbol = new SimpleFillSymbol(SimpleFillSymbol.STYLE_SOLID, resultFillSymbolColor, resultFillSymbolAlpha, new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, resultFillSymbolOutlineColor, resultFillSymbolOutlineAlpha, resultFillSymbolOutlineWidth));
-					
 					graphicsLayerBuffer = new GraphicsLayer();
 					graphicsLayerBuffer.name = "Search Buffer Results";
 					map.addLayer(graphicsLayerBuffer);
@@ -1029,8 +1024,9 @@
 					}
 					
 					if (configSearchText.length == 1){
-						boxText.visible = false;
-						boxText.includeInLayout = false;
+						lblLayerText.text += ("  " + configSearchText[0].label);
+						cboLayerText.visible = false;
+						cboLayerText.includeInLayout = false;
 					}
 					cboLayerExpr.dataProvider = new ArrayCollection(configSearchText[0].expr);
 					cboLayerExpr.width = determineDropDownWidth(configSearchText[0].expr);
@@ -1057,8 +1053,9 @@
 					cboLayerGraphical.selectedIndex = 0;
 					txtLabelGraphical.text = configSearchGraphical[0].graphicallabel;
 					if (configSearchGraphical.length == 1){
-						boxGraphical.visible = false;
-						boxGraphical.includeInLayout = false;
+						lblLayerGraphical.text += ("  " + configSearchGraphical[0].label);
+						cboLayerGraphical.visible = false;
+						cboLayerGraphical.includeInLayout = false;
 					}
 				}else{
 					boxGraphical.visible = false;
@@ -1108,12 +1105,34 @@
 				
 				/* If the first layer has qued popCBwithUniques and is yet to be loaded then
 				once it is loaded get those popCBwithUniques */
-				configSearchText[0].layer.addEventListener(LayerEvent.LOAD, queryLayer_loadHandler);
-				function queryLayer_loadHandler(event:LayerEvent):void
-				{
-					if(popCBwithUniqueQue.length > 0){
-						var arr:Object = popCBwithUniqueQue.shift();
-						popCBwithUnique(arr.uFld, arr.sItemVal);
+				var fFeatLayer:FeatureLayer = (configSearchText[0].layer)?configSearchText[0].layer:configSearchText[0].table;
+				if(fFeatLayer){
+					fFeatLayer.addEventListener(LayerEvent.LOAD, queryLayer_loadHandler);
+					function queryLayer_loadHandler(event:LayerEvent):void
+					{
+						if(popCBwithUniqueQue.length > 0){
+							var arr:Object = popCBwithUniqueQue.shift();
+							popCBwithUnique(arr.uFld, arr.sItemVal);
+						}
+						if(configSearchText[0].layer && !configSearchText[0].symbology){
+							var gType:String = (event.layer as FeatureLayer).layerDetails.geometryType;
+							switch (gType){
+								case Geometry.MAPPOINT:{
+									lyrSymbol = resultMarkerSymbol;
+									break;
+								}
+								case Geometry.POLYLINE:{
+									lyrSymbol = resultLineSymbol;
+									break;
+								}
+								case Geometry.POLYGON:{
+									lyrSymbol = resultFillSymbol;
+									break;
+								}
+							}
+							configSearchText[0].symbology = lyrSymbol;
+							fFeatLayer.renderer = new SimpleRenderer(lyrSymbol);
+						} 
 					}
 				}
 			}
@@ -1239,6 +1258,7 @@
 				qFeatSet.displayFieldName = (queryLayer.layerDetails)?queryLayer.layerDetails.displayField:queryLayer.tableDetails.displayField;
 				gridDataProvider = qFeatSet.attributes;
 				resultsFeatureSet = qFeatSet;
+				featSethasGeom = (queryLayer.layerDetails)?true:false;
 			}
 			
 			/*
@@ -1406,6 +1426,9 @@
 				if(queryLayer != qFeatLayer){
 					map.removeLayer(qFeatLayer);
 					qFeatLayer = queryLayer;
+					if(typeQ == "layer" && !qFeatLayer.renderer){
+						qFeatLayer.renderer = new SimpleRenderer(getFeatLyrSymbol(qFeatLayer, "queryFromURL"));
+					}
 					qFeatLayer.addEventListener(FlexEvent.HIDE, featLayer_hideHandler);
 					featLyrLen = qFeatLayer.selectedFeatures.length;
 					map.addLayer(qFeatLayer);
@@ -2139,9 +2162,13 @@
 					}
 					return;
 				}
-				if(queryLayer != qFeatLayer){
+				if(queryLayer != qFeatLayer || (!configSearchText[i].symbology && typeQ == "layer")){
 					map.removeLayer(qFeatLayer);
 					qFeatLayer = queryLayer;
+					if(typeQ == "layer" && !qFeatLayer.renderer){
+						qFeatLayer.renderer = new SimpleRenderer(getFeatLyrSymbol(qFeatLayer, "queryFeaturesText"));
+					}
+					//qFeatLayer.selectionColor = getGlowColor(getFeatLyrSymbol(qFeatLayer, "queryFeaturesText"));
 					qFeatLayer.addEventListener(FlexEvent.HIDE, featLayer_hideHandler);
 					featLyrLen = qFeatLayer.selectedFeatures.length;
 					map.addLayer(qFeatLayer);
@@ -2413,6 +2440,9 @@
 				if(queryLayer != qFeatLayer){
 					map.removeLayer(qFeatLayer);
 					qFeatLayer = queryLayer;
+					if(!qFeatLayer.renderer){
+						qFeatLayer.renderer = new SimpleRenderer(getFeatLyrSymbol(qFeatLayer, initiator));
+					}
 					qFeatLayer.addEventListener(FlexEvent.HIDE, featLayer_hideHandler);
 					featLyrLen = qFeatLayer.selectedFeatures.length;
 					map.addLayer(qFeatLayer);
@@ -2930,7 +2960,7 @@
 			}
 			
 			/*
-			* Get the graphics symbol from the config file if a symbol is specified for this indivual layer pr just 
+			* Get the graphics symbol from the config file if a symbol is specified for this indivual layer or just 
 			* return the deault symbol for this geometry type.
 			* @param Graphic graphic the graphic that a symbol should be returned for.
 			* @param String initiator the specific view that initiated this function.
@@ -2945,7 +2975,7 @@
 				}else if(initiator == "queryFeaturesGraphical"){
 					i = (cboLayerGraphical.selectedIndex < 0) ? 0 : cboLayerGraphical.selectedIndex;
 				}else{
-					i = (configSpatialSearchLayers.selectedIndex < 0) ? 0 : configSpatialSearchLayers.selectedIndex;
+					i = (cboSearchLayerSpatial.selectedIndex < 0) ? 0 : cboSearchLayerSpatial.selectedIndex;
 				}
 				
 				if(graphic.geometry){
@@ -3009,6 +3039,109 @@
 					sym = resultSATSymbol;
 				}
 				return sym;
+			}
+			
+			/*
+			* Get the FeatureLayer symbol from the config file if a symbol is specified for this indivual layer or just 
+			* return the deault symbol for this geometry type.
+			* @param FeatureLayer FeatLyr the FeatureLayer that a symbol should be returned for.
+			* @param String initiator the specific view that initiated this function.
+			* @return Symbol the Symbol of the input graphic
+			*/
+			private function getFeatLyrSymbol(FeatLyr:FeatureLayer, initiator:String):Symbol
+			{
+				var i:int;
+				var sym:Symbol;
+				var retClr:uint
+				if(initiator == "queryFeaturesText" || initiator == "queryFromURL"){
+					i = (cboLayerText.selectedIndex < 0) ? 0 : cboLayerText.selectedIndex;
+				}else if(initiator == "queryFeaturesGraphical"){
+					i = (cboLayerGraphical.selectedIndex < 0) ? 0 : cboLayerGraphical.selectedIndex;
+				}else{
+					i = (cboSearchLayerSpatial.selectedIndex < 0) ? 0 : cboSearchLayerSpatial.selectedIndex;
+				}
+				
+				switch (FeatLyr.layerDetails.geometryType){
+					case Geometry.MAPPOINT:{
+						if(initiator == "queryFeaturesText" || initiator == "queryFromURL"){
+							if(configSearchText[i].symbology){
+								sym = configSearchText[i].symbology;
+							}else{
+								sym = resultMarkerSymbol;
+							};
+						}else if (initiator == "queryGraphical"){
+							if(configSpatialSearchLayers[i].symbology){
+								sym = cboLayerGraphical[i].symbology;
+							}else{
+								sym = resultMarkerSymbol;
+							};
+						}else{
+							if(configSpatialSearchLayers[i].symbology){
+								sym = configSpatialSearchLayers[i].symbology;
+							}else{
+								sym = resultMarkerSymbol;
+							};
+						}
+						break;
+					}
+					case Geometry.POLYLINE:{
+						if(initiator == "queryFeaturesText" || initiator == "queryFromURL"){
+							if(configSearchText[i].symbology){
+								sym = configSearchText[i].symbology;
+							}else{
+								sym = resultLineSymbol;
+							};
+						}else{
+							if(configSpatialSearchLayers[i].symbology){
+								sym = configSpatialSearchLayers[i].symbology;
+							}else{
+								sym = resultLineSymbol;
+							};
+						}
+						break;
+					}
+					case Geometry.POLYGON:{
+						if(initiator == "queryFeaturesText" || initiator == "queryFromURL"){
+							if(configSearchText[i].symbology){
+								sym = configSearchText[i].symbology;
+							}else{
+								sym = resultFillSymbol;
+							};
+						}else{
+							if(configSpatialSearchLayers[i].symbology){
+								sym = configSpatialSearchLayers[i].symbology;
+							}else{
+								sym = resultFillSymbol;
+							};
+						}
+						break;
+					}
+				}				
+				return sym;
+			}
+			
+			/*
+			* Return the color to use for the featurelayer selection color
+			* @param Symbol sym the symbol for the specific featureLayer
+			* @return uint the uint of the symbol or a default of Yellow
+			*/
+			private function getGlowColor(sym:Symbol):uint
+			{
+				var retClr:uint;
+				if(sym is SimpleFillSymbol){
+					if((sym as SimpleFillSymbol).outline.color){
+						retClr = (sym as SimpleFillSymbol).outline.color;
+					}else{
+						retClr = (sym as SimpleFillSymbol).color;
+					}
+				}else if(sym is SimpleLineSymbol){
+					retClr = (sym as SimpleFillSymbol).color;
+				}else if(sym is SimpleMarkerSymbol){
+					retClr = (sym as SimpleMarkerSymbol).color;
+				}else{
+					retClr = 0xFFFF00;
+				}
+				return retClr;
 			}
 			
 			/*
@@ -3251,25 +3384,6 @@
 						searchResult.relateicon = queryRelates[0].icon;
 					}
 					searchResult.relatetooltip = relateToolTip;
-					
-					var Atts:Object = {
-						oid: searchResult.oid,
-						content: searchResult.content,
-						title: searchResult.title
-					}; 
-					if(!qFeatLayer.layerDetails){
-						if(!qFeatLayer.tableDetails.objectIdField){
-							Atts["ObjectID"] = searchResult.oid;
-						}else{
-							Atts[qFeatLayer.tableDetails.objectIdField] = searchResult.oid;
-						}
-					}else{
-						if(!qFeatLayer.layerDetails.objectIdField){
-							Atts["ObjectID"] = searchResult.oid;
-						}else{
-							Atts[qFeatLayer.layerDetails.objectIdField] = searchResult.oid;
-						}
-					}
 					
 					graphic.attributes["content__pu__sr"] = searchResult.content;
 					graphic.attributes["title__pu__sr"] = searchResult.title;
@@ -4905,14 +5019,14 @@
 			*/
 			private function zoomAll():void
 			{
-				if(resultsFeatureSet){
+				if(qFeatLayer.selectedFeatures){
 					if (resultsFeatureSet.features.length == 1 
 						&& resultsFeatureSet.features[0].geometry.type == Geometry.MAPPOINT){
 						var mp:MapPoint = resultsFeatureSet.features[0].geometry as MapPoint;
 						map.zoom(1 / 16, mp);
 						map.centerAt(mp);
 					}else{
-						var graphicsExtent:Extent = GraphicUtil.getGraphicsExtent(resultsFeatureSet.features);
+						var graphicsExtent:Extent = GraphicUtil.getGraphicsExtent(validateSelectedGeom(qFeatLayer.selectedFeatures));
 						if(graphicsExtent){
 							map.extent = graphicsExtent.expand(zoomPercent);
 							// make sure the whole extent is visible
@@ -4926,6 +5040,25 @@
 						}
 					}
 				}
+			}
+			
+			/*
+			* Validate that the selected features have valid geometry and if not remove from
+			* from the returned array
+			* @param Array FeatsArr the array of graphics to check for valid geometry
+			* @return Array of graphics with only valid geometries
+			*/
+			private function validateSelectedGeom(FeatsArr:Array):Array
+			{
+				var gra:Graphic;
+				var retFeatArr:Array = [];
+				for(var i:int=0; i<FeatsArr.length; i++){
+					gra = FeatsArr[i];
+					if(gra.geometry){
+						retFeatArr.push(gra);
+					}
+				}
+				return retFeatArr;
 			}
 			
 			/*
@@ -5520,11 +5653,11 @@
 				<s:Label buttonMode="true" textAlign="right"
 						 click="zoomAll()"
 						 fontWeight="bold"
-						 includeInLayout="{featLyrLen &gt; 0}"
+						 includeInLayout="{featLyrLen &gt; 0 &amp;&amp; featSethasGeom}"
 						 text="{zoomallLabel}"
 						 textDecoration="underline"
 						 toolTip="{zoomallTip}"
-						 visible="{featLyrLen &gt; 0}"/>
+						 visible="{featLyrLen &gt; 0 &amp;&amp; featSethasGeom}"/>
 				<s:Label buttonMode="true" textAlign="right"
 						 click="clear()"
 						 fontWeight="bold"

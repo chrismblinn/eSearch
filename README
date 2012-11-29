@@ -1,3 +1,13 @@
+Version 3.0.15 - 11/28/2012
+* Fixed an issue when printing after a search and the search layer did not have individual
+  layer symbology specified in the eSearchWidget.xml
+* Fixed issue where you could not use just tables in the eSearchWidget.xml
+* Fixed issue where clicking the clear button before running a search produces an error.
+* Fixed issue where new/add/remove selection button is not in the GUI when there is only
+  one layer configured.
+* Removed the Zoom All button when the results are a table.
+* Validate the returned geometry before attempting to zoom to all selected features.
+
 Version 3.0.14f - 11/15/2012
 ** Hot fix for uniquevalsfromfield now are aware of isrequired attribute and add a blank entry
    in the drop down if necessary.
