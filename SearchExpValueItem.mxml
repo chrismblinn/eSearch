@@ -175,7 +175,11 @@
 				if (txtSearch.visible){
 					_textValue = txtSearch.text;
 				}else{
-					_textValue = cbSearch.selectedItem.value;
+					if(!cbSearch.selectedItem){
+						_textValue = null;
+					}else{
+						_textValue = cbSearch.selectedItem.value;
+					}
 				}
 				return _textValue;
 			}

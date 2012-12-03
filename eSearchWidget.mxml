@@ -345,8 +345,8 @@
 			private var resultSATSymbol:Symbol;
 			
 			//Build Constants
-			protected const VERSION:String = "3.0.15";
-			protected const BUILDDATE:String = "11/29/2012";
+			protected const VERSION:String = "3.0.16";
+			protected const BUILDDATE:String = "12/3/2012";
 			
 			//Resources
 			[Embed(source="assets/images/i_about.png")]
@@ -620,6 +620,8 @@
 								var valUniqueFromField:String = lyrExprVals[v].@uniquevalsfromfield;
 								var valDomain:Boolean = lyrExprVals[v].@usedomain && lyrExprVals[v].@usedomain == "true";
 								var valSubType:Boolean = lyrExprVals[v].@usesubtype && lyrExprVals[v].@usesubtype == "true";
+								var valDateFormat:String = lyrExprVals[v].@dateformat || "";
+								var valUseUTC:Boolean = lyrExprVals[v].@useutc && lyrExprVals[v].@useutc == "true";
 								// if config is given and set to false explicitly, then make it optional (aka not required). Otherwise, default to being required
 								var isOptional:Boolean = lyrExprVals[v].@isvaluerequired && lyrExprVals[v].@isvaluerequired == "false";
 								var operatorValue:String =  lyrExprVals[v].@operator;
@@ -632,7 +634,9 @@
 									uniquevalsfromfield: valUniqueFromField,
 									isvaluerequired : !isOptional,
 									operator : operatorValue,
-									usesubtype: valSubType
+									usesubtype: valSubType,
+									dateformat: valDateFormat,
+									useutc: valUseUTC
 								};
 								configLayerExprsVals.push(exprVals)
 							}
@@ -789,6 +793,8 @@
 								var tblUniqueFromField:String = tblExprVals[v].@uniquevalsfromfield;
 								var tblDomain:Boolean = tblExprVals[v].@usedomain && tblExprVals[v].@usedomain == "true";
 								var tblSubType:Boolean = tblExprVals[v].@usesubtype && tblExprVals[v].@usesubtype == "true";
+								var tblDateFormat:String = tblExprVals[v].@dateformat || "";
+								var tblUseUTC:Boolean = tblExprVals[v].@useutc && tblExprVals[v].@useutc == "true";
 								// if config is given and set to false explicitly, then make it optional (aka not required). Otherwise, default to being required
 								var isOptionalt:Boolean = tblExprVals[v].@isvaluerequired && tblExprVals[v].@isvaluerequired == "false";
 								var operatorValuet:String =  tblExprVals[v].@operator;
@@ -801,7 +807,9 @@
 									uniquevalsfromfield: tblUniqueFromField,
 									isvaluerequired: !isOptionalt,
 									operator: operatorValuet,
-									usesubtype: tblSubType
+									usesubtype: tblSubType,
+									dateformat: tblDateFormat,
+									useutc: tblUseUTC
 								};
 								configTableExprsVals.push(tblexprVals)
 							}
@@ -1010,13 +1018,17 @@
 							popCBwithSubType(sItemVal);
 						}else if(configSearchText[0].expr[0].values[v].uniquevalsfromfield != ""){
 							var uFld:String = configSearchText[0].expr[0].values[v].uniquevalsfromfield;
+							var uDateFormat:String = configSearchText[0].expr[0].values[v].dateformat;
+							var uUseUTC:Boolean = configSearchText[0].expr[0].values[v].useutc;
 							if(!pagingQueryTask.isQuerying && configSearchText[0].layer.loaded){
-								popCBwithUnique(uFld, sItemVal);
+								popCBwithUnique(uFld, sItemVal, uDateFormat, uUseUTC);
 							}else{
 								//add this field to the Que
 								var queObj:Object = {
-									uFld: uFld,
-									sItemVal: sItemVal
+									ufld: uFld,
+									sitemval: sItemVal,
+									udatefmt: uDateFormat,
+									uuseutc: uUseUTC
 								}
 								popCBwithUniqueQue.push(queObj);
 							}
@@ -1112,7 +1124,7 @@
 					{
 						if(popCBwithUniqueQue.length > 0){
 							var arr:Object = popCBwithUniqueQue.shift();
-							popCBwithUnique(arr.uFld, arr.sItemVal);
+							popCBwithUnique(arr.ufld, arr.sitemval, arr.udatefmt, arr.uuseutc);
 						}
 						if(configSearchText[0].layer && !configSearchText[0].symbology){
 							var gType:String = (event.layer as FeatureLayer).layerDetails.geometryType;
@@ -1479,13 +1491,17 @@
 						popCBwithSubType(sItemVal);
 					}else if(configSearchText[slayerId].expr[exprNum].values[v].uniquevalsfromfield != ""){
 						var uFld:String = configSearchText[slayerId].expr[exprNum].values[v].uniquevalsfromfield;
+						var uDateFormat:String = configSearchText[slayerId].expr[exprNum].values[v].dateformat;
+						var uUseUTC:Boolean = configSearchText[slayerId].expr[exprNum].values[v].useutc;
 						if(!pagingQueryTask.isQuerying){
-							popCBwithUnique(uFld, sItemVal);
+							popCBwithUnique(uFld, sItemVal, uDateFormat, uUseUTC);
 						}else{
 							//add this field to the Que
 							var queObj:Object = {
-								uFld: uFld,
-								sItemVal: sItemVal
+								ufld: uFld,
+								sitemval: sItemVal,
+								udatefmt: uDateFormat,
+								uuseutc: uUseUTC
 							}
 							popCBwithUniqueQue.push(queObj);
 						}
@@ -1777,13 +1793,17 @@
 						popCBwithSubType(sItemVal);
 					}else if(configSearchText[i].expr[0].values[v].uniquevalsfromfield != ""){
 						var uFld:String = configSearchText[i].expr[0].values[v].uniquevalsfromfield;
+						var uDateFormat:String = configSearchText[i].expr[0].values[v].dateformat;
+						var uUseUTC:Boolean = configSearchText[i].expr[0].values[v].dateformat;
 						if(!pagingQueryTask.isQuerying){
-							popCBwithUnique(uFld, sItemVal);
+							popCBwithUnique(uFld, sItemVal, uDateFormat, uUseUTC);
 						}else{
 							//add this field to the Que
 							var queObj:Object = {
-								uFld: uFld,
-								sItemVal: sItemVal
+								ufld: uFld,
+								sitemval: sItemVal,
+								udatefmt: uDateFormat,
+								uuseutc: uUseUTC
 							}
 							popCBwithUniqueQue.push(queObj);
 						}
@@ -1858,13 +1878,17 @@
 						popCBwithSubType(sItemVal);
 					}else if(configSearchText[i].expr[j].values[v].uniquevalsfromfield != ""){
 						var uFld:String = configSearchText[i].expr[j].values[v].uniquevalsfromfield;
+						var uDateFormat:String = configSearchText[i].expr[j].values[v].dateformat;
+						var uUseUTC:Boolean = configSearchText[i].expr[j].values[v].useutc;
 						if(!pagingQueryTask.isQuerying){
-							popCBwithUnique(uFld, sItemVal);
+							popCBwithUnique(uFld, sItemVal, uDateFormat, uUseUTC);
 						}else{
 							//add this field to the Que
 							var queObj:Object = {
-								uFld: uFld,
-								sItemVal: sItemVal
+								ufld: uFld,
+								sitemval: sItemVal,
+								udatefmt: uDateFormat,
+								uuseutc: uUseUTC
 							}
 							popCBwithUniqueQue.push(queObj);
 						}
@@ -3582,7 +3606,7 @@
 			* @param String targetField the field to get the values from
 			* @param * sItemVal the dropdown that will be populated
 			*/
-			private function popCBwithUnique(targetField:String, sItemVal:*):void
+			private function popCBwithUnique(targetField:String, sItemVal:*, targetDateFormat:String, uUseUTC:Boolean):void
 			{
 				var i:int = (cboLayerText.selectedIndex < 0) ? 0 : cboLayerText.selectedIndex;
 				if (i == -1){
@@ -3603,7 +3627,7 @@
 					queryLayer.addEventListener(LayerEvent.LOAD, queryLayer_loadHandler);
 					function queryLayer_loadHandler(event:LayerEvent):void
 					{
-						popCBwithUnique(targetField, sItemVal);
+						popCBwithUnique(targetField, sItemVal, targetDateFormat, uUseUTC);
 					}
 					return;
 				}
@@ -3626,7 +3650,7 @@
 					var vNum:Number = (queryLayer.layerDetails)?queryLayer.layerDetails.version:queryLayer.tableDetails.version;
 					var isTenOrGreater:Boolean = (vNum >= 10)
 					pagingQueryTask = new PagingQueryTask(queryLayer.url, targetField, isTenOrGreater, sItemVal, 
-						uniqueCache, sItemVal.isValueRequired);
+						uniqueCache, sItemVal.isValueRequired, targetDateFormat, uUseUTC);
 					pagingQueryTask.addEventListener("pagingComplete",pagingQueryTask_complete);
 					pagingQueryTask.execute();
 				}
@@ -3644,7 +3668,7 @@
 				}
 				if(popCBwithUniqueQue.length > 0){
 					var arr:Object = popCBwithUniqueQue.shift();
-					popCBwithUnique(arr.uFld, arr.sItemVal);
+					popCBwithUnique(arr.ufld, arr.sitemval, arr.udatefmt, arr.uuseutc);
 				}
 			}
 			
@@ -3983,7 +4007,9 @@
 						wTemplate.selectedTitlebarButtonIndex = 2;
 					}
 				}
-				qFeatLayer.clearSelection();
+				if(qFeatLayer){
+					qFeatLayer.clearSelection();
+				}
 				graphicsLayerBuffer.clear();
 				graGraphicsLayer.clear();
 				clearMessage();

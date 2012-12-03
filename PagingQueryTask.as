@@ -16,6 +16,9 @@ package widgets.eSearch
 	import mx.core.FlexGlobals;
 	import mx.events.FlexEvent;
 	import mx.rpc.AsyncResponder;
+	import mx.utils.ObjectUtil;
+	
+	import spark.formatters.DateTimeFormatter;
 	
 	/**
 	 *  Dispatched when the paging query is fully complete.
@@ -46,6 +49,8 @@ package widgets.eSearch
 		private var _useAMF:Boolean;
 		private var _pagingEscaped:Boolean;
 		private var _isRequired:Boolean;
+		private var _dateFormat:String;
+		private var _useUTC:Boolean;
 		private var blankStringExists:Boolean;
 		
 		private var query:Query = new Query;
@@ -58,16 +63,21 @@ package widgets.eSearch
 		private var iStart:int = 0;
 		private var iMaxRecords:int = 0;
 		
+		private var dateFormatter:DateTimeFormatter = new DateTimeFormatter();
+		
 		public function PagingQueryTask(url:String="", fieldName:String="", useAMF:Boolean=false, 
 										token:SearchExpValueItem=null, uniqueCache:Object=null, 
-										isRequired:Boolean=false)
+										isRequired:Boolean=false, dateFormat:String="",
+										useUTC:Boolean = false)
 		{
 			_url = url;
 			_fieldName = fieldName;
 			_token = token;
 			_uniqueCache = uniqueCache;
 			_useAMF = useAMF;
-			_isRequired = isRequired
+			_isRequired = isRequired;
+			_dateFormat = dateFormat;
+			_useUTC = useUTC;
 		}
 
 		/**
@@ -97,6 +107,22 @@ package widgets.eSearch
 		public function set isRequired(value:Boolean):void
 		{
 			_isRequired = value;
+		}
+		
+		/**
+		 * Boolean as whether to use UTC or not.
+		 */
+		public function set useUTC(value:Boolean):void
+		{
+			_useUTC = value;
+		}
+		
+		/**
+		 * String of Date Format to use to format dates.
+		 */
+		public function set dateFormat(value:String):void
+		{
+			_dateFormat = value;
 		}
 		
 		/**
@@ -269,6 +295,63 @@ package widgets.eSearch
 		}
 		
 		/**
+		 * Go though the unique values and replace the date numbers with string dates
+		 */
+		private function replaceDatesWithStrings():void
+		{
+			var val:String;
+			for(var i:int=0; i<uniqueValues.length; i++){
+				var dateMS:Number = Number(uniqueValues[i].value);
+				if (!isNaN(dateMS)){
+					//Fix the date format to use the Spark format
+					if(_dateFormat){
+						_dateFormat = _dateFormat.replace(/D/g, "d").replace(/Y/g, "y");
+					}
+					val = msToDate(dateMS, _dateFormat);
+				}
+				uniqueValues[i].value = val;
+				uniqueValues[i].label = val;
+			}
+			if(_isRequired == false){
+				if(blankStringExists){
+					uniqueValues.shift();
+					uniqueValues.splice(0,0,{value: " ", label: '" "'});
+				}
+				uniqueValues.splice(0,0,{value: "", label: ""});
+			}
+			uniqueValues.push({value: "allu", label: "all"});
+			dispatchEvent(new FlexEvent("pagingComplete"));
+			isQuerying = false;
+		}
+		
+		/**
+		* return a date string from a number and a format string and use UTC value
+		* @param Number ms the number representation of the date
+		* @param String dateFormat the date format to return the string in
+		*/
+		private function msToDate(ms:Number, dateFormat:String):String
+		{
+			var date:Date = new Date(ms);
+			if (date.milliseconds == 999){ // workaround for REST bug
+				date.milliseconds++;
+			}
+			if (_useUTC){
+				date.minutes += date.timezoneOffset;
+			}
+			if (dateFormat){
+				dateFormatter.dateTimePattern = dateFormat;
+				var result:String = dateFormatter.format(date);
+				if (result){
+					return result;
+				}else{
+					return dateFormatter.errorText;
+				}
+			}else{
+				return date.toLocaleString();
+			}
+		}
+		
+		/**
 		 * Keep querying the layer until all features have been queried.
 		 * Check to see if ESC key has been pressed.
 		 */
@@ -287,15 +370,23 @@ package widgets.eSearch
 			if (featuresProcessed >= objectIdsArray.length){
 				// get the unique values
 				uniqueValues = getDistinctValues(allValues, _fieldName);
-				if(_isRequired == false){
-					if(!blankStringExists){
+				if(_dateFormat != ""){
+					replaceDatesWithStrings();
+					return;
+				}else{
+					if(_isRequired == false){
+						//trace(ObjectUtil.toString(uniqueValues));
+						if(blankStringExists){
+							uniqueValues.shift();
+							uniqueValues.splice(0,0,{value: " ", label: '" "'});
+						}
 						uniqueValues.splice(0,0,{value: "", label: ""});
 					}
+					uniqueValues.push({value: "allu", label: "all"});
+					dispatchEvent(new FlexEvent("pagingComplete"));
+					isQuerying = false;
+					return;
 				}
-				uniqueValues.push({value: "allu", label: "all"});
-				dispatchEvent(new FlexEvent("pagingComplete"));
-				isQuerying = false;
-				return;
 			}
 				
 			// check to see if max records has been determined.
@@ -373,10 +464,10 @@ package widgets.eSearch
 			for (var propertyName:String in tempPropertyArray) {
 				//add the propertyName (which is actually a distinct property value) 
 				//to the distinct values collection
-				if(propertyName == "" || propertyName == " "){
+				if(propertyName == " "){
 					blankStringExists = true;
 				}
-				distinctValuesCollection.addItem({value: propertyName, label: propertyName});
+				distinctValuesCollection.addItem({value:propertyName, label:propertyName});
 			}
 			
 			distinctValuesCollection.source.sortOn("value");

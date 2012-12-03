@@ -1,3 +1,8 @@
+Version 3.0.16 - 12/3/2012
+* Fixed an issue with blanks (when using isrequired="true") and empty strings be treated
+  as equal when using uniquevalsfromfield.
+* uniquevalsfromfield can now use a datefield and used the dateformat and useutc attributes.
+
 Version 3.0.15 - 11/28/2012
 * Fixed an issue when printing after a search and the search layer did not have individual
   layer symbology specified in the eSearchWidget.xml
