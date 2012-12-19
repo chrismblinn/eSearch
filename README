@@ -1,3 +1,12 @@
+Version 3.1.1 - 12/19/2012
+* Updated some code for API Version 3.1
+* Added Token Element to layers and tables
+* Fixed some bugs with layer zoom settings.
+* Removed geometryservice from eSearchWidget.xml as it gets this from the main config.xml now.
+* Added some error trapping to URL Searches using improper parameters
+* Changed the URL Search parameter to esearch (was search) as esri is now using search for their
+  purposes and it was conflicting with mine.
+
 Version 3.0.16 - 12/3/2012
 * Fixed an issue with blanks (when using isrequired="true") and empty strings be treated
   as equal when using uniquevalsfromfield.

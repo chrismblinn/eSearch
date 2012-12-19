@@ -114,6 +114,8 @@
 	
 	<fx:Script>
 		<![CDATA[
+			import mx.collections.IViewCursor;
+			import mx.collections.ArrayCollection;
 			import com.esri.ags.FeatureSet;
 			import com.esri.ags.Graphic;
 			import com.esri.ags.Map;
@@ -163,9 +165,8 @@
 			
 			import flash.filters.BitmapFilterQuality;
 			
-			import mx.collections.*;
+			import mx.collections.ArrayList;
 			import mx.controls.Alert;
-			import mx.controls.ToolTip;
 			import mx.core.IVisualElement;
 			import mx.events.FlexEvent;
 			import mx.managers.PopUpManager;
@@ -175,7 +176,6 @@
 			import mx.rpc.events.FaultEvent;
 			import mx.utils.ObjectUtil;
 			import mx.utils.StringUtil;
-			import mx.validators.NumberValidator;
 			
 			import spark.components.supportClasses.ItemRenderer;
 			import spark.formatters.CurrencyFormatter;
@@ -213,6 +213,7 @@
 			[Bindable] private var msgVisible:Boolean = false;
 			[Bindable] private var searchLayerLabel:String;
 			[Bindable] private var bufferLabel:String;
+			[Bindable] private var urlSearchErrorMsg:String;
 			private var graphicalsearchLabel:String;
 			private var textsearchLabel:String;
 			private var resultsLabel:String;
@@ -345,8 +346,8 @@
 			private var resultSATSymbol:Symbol;
 			
 			//Build Constants
-			protected const VERSION:String = "3.0.16";
-			protected const BUILDDATE:String = "12/3/2012";
+			protected const VERSION:String = "3.1.1";
+			protected const BUILDDATE:String = "12/19/2012";
 			
 			//Resources
 			[Embed(source="assets/images/i_about.png")]
@@ -370,6 +371,7 @@
 					}
 					relateIcon = configXML.relateicon || WIDGET_URL + "i_relate.png";
 					//labels
+					urlSearchErrorMsg = configXML.labels.urlsearcherrormessage || "URL search parameters are incorrect";
 					SelectionMethodTip = configXML.labels.selectionmethodtip || "Click to change the selection method";
 					NewSelectionMethodTip = configXML.labels.newselectionmethodtip || "Create new selection";
 					AddSelectionMethodTip = configXML.labels.addselectionmethodtip || "Add to current selection";
@@ -583,6 +585,7 @@
 						configLayerExprs = [];
 						configLayerRels = [];
 						var lyrURL:String = lyrList[i].url;
+						var lyrToken:String = lyrList[i].token;
 						var lyrLabel:String = lyrList[i].name;
 						var lyrGraphicalLabel:String = lyrList[i].graphicalsearchlabel;
 						var lyrRelList:XMLList = configXML.layers.layer[i]..relate;
@@ -694,7 +697,7 @@
 						var lyrSpatialLabel:String = lyrList[i].spatialquerylabel;
 						var lyrSpatialSearchLyr:Boolean = lyrList[i].spatialsearchlayer && lyrList[i].spatialsearchlayer == "true";
 						
-						const layer:FeatureLayer = new FeatureLayer(lyrURL);
+						const layer:FeatureLayer = new FeatureLayer(lyrURL, null, (lyrToken != "")?lyrToken:null);
 						layer.name = layer.id = "hiddenLayer_" + lyrLabel;
 						layer.mode = FeatureLayer.MODE_SELECTION;
 						if (useProxy && configData.proxyUrl){
@@ -757,6 +760,7 @@
 						configTableExprs = [];
 						configTableRels = [];
 						var tblURL:String = tblList[i].url;
+						var tblToken:String = tblList[i].token;
 						var tblLabel:String = tblList[i].name;
 						var tblRelList:XMLList = configXML.tables.table[i]..relate;
 						for (r = 0; r < tblRelList.length(); r++){
@@ -852,7 +856,7 @@
 						var tblopenDG:Boolean = tblList[i].autoopendatagrid && tblList[i].autoopendatagrid == "true";
 						var tblQueryAttach:Boolean = tblList[i].@queryattachments && tblList[i].@queryattachments == "true";
 	
-						var table:FeatureLayer = new FeatureLayer(tblURL);
+						var table:FeatureLayer = new FeatureLayer(tblURL, null, (tblToken != "")?tblToken:null);
 						if (useProxy && configData.proxyUrl){
 							table.proxyURL = configData.proxyUrl;
 						}
@@ -1105,8 +1109,8 @@
 				
 				AppEvent.addListener(AppEvent.DATA_PUBLISH, sharedDataUpdated);
 				
-				if(ViewerContainer.urlConfigParams.search != null){
-					callLater(queryFromURL,[ViewerContainer.urlConfigParams.search,ViewerContainer.urlConfigParams.slayer,ViewerContainer.urlConfigParams.exprnum]);
+				if(ViewerContainer.urlConfigParams.esearch != null){
+					callLater(queryFromURL,[ViewerContainer.urlConfigParams.esearch,ViewerContainer.urlConfigParams.slayer,ViewerContainer.urlConfigParams.exprnum]);
 				}
 				wTemplate.visible = true;
 				wTemplate.header.addEventListener(MouseEvent.CLICK, DisplayVersion);
@@ -1145,22 +1149,6 @@
 							configSearchText[0].symbology = lyrSymbol;
 							fFeatLayer.renderer = new SimpleRenderer(lyrSymbol);
 						} 
-					}
-				}
-			}
-			
-			/* 
-			* Remove the glow from each graphic now that I am using a featurelayer in selection mode
-			* This should not be necessary in 3.1
-			*/
-			private function removeGlow(featlyr:FeatureLayer):void
-			{
-				var len:int = featlyr.numChildren;
-				var dObj:DisplayObject;
-				for(var i:int = 0; i < len; i++){
-					dObj = featlyr.getChildAt(i);
-					if(dObj.filters){
-						dObj.filters = [];
 					}
 				}
 			}
@@ -1453,6 +1441,10 @@
 				}
 				var v:int;
 				var sItemVal:SearchExpValueItem;
+				if(!configSearchText[slayerId].expr[exprNum]){
+					showError(urlSearchErrorMsg);
+					return;
+				}
 				for(v=0; v<configSearchText[slayerId].expr[exprNum].values.length; v++){
 					var cfg:Object = configSearchText[slayerId].expr[exprNum].values[v];
 					if(v == 0){
@@ -1588,7 +1580,7 @@
 					{   
 						try{
 							createFeatureSet(feats);
-							removeGlow(qFeatLayer);
+							qFeatLayer.selectionColor = Number.NaN;
 							var gid:Number = 0;
 							for each (var gra:Graphic in feats){   
 								var obj:Object = gra.attributes;
@@ -1970,7 +1962,7 @@
 						break;
 					}
 				}
-				setMapAction(value, status, drawSymbol, searchDrawEnd);
+				setMapAction(value, status, drawSymbol, searchDrawEnd, null, false, true);
 			}			
 			
 			/*
@@ -2288,7 +2280,7 @@
 					{
 						try{
 							createFeatureSet(feats);
-							removeGlow(qFeatLayer);
+							qFeatLayer.selectionColor = Number.NaN;
 							var gid:Number = 0;
 							for each (var gra:Graphic in feats){   
 								var obj:Object = gra.attributes;
@@ -2405,13 +2397,13 @@
 							}
 							if(autoZoom && searchResultAC.length > 0){
 								if(typeQ == "layer"){
-									if(searchResultAC.length == 1){
+									if(isNaN(zoomScale)){
+										zoomAll();
+									}else{
 										if (map.scale > zoomScale){
 											map.scale = zoomScale;
 										}
 										map.centerAt(searchResultAC[0].point);
-									}else{
-										zoomAll();
 									}
 								}
 							}
@@ -2559,7 +2551,7 @@
 					{   
 						try{
 							createFeatureSet(feats);
-							removeGlow(qFeatLayer);
+							qFeatLayer.selectionColor = Number.NaN;
 							var gid:Number = 0;
 							for each (var gra:Graphic in feats){   
 								var obj:Object = gra.attributes;
@@ -2619,13 +2611,13 @@
 									showGridResults();
 								}
 								if(autoZoom && searchResultAC.length > 0){
-									if(searchResultAC.length == 1){
+									if(isNaN(zoomScale)){
+										zoomAll();
+									}else{
 										if (map.scale > zoomScale){
 											map.scale = zoomScale;
 										}
 										map.centerAt(searchResultAC[0].point);
-									}else{
-										zoomAll();
 									}
 								}
 							}else if(floatorfixed == "fixed"){
@@ -2668,13 +2660,13 @@
 								dgconfigArr.addItem(dgConfig);
 								addSharedData("configFixedDatagrid", dgconfigArr);
 								if(autoZoom && searchResultAC.length > 0){
-									if(searchResultAC.length == 1){
+									if(isNaN(zoomScale)){
+										zoomAll();
+									}else{
 										if (map.scale > zoomScale){
 											map.scale = zoomScale;
 										}
 										map.centerAt(searchResultAC[0].point);
-									}else{
-										zoomAll();
 									}
 								}
 							}
@@ -3188,7 +3180,7 @@
 				
 				var result:ArrayCollection = new ArrayCollection();
 				if (!queryTitleField){
-					queryTitleField = layerDetails.displayFieldName;
+					queryTitleField = layerDetails.displayField;
 				}
 				fldAliases = qFeatSet.fieldAliases;
 				var gSym:Symbol;
