@@ -27,7 +27,6 @@
 
             private const RELATE_CLICK:String = "relateClick";
 
-
             [Bindable]
             private var relateResult:RelateResult;
 			

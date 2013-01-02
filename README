@@ -1,3 +1,7 @@
+Version 3.1.2 - 1/2/2013
+* When features are added to the selection they appear at the top of the Widgets results list.
+* When features are removed the order of the results remains the same minus the removed results.
+
 Version 3.1.1 - 12/19/2012
 * Updated some code for API Version 3.1
 * Added Token Element to layers and tables

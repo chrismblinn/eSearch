@@ -13,8 +13,6 @@ package widgets.eSearch
 {
 	import flash.events.EventDispatcher;
 	
-	import widgets.eSearch.SearchResult;
-	
 	[Bindable]
 	[RemoteClass(alias="widgets.eSearch.RelateResult")]
 	

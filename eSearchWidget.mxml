@@ -114,8 +114,6 @@
 	
 	<fx:Script>
 		<![CDATA[
-			import mx.collections.IViewCursor;
-			import mx.collections.ArrayCollection;
 			import com.esri.ags.FeatureSet;
 			import com.esri.ags.Graphic;
 			import com.esri.ags.Map;
@@ -165,7 +163,9 @@
 			
 			import flash.filters.BitmapFilterQuality;
 			
+			import mx.collections.ArrayCollection;
 			import mx.collections.ArrayList;
+			import mx.collections.IViewCursor;
 			import mx.controls.Alert;
 			import mx.core.IVisualElement;
 			import mx.events.FlexEvent;
@@ -346,8 +346,8 @@
 			private var resultSATSymbol:Symbol;
 			
 			//Build Constants
-			protected const VERSION:String = "3.1.1";
-			protected const BUILDDATE:String = "12/19/2012";
+			protected const VERSION:String = "3.1.2";
+			protected const BUILDDATE:String = "1/2/2013";
 			
 			//Resources
 			[Embed(source="assets/images/i_about.png")]
@@ -2300,10 +2300,17 @@
 									}
 								}
 							}
+							var adding:Boolean;
+							var removing:Boolean;
+							if(selectionMethodText.selectedItem.selectionName == FeatureLayer.SELECTION_ADD){
+								adding = true;
+							}else if(selectionMethodText.selectedItem.selectionName == FeatureLayer.SELECTION_SUBTRACT){
+								removing = true;
+							}
 							if(queryLayerRels && queryLayerRels.length > 0){
-								searchResultAC = createSearchResults(qFeatLayer.selectedFeatures, token, queryLayerRels, "queryFeaturesText");
+								searchResultAC = createSearchResults((adding || removing)?feats:qFeatLayer.selectedFeatures, token, queryLayerRels, "queryFeaturesText", adding, removing);
 							}else{
-								searchResultAC = createSearchResults(qFeatLayer.selectedFeatures, token, null, "queryFeaturesText");
+								searchResultAC = createSearchResults((adding || removing)?feats:qFeatLayer.selectedFeatures, token, null, "queryFeaturesText", adding, removing);
 							}
 							
 							// share data
@@ -2562,10 +2569,17 @@
 									obj["oid"] = gra.attributes[queryLayer.layerDetails.objectIdField];
 								}
 							}
+							var adding:Boolean;
+							var removing:Boolean;
+							if(selectionMethodGraphical.selectedItem.selectionName == FeatureLayer.SELECTION_ADD){
+								adding = true;
+							}else if(selectionMethodGraphical.selectedItem.selectionName == FeatureLayer.SELECTION_SUBTRACT){
+								removing = true;
+							}
 							if(queryLayerRels && queryLayerRels.length > 0){
-								searchResultAC = createSearchResults(qFeatLayer.selectedFeatures, token, queryLayerRels, (initiator == "graphical")?"queryFeaturesGraphical":"queryFeaturesSpatial");
+								searchResultAC = createSearchResults((adding || removing)?feats:qFeatLayer.selectedFeatures, token, queryLayerRels, (initiator == "graphical")?"queryFeaturesGraphical":"queryFeaturesSpatial", adding, removing);
 							}else{
-								searchResultAC = createSearchResults(qFeatLayer.selectedFeatures, token, null, (initiator == "graphical")?"queryFeaturesGraphical":"queryFeaturesSpatial");
+								searchResultAC = createSearchResults((adding || removing)?feats:qFeatLayer.selectedFeatures, token, null, (initiator == "graphical")?"queryFeaturesGraphical":"queryFeaturesSpatial", adding, removing);
 							}
 							showMessage(selectionLabel + " " + qFeatSet.features.length, false);
 							if(floatorfixed == "float"){
@@ -3168,7 +3182,7 @@
 			* @param String initiator the name of which view initiated this function
 			* @return ArrayCollection the ArrayCollection of the formated results
 			*/
-			private function createSearchResults(feats:Array, queryFields:XMLList, queryRelates:Array = null, initiator:String = null):ArrayCollection
+			private function createSearchResults(feats:Array, queryFields:XMLList, queryRelates:Array = null, initiator:String = null, adding:Boolean = false, removing:Boolean = false):ArrayCollection
 			{
 				var a:int;
 				if(qFeatLayer.layerDetails){
@@ -3187,6 +3201,7 @@
 				if(feats.length > 0){
 					gSym = getGraphicSymbol(feats[0], initiator);
 				}
+				
 				for each (var graphic:Graphic in feats){
 					var value:String = "";
 					var title:String = "";
@@ -3414,6 +3429,20 @@
 						graphic.infoWindowRenderer = infoWindowRenderer;
 					}
 					
+				}
+				if(adding){
+					result.addAll(searchResultAC);
+				}
+				if(removing){
+					for(var r:int=0; r<result.length; r++){
+						for(var r2:int=0; r2<searchResultAC.length; r2++){
+							if(searchResultAC[r2].graphic == result[r].graphic){
+								searchResultAC.removeItemAt(r2);
+								break;
+							}
+						}
+					}
+					result = searchResultAC;
 				}
 				return result;
 			}
