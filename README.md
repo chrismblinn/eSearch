@@ -1,3 +1,15 @@
+# Enhanced Search Widget
+
+[View live app here](http://gis.calhouncounty.org/FlexViewer3.1/index.html?config=config-eSearch.xml&esearch=2&slayer=3&exprnum=1)
+
+[![Image of Enhanced Search Widget](https://raw.github.com/rscheitlin/eSearch/master/Preview.jpg "Example Enhanced Search Widget app")](http://gis.calhouncounty.org/FlexViewer3.1/index.html?config=config-eSearch.xml&esearch=2&slayer=3&exprnum=1)
+
+## Version Updates
+
+Version 3.1.3 - 1/11/2013
+* Fixed some issuee with relates and uniquevalsfromfield when using tokens.
+* Fixed some issues if the layers url contains the token.
+
 Version 3.1.2 - 1/2/2013
 * When features are added to the selection they appear at the top of the Widgets results list.
 * When features are removed the order of the results remains the same minus the removed results.
@@ -530,7 +542,7 @@ version 1.01
  - Ability to have the hyperlink field show the url or an alias of "Get Hyperlink" in the datagrid.
    
 
-README FIRST
+## Features
 
     This sample provides an enhanced version of the SearchWidget for the Flex Sample Viewer.
 This enhanced version allows you to open a datagrid from the SearchWidget that has its own
@@ -565,13 +577,13 @@ i_searchspatial.png		- a icon for the spatial search.
 i_draw_draw.png			- a icon for the use of the draw widgets graphics
 
 
-Requirements:
+## Requirements
 - The ArcGIS Flex API 2.x or greater swc. Download it here:  http://resources.esri.com/arcgisserver/apis/flex/index.cfm?fa=downloadDisclaimer
 - Internet access to the ArcGIS Online servers
 - Web Server to deploy the application
-- Flash Player 10 
+- Flash Player 10
 
-How to install:
+## How to install
 
 
 **********************************************************************************

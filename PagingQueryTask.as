@@ -43,7 +43,7 @@ package widgets.eSearch
 		private var _isQuerying:Boolean = false;
 		private var _featuresProcessed:int = 0;
 		private var _featuresTotal:int = 0;
-		private var _token:SearchExpValueItem;
+		private var _sItemVal:SearchExpValueItem;
 		private var _uniqueCache:Object;
 		private var _useAMF:Boolean;
 		private var _pagingEscaped:Boolean;
@@ -51,6 +51,7 @@ package widgets.eSearch
 		private var _dateFormat:String;
 		private var _useUTC:Boolean;
 		private var blankStringExists:Boolean;
+		private var _token:String;
 		
 		private var query:Query = new Query;
 		private var queryTask:QueryTask = new QueryTask();
@@ -65,18 +66,19 @@ package widgets.eSearch
 		private var dateFormatter:DateTimeFormatter = new DateTimeFormatter();
 		
 		public function PagingQueryTask(url:String="", fieldName:String="", useAMF:Boolean=false, 
-										token:SearchExpValueItem=null, uniqueCache:Object=null, 
+										sItemVal:SearchExpValueItem=null, uniqueCache:Object=null, 
 										isRequired:Boolean=false, dateFormat:String="",
-										useUTC:Boolean = false)
+										useUTC:Boolean=false, token:String=null)
 		{
 			_url = url;
 			_fieldName = fieldName;
-			_token = token;
+			_sItemVal = sItemVal;
 			_uniqueCache = uniqueCache;
 			_useAMF = useAMF;
 			_isRequired = isRequired;
 			_dateFormat = dateFormat;
 			_useUTC = useUTC;
+			_token = token;
 		}
 
 		/**
@@ -90,6 +92,15 @@ package widgets.eSearch
 		public function get fieldName():String
 		{
 			return _fieldName;
+		}
+		
+		/**
+		 * String with the token for the searched 
+		 * Layer.
+		 */
+		public function set token(value:String):void
+		{
+			_token = value;
 		}
 		
 		/**
@@ -137,13 +148,13 @@ package widgets.eSearch
 		 * sItemVal which the unique vals 
 		 * will be added to.
 		 */
-		public function set token(value:SearchExpValueItem):void
+		public function set sItemVal(value:SearchExpValueItem):void
 		{
-			_token = value;
+			_sItemVal = value;
 		}
-		public function get token():SearchExpValueItem
+		public function get sItemVal():SearchExpValueItem
 		{
-			return _token;
+			return _sItemVal;
 		}
 		
 		/**
@@ -273,6 +284,7 @@ package widgets.eSearch
 			query.text = "%";
 			queryTask.url = _url;
 			queryTask.useAMF = _useAMF;
+			queryTask.token = _token;
 			queryTask.executeForIds(query, new AsyncResponder(onExecuteForIdsComplete, queryTask_faultHandler));
 		}
 		
@@ -290,6 +302,7 @@ package widgets.eSearch
 			query.text = null;			
 			query.objectIds = objectIdsArray;
 			queryTask.useAMF = _useAMF;
+			queryTask.token = _token;
 			queryTask.execute(query, new AsyncResponder(queryTask_executeCompleteHandler, queryTask_faultHandler));
 		}
 		
@@ -405,6 +418,7 @@ package widgets.eSearch
 				
 				query.objectIds = objectIdsArray.slice(iStart, iStart + iMaxRecords);
 				queryTask.useAMF = _useAMF;
+				queryTask.token = _token;
 				queryTask.execute(query, new AsyncResponder(queryTask_executeCompleteHandler, 
 															queryTask_faultHandler));
 				
