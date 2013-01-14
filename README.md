@@ -7,7 +7,7 @@
 ## Version Updates
 
 Version 3.1.3 - 1/11/2013
-* Fixed some issuee with relates and uniquevalsfromfield when using tokens.
+* Fixed some issues with relates and uniquevalsfromfield when using tokens.
 * Fixed some issues if the layers url contains the token.
 
 Version 3.1.2 - 1/2/2013
