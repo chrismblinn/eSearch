@@ -6,6 +6,9 @@
 
 ## Version Updates
 
+Version 3.1.4 - 1/15/2013
+* Fixed a bug when you clear the results and then choose add to results and make a selection.
+
 Version 3.1.3 - 1/11/2013
 * Fixed some issues with relates and uniquevalsfromfield when using tokens.
 * Fixed some issues if the layers url contains the token.
