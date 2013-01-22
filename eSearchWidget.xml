@@ -412,7 +412,7 @@
 			<name>UNIT_FOOT</name>
 			<label>Feet</label>
 		</bufferunit>
-		<bufferunit>
+		<bufferunit selected="true">
 			<name>UNIT_STATUTE_MILE</name>
 			<label>Miles</label>
 		</bufferunit>
@@ -425,6 +425,7 @@
 			<label>Kilometers</label>
 		</bufferunit>
 	</bufferunits>
+	<buffervalue>2</buffervalue>
 	<printdatagrid>
 		<addheadertoeachpage>true</addheadertoeachpage>
 		<columnheaderbgcolor>0xa7a7a7</columnheaderbgcolor>

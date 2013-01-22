@@ -6,6 +6,11 @@
 
 ## Version Updates
 
+Version 3.1.5 - 1/22/2013
+* Fixed bug when user does not have ANY layer setup for spatial search.
+* Fixed more layer symbology issues.
+* Added configuration options for selecting buffer units and distance from xml.
+
 Version 3.1.4 - 1/15/2013
 * Fixed a bug when you clear the results and then choose add to results and make a selection.
 

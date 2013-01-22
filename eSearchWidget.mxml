@@ -160,9 +160,9 @@
 			import com.esri.viewer.ViewerContainer;
 			import com.esri.viewer.components.TitlebarButton;
 			import com.esri.viewer.components.toc.utils.MapUtil;
-
+			
 			import flash.filters.BitmapFilterQuality;
-
+			
 			import mx.collections.ArrayCollection;
 			import mx.collections.ArrayList;
 			import mx.collections.IViewCursor;
@@ -176,7 +176,7 @@
 			import mx.rpc.events.FaultEvent;
 			import mx.utils.ObjectUtil;
 			import mx.utils.StringUtil;
-
+			
 			import spark.components.supportClasses.ItemRenderer;
 			import spark.formatters.CurrencyFormatter;
 			import spark.formatters.DateTimeFormatter;
@@ -323,6 +323,7 @@
 			private var disGrid:Boolean = false;
 			[Bindable] private var featLyrLen:int;
 			[Bindable] private var featSethasGeom:Boolean;
+			[Bindable] private var BuffValue:String;
 
 			//Print DG Properties
 			private var dgheaderbgcolor:uint;
@@ -346,8 +347,8 @@
 			private var resultSATSymbol:Symbol;
 
 			//Build Constants
-			protected const VERSION:String = "3.1.4";
-			protected const BUILDDATE:String = "1/15/2013";
+			protected const VERSION:String = "3.1.5";
+			protected const BUILDDATE:String = "1/22/2013";
 
 			//Resources
 			[Embed(source="assets/images/i_about.png")]
@@ -514,9 +515,13 @@
 
 					configBufferUnits = [];
 					var bufferUnitsList:XMLList = configXML..bufferunit;
+					var ddSelIndx:int = -1;
 					for (var b:int = 0; b < bufferUnitsList.length(); b++){
 						var buffUnitName:String = bufferUnitsList[b].name;
 						var buffUnitLabel:String = bufferUnitsList[b].label;
+						if(bufferUnitsList[b].@selected && bufferUnitsList[b].@selected == "true"){
+							ddSelIndx = b;
+						}
 						var bufferUnit:Object = {
 							name: buffUnitName,
 							label: buffUnitLabel
@@ -528,7 +533,8 @@
 					if((cboGraBufferUnit.width + 102 + bufferUserGraphic.measureText(lblbufferUserGraphic).width + 37) > wTemplate.width){
 						cboGraBufferUnit.width = (wTemplate.width - (102 + bufferUserGraphic.measureText(lblbufferUserGraphic).width + 37));
 					}
-					cboGraBufferUnit.selectedIndex = 0;
+					cboGraBufferUnit.selectedIndex = ddSelIndx;
+					BuffValue = configXML.buffervalue || "50";
 
 					//marker symbol
 					if(configXML.symbols.picturemarkersymbol.@url[0] != null){
@@ -1090,7 +1096,7 @@
 					if((cboBufferUnit.width + 117) > wTemplate.width){
 						cboBufferUnit.width = (wTemplate.width - 117);
 					}
-					cboBufferUnit.selectedIndex = 0;
+					cboBufferUnit.selectedIndex = cboGraBufferUnit.selectedIndex;
 				}
 
 				//Determine which button to select based on the default selection option
@@ -1426,7 +1432,8 @@
 				if(queryLayer != qFeatLayer){
 					map.removeLayer(qFeatLayer);
 					qFeatLayer = queryLayer;
-					if(typeQ == "layer" && !qFeatLayer.renderer){
+					if(typeQ == "layer"){
+						// && !qFeatLayer.renderer
 						qFeatLayer.renderer = new SimpleRenderer(getFeatLyrSymbol(qFeatLayer, "queryFromURL"));
 					}
 					qFeatLayer.addEventListener(FlexEvent.HIDE, featLayer_hideHandler);
@@ -2181,7 +2188,8 @@
 				if(queryLayer != qFeatLayer || (!configSearchText[i].symbology && typeQ == "layer")){
 					map.removeLayer(qFeatLayer);
 					qFeatLayer = queryLayer;
-					if(typeQ == "layer" && !qFeatLayer.renderer){
+					if(typeQ == "layer"){
+						// && !qFeatLayer.renderer
 						qFeatLayer.renderer = new SimpleRenderer(getFeatLyrSymbol(qFeatLayer, "queryFeaturesText"));
 					}
 					//qFeatLayer.selectionColor = getGlowColor(getFeatLyrSymbol(qFeatLayer, "queryFeaturesText"));
@@ -2452,7 +2460,7 @@
 			* @param Object layerConfig the search layers configuration object
 			* @param String initiator a string that specifys if this function was called by the graphical view or the Spatial view
 			*/
-			private function queryFeaturesGraphical(geom:Geometry, querySpatialRel:String, layerConfig:Object, initiator:String = "graphical"):void
+			private function queryFeaturesGraphical(geom:Geometry, querySpatialRel:String, layerConfig:Object, initiator:String = "queryFeaturesGraphical"):void
 			{
 				//hide infowindow if any
 				hideInfoWindow();
@@ -2463,9 +2471,7 @@
 				if(queryLayer != qFeatLayer){
 					map.removeLayer(qFeatLayer);
 					qFeatLayer = queryLayer;
-					if(!qFeatLayer.renderer){
-						qFeatLayer.renderer = new SimpleRenderer(getFeatLyrSymbol(qFeatLayer, initiator));
-					}
+					qFeatLayer.renderer = new SimpleRenderer(getFeatLyrSymbol(qFeatLayer, initiator));
 					qFeatLayer.addEventListener(FlexEvent.HIDE, featLayer_hideHandler);
 					featLyrLen = qFeatLayer.selectedFeatures.length;
 					map.addLayer(qFeatLayer);
@@ -3024,7 +3030,7 @@
 									sym = resultMarkerSymbol;
 								};
 							}else{
-								if(configSpatialSearchLayers[i].symbology){
+								if(configSpatialSearchLayers.length && configSpatialSearchLayers[i].symbology){
 									sym = configSpatialSearchLayers[i].symbology;
 								}else{
 									sym = resultMarkerSymbol;
@@ -3040,7 +3046,7 @@
 									sym = resultLineSymbol;
 								};
 							}else{
-								if(configSpatialSearchLayers[i].symbology){
+								if(configSpatialSearchLayers.length && configSpatialSearchLayers[i].symbology){
 									sym = configSpatialSearchLayers[i].symbology;
 								}else{
 									sym = resultLineSymbol;
@@ -3056,7 +3062,7 @@
 									sym = resultFillSymbol;
 								};
 							}else{
-								if(configSpatialSearchLayers[i].symbology){
+								if(configSpatialSearchLayers.length && configSpatialSearchLayers[i].symbology){
 									sym = configSpatialSearchLayers[i].symbology;
 								}else{
 									sym = resultFillSymbol;
@@ -3099,9 +3105,9 @@
 							}else{
 								sym = resultMarkerSymbol;
 							};
-						}else if (initiator == "queryGraphical"){
-							if(configSpatialSearchLayers[i].symbology){
-								sym = cboLayerGraphical[i].symbology;
+						}else if (initiator == "queryFeaturesGraphical"){
+							if(configSearchGraphical[i].symbology){
+								sym = configSearchGraphical[i].symbology;
 							}else{
 								sym = resultMarkerSymbol;
 							};
@@ -3121,6 +3127,12 @@
 							}else{
 								sym = resultLineSymbol;
 							};
+						}else if (initiator == "queryFeaturesGraphical"){
+							if(configSearchGraphical[i].symbology){
+								sym = configSearchGraphical[i].symbology;
+							}else{
+								sym = resultLineSymbol;
+							};
 						}else{
 							if(configSpatialSearchLayers[i].symbology){
 								sym = configSpatialSearchLayers[i].symbology;
@@ -3134,6 +3146,12 @@
 						if(initiator == "queryFeaturesText" || initiator == "queryFromURL"){
 							if(configSearchText[i].symbology){
 								sym = configSearchText[i].symbology;
+							}else{
+								sym = resultFillSymbol;
+							};
+						}else if (initiator == "queryFeaturesGraphical"){
+							if(configSearchGraphical[i].symbology){
+								sym = configSearchGraphical[i].symbology;
 							}else{
 								sym = resultFillSymbol;
 							};
@@ -5531,7 +5549,7 @@
 			</s:Group>
 			<s:HGroup verticalAlign="middle">
 				<s:CheckBox id="bufferUserGraphic" selected="false" label="{lblbufferUserGraphic}"/>
-				<s:TextInput id="textGraInputBuffer" text="50" width="40" needsSoftKeyboard="true"/>
+				<s:TextInput id="textGraInputBuffer" text="{BuffValue}" width="40" needsSoftKeyboard="true"/>
 				<s:DropDownList id="cboGraBufferUnit" />
 				<s:Group>
 					<s:Image source="{WIDGET_URL + 'i_gearsmall.png'}"
@@ -5595,7 +5613,7 @@
 			</s:layout>
 			<s:Label id="lblBuffer" text="{bufferLabel}" width="100%"/>
 			<s:HGroup verticalAlign="middle">
-				<s:TextInput id="textInputBuffer" text="50" width="40" needsSoftKeyboard="true" />
+				<s:TextInput id="textInputBuffer" text="{BuffValue}" width="40" needsSoftKeyboard="true" />
 				<s:DropDownList id="cboBufferUnit" />
 				<s:Group>
 					<s:Image source="{WIDGET_URL + 'i_gearsmall.png'}" width="22" height="22" smooth="true"
