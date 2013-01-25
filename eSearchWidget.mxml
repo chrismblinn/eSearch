@@ -1433,7 +1433,6 @@
 					map.removeLayer(qFeatLayer);
 					qFeatLayer = queryLayer;
 					if(typeQ == "layer"){
-						// && !qFeatLayer.renderer
 						qFeatLayer.renderer = new SimpleRenderer(getFeatLyrSymbol(qFeatLayer, "queryFromURL"));
 					}
 					qFeatLayer.addEventListener(FlexEvent.HIDE, featLayer_hideHandler);
@@ -2185,11 +2184,10 @@
 					}
 					return;
 				}
-				if(queryLayer != qFeatLayer || (!configSearchText[i].symbology && typeQ == "layer")){
+				if(queryLayer != qFeatLayer){
 					map.removeLayer(qFeatLayer);
 					qFeatLayer = queryLayer;
 					if(typeQ == "layer"){
-						// && !qFeatLayer.renderer
 						qFeatLayer.renderer = new SimpleRenderer(getFeatLyrSymbol(qFeatLayer, "queryFeaturesText"));
 					}
 					//qFeatLayer.selectionColor = getGlowColor(getFeatLyrSymbol(qFeatLayer, "queryFeaturesText"));
@@ -3458,7 +3456,6 @@
 						infoWindowRenderer.properties = {popUpInfo:configurePopUpInfo(lyrQLinks)};
 						graphic.infoWindowRenderer = infoWindowRenderer;
 					}
-
 				}
 				if(searchResultAC){
 					if(adding){
