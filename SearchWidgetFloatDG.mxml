@@ -1096,8 +1096,9 @@
             
             private function clickRow(event:GridEvent):void
             {
-				if(!event.itemRenderer || !event.itemRenderer.data)
+				if(!event.itemRenderer || !event.itemRenderer.data){
 					return;
+				}
 				var searchResult:SearchResult = findSearchResultByOID(event.itemRenderer.data.oid);
 				if(!searchResult.graphic){
 					if(event.itemRenderer is HyperLinkIconColumn){
@@ -1106,7 +1107,10 @@
 					return;
 				}
 				if(event.itemRenderer is HyperLinkIconColumn){
-					_bWidget.clickSearchRelateResult(searchResult);
+					var hlic:HyperLinkIconColumn = event.itemRenderer as HyperLinkIconColumn;
+					if(hlic.data[hlic.getDataField()] == "defined"){
+						_bWidget.clickSearchRelateResult(searchResult);
+					}
 					return;
 				}
 				var pt:MapPoint = searchResult.point;

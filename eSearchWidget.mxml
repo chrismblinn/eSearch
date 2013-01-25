@@ -347,8 +347,8 @@
 			private var resultSATSymbol:Symbol;
 
 			//Build Constants
-			protected const VERSION:String = "3.1.5";
-			protected const BUILDDATE:String = "1/22/2013";
+			protected const VERSION:String = "3.1.6";
+			protected const BUILDDATE:String = "1/25/2013";
 
 			//Resources
 			[Embed(source="assets/images/i_about.png")]
@@ -2460,7 +2460,7 @@
 			* @param Object layerConfig the search layers configuration object
 			* @param String initiator a string that specifys if this function was called by the graphical view or the Spatial view
 			*/
-			private function queryFeaturesGraphical(geom:Geometry, querySpatialRel:String, layerConfig:Object, initiator:String = "queryFeaturesGraphical"):void
+			private function queryFeaturesGraphical(geom:Geometry, querySpatialRel:String, layerConfig:Object, initiator:String = "graphical"):void
 			{
 				//hide infowindow if any
 				hideInfoWindow();
@@ -2583,9 +2583,9 @@
 								removing = true;
 							}
 							if(queryLayerRels && queryLayerRels.length > 0){
-								searchResultAC = createSearchResults((adding || removing)?feats:qFeatLayer.selectedFeatures, token, queryLayerRels, (initiator == "graphical")?"queryFeaturesGraphical":"queryFeaturesSpatial", adding, removing);
+								searchResultAC = createSearchResults((adding || removing)?feats:qFeatLayer.selectedFeatures, token, queryLayerRels, (initiator == "graphical")?"graphical":"queryFeaturesSpatial", adding, removing);
 							}else{
-								searchResultAC = createSearchResults((adding || removing)?feats:qFeatLayer.selectedFeatures, token, null, (initiator == "graphical")?"queryFeaturesGraphical":"queryFeaturesSpatial", adding, removing);
+								searchResultAC = createSearchResults((adding || removing)?feats:qFeatLayer.selectedFeatures, token, null, (initiator == "graphical")?"graphical":"queryFeaturesSpatial", adding, removing);
 							}
 							showMessage(selectionLabel + " " + qFeatSet.features.length, false);
 							if(floatorfixed == "float"){
@@ -3008,7 +3008,7 @@
 				var sym:Symbol;
 				if(initiator == "queryFeaturesText" || initiator == "queryFromURL"){
 					i = (cboLayerText.selectedIndex < 0) ? 0 : cboLayerText.selectedIndex;
-				}else if(initiator == "queryFeaturesGraphical"){
+				}else if(initiator == "graphical"){
 					i = (cboLayerGraphical.selectedIndex < 0) ? 0 : cboLayerGraphical.selectedIndex;
 				}else{
 					i = (cboSearchLayerSpatial.selectedIndex < 0) ? 0 : cboSearchLayerSpatial.selectedIndex;
@@ -3023,9 +3023,9 @@
 								}else{
 									sym = resultMarkerSymbol;
 								};
-							}else if (initiator == "queryGraphical"){
-								if(configSpatialSearchLayers[i].symbology){
-									sym = cboLayerGraphical[i].symbology;
+							}else if (initiator == "graphical"){
+								if(configSearchGraphical[i].symbology){
+									sym = configSearchGraphical[i].symbology;
 								}else{
 									sym = resultMarkerSymbol;
 								};
@@ -3045,6 +3045,12 @@
 								}else{
 									sym = resultLineSymbol;
 								};
+							}else if (initiator == "graphical"){
+								if(configSearchGraphical[i].symbology){
+									sym = configSearchGraphical[i].symbology;
+								}else{
+									sym = resultLineSymbol;
+								};
 							}else{
 								if(configSpatialSearchLayers.length && configSpatialSearchLayers[i].symbology){
 									sym = configSpatialSearchLayers[i].symbology;
@@ -3058,6 +3064,12 @@
 							if(initiator == "queryFeaturesText" || initiator == "queryFromURL"){
 								if(configSearchText[i].symbology){
 									sym = configSearchText[i].symbology;
+								}else{
+									sym = resultFillSymbol;
+								};
+							}else if (initiator == "graphical"){
+								if(configSearchGraphical[i].symbology){
+									sym = configSearchGraphical[i].symbology;
 								}else{
 									sym = resultFillSymbol;
 								};
@@ -3091,7 +3103,7 @@
 				var retClr:uint
 				if(initiator == "queryFeaturesText" || initiator == "queryFromURL"){
 					i = (cboLayerText.selectedIndex < 0) ? 0 : cboLayerText.selectedIndex;
-				}else if(initiator == "queryFeaturesGraphical"){
+				}else if(initiator == "graphical"){
 					i = (cboLayerGraphical.selectedIndex < 0) ? 0 : cboLayerGraphical.selectedIndex;
 				}else{
 					i = (cboSearchLayerSpatial.selectedIndex < 0) ? 0 : cboSearchLayerSpatial.selectedIndex;
@@ -3105,7 +3117,7 @@
 							}else{
 								sym = resultMarkerSymbol;
 							};
-						}else if (initiator == "queryFeaturesGraphical"){
+						}else if (initiator == "graphical"){
 							if(configSearchGraphical[i].symbology){
 								sym = configSearchGraphical[i].symbology;
 							}else{
@@ -3127,7 +3139,7 @@
 							}else{
 								sym = resultLineSymbol;
 							};
-						}else if (initiator == "queryFeaturesGraphical"){
+						}else if (initiator == "graphical"){
 							if(configSearchGraphical[i].symbology){
 								sym = configSearchGraphical[i].symbology;
 							}else{
@@ -3149,7 +3161,7 @@
 							}else{
 								sym = resultFillSymbol;
 							};
-						}else if (initiator == "queryFeaturesGraphical"){
+						}else if (initiator == "graphical"){
 							if(configSearchGraphical[i].symbology){
 								sym = configSearchGraphical[i].symbology;
 							}else{
@@ -4121,7 +4133,7 @@
 			}
 
 			/*
-			* When the ralte icon in a datagrid is clicked get the searchResult for that row
+			* When the relate icon in a datagrid is clicked get the searchResult for that row
 			*/
 			private function preClickSearchRelateResult(event:Event):void
 			{

@@ -6,6 +6,11 @@
 
 ## Version Updates
 
+Version 3.1.6 - 1/25/2013
+* Fixed major bug introduced in 3.1.5 with adding and removing form selections
+* Fixed bug, when clicking on a popup the datagrid opens.
+* Fixed bug when using a hyperlink field in the datagrid with a hyperlinkgridicon specified and error occurs.
+
 Version 3.1.5 - 1/22/2013
 * Fixed bug when user does not have ANY layer setup for spatial search.
 * Fixed more layer symbology issues.

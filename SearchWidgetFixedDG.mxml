@@ -8,12 +8,12 @@
 				   widgetConfigLoaded="init()" verticalScrollPolicy="off">	
 	
 	<fx:Declarations>
-		<s:Move id="panelOut" yTo="0" duration="0" startDelay="0"/>
+		<s:Move id="panelOut" yTo="0" duration="0" startDelay="0" effectStart="panelOut_effectStartHandler(event)"/>
 		<s:Move id="panelIn" yTo="175" duration="2000" startDelay="0"/>
 	</fx:Declarations>
 	
 	<fx:Script>
-		<![CDATA[
+		<![CDATA[ 
 			import com.esri.ags.Graphic;
 			import com.esri.ags.Map;
 			import com.esri.ags.geometry.Geometry;
@@ -187,6 +187,7 @@
 			private function addEvent(event:Event):void
 			{
 				panelIsOpen = false;
+				movingPanel = false;
 				panelIn.removeEventListener(EffectEvent.EFFECT_END, addEvent);
 				panel.addEventListener(MoveEvent.MOVE, panel_moveHandler);
 			}
@@ -1314,6 +1315,7 @@
 			
 			private function panel_rollOutHandler(event:MouseEvent):void
 			{
+				//trace("RollOut: " + event.currentTarget);
 				panelIsOpen = false;
 				movingPanel = true;
 				panelOut.end();
@@ -1322,6 +1324,7 @@
 			
 			private function panel_rollOverHandler(event:MouseEvent):void
 			{
+				//trace("RollOver: " + event.currentTarget);
 				panelIsOpen = true;
 				movingPanel = true;
 				panelIn.end();
@@ -1579,7 +1582,10 @@
 					return;
 				}
 				if(event.itemRenderer is HyperLinkIconColumn){
-					_bWidget.clickSearchRelateResult(searchResult);
+					var hlic:HyperLinkIconColumn = event.itemRenderer as HyperLinkIconColumn;
+					if(hlic.data[hlic.getDataField()] == "defined"){
+						_bWidget.clickSearchRelateResult(searchResult);
+					}
 					return;
 				}
 				var pt:MapPoint = searchResult.point;
@@ -1670,6 +1676,11 @@
 				PrintUtil.printDataGrid(printProps);
 			}
 			
+			protected function panelOut_effectStartHandler(event:EffectEvent):void
+			{
+				trace("Effect Start Event: " + event.currentTarget);
+			}
+			
 		]]>
 	</fx:Script>
 	<fx:Declarations>
@@ -1681,8 +1692,8 @@
 				  rollOver="panel_rollOverHandler(event)"
 				  rollOut="panel_rollOutHandler(event)"/>
 		<mx:ViewStack id="vs" height="100%" width="100%" creationPolicy="all"
-					  rollOver="panel_rollOverHandler(event)"
-					  rollOut="panel_rollOutHandler(event)">
+				rollOver="panel_rollOverHandler(event)"
+				rollOut="panel_rollOutHandler(event)">
 			<s:NavigatorContent label="{searchResultTab}" width="100%"  height="100%" backgroundColor="{getStyle('chromeColor')}" backgroundAlpha="{getStyle('backgroundAlpha')}">
 				<s:SkinnableContainer height="100%" width="100%" backgroundAlpha="{getStyle('backgroundAlpha')}" backgroundColor="{getStyle('chromeColor')}">
 					<s:VGroup gap="0" width="100%" height="100%" horizontalAlign="center" verticalAlign="middle" >

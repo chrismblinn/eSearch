@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:GridItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
 					xmlns:s="library://ns.adobe.com/flex/spark" 
-					xmlns:mx="library://ns.adobe.com/flex/mx" clipAndEnableScrolling="true">
+					xmlns:mx="library://ns.adobe.com/flex/mx"
+					clipAndEnableScrolling="true">
 	
 	<fx:Script>
 		<![CDATA[
@@ -16,11 +17,17 @@
 				}
 			}
 			
+			public function getDataField():String
+			{
+				return column.dataField;
+			}
+			
 			protected function hyperIcon_clickHandler(event:MouseEvent):void
 			{
 				if(data[column.dataField] == "defined"){
 					return;
 				}
+				event.stopImmediatePropagation(); // don't dispatch
 				u = new URLRequest(data[column.dataField]);
 				navigateToURL(u);
 			}
