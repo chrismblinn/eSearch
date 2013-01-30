@@ -118,6 +118,8 @@
 			import com.esri.ags.Graphic;
 			import com.esri.ags.Map;
 			import com.esri.ags.SpatialReference;
+			import com.esri.ags.components.IdentityManager;
+			import com.esri.ags.components.supportClasses.Credential;
 			import com.esri.ags.events.DrawEvent;
 			import com.esri.ags.events.GeometryServiceEvent;
 			import com.esri.ags.events.GraphicEvent;
@@ -347,8 +349,8 @@
 			private var resultSATSymbol:Symbol;
 
 			//Build Constants
-			protected const VERSION:String = "3.1.6";
-			protected const BUILDDATE:String = "1/25/2013";
+			protected const VERSION:String = "3.1.7";
+			protected const BUILDDATE:String = "1/??/2013";
 
 			//Resources
 			[Embed(source="assets/images/i_about.png")]
@@ -702,8 +704,15 @@
 
 						var lyrSpatialLabel:String = lyrList[i].spatialquerylabel;
 						var lyrSpatialSearchLyr:Boolean = lyrList[i].spatialsearchlayer && lyrList[i].spatialsearchlayer == "true";
-
+//This is where I need to get a token from the Identity Manager if one is not provided
+						if(IdentityManager.instance.enabled){
+							var cred:Credential = IdentityManager.instance.findCredential(lyrURL);
+							if (cred && lyrToken == ""){
+								lyrToken = cred.token;
+							}
+						}
 						const layer:FeatureLayer = new FeatureLayer(lyrURL, null, (lyrToken != "")?lyrToken:null);
+//
 						layer.name = layer.id = "hiddenLayer_" + lyrLabel;
 						layer.mode = FeatureLayer.MODE_SELECTION;
 						if (useProxy && configData.proxyUrl){
@@ -861,8 +870,15 @@
 						var tbluseAMF:String = tblList[i].useamf;
 						var tblopenDG:Boolean = tblList[i].autoopendatagrid && tblList[i].autoopendatagrid == "true";
 						var tblQueryAttach:Boolean = tblList[i].@queryattachments && tblList[i].@queryattachments == "true";
-
+//This is where I need to get the token from the Identity Manger if one is not provided
+						if(IdentityManager.instance.enabled){
+							var tcred:Credential = IdentityManager.instance.findCredential(tblURL);
+							if (tcred && tblToken == ""){
+								tblToken = tcred.token;
+							}
+						}
 						var table:FeatureLayer = new FeatureLayer(tblURL, null, (tblToken != "")?tblToken:null);
+///
 						if (useProxy && configData.proxyUrl){
 							table.proxyURL = configData.proxyUrl;
 						}
@@ -1276,12 +1292,14 @@
 				sumField = "";
 				gridFields = [];
 				gridHyperFields = [];
+				var fldOrder:int = 0;
 
 				if (queryFields){
 					gfields = queryFields.field;
 					for each (var fieldXML:XML in gfields){
 						if (fieldXML.@gridfield[0]){
 							if(fieldXML.@gridfield[0]=="true"){
+								fldOrder++;
 								if(fieldXML.@sum[0] && fieldXML.@sum[0] == "true"){
 									if(fieldXML.@sumlabel[0]){
 										lblSum = fieldXML.@sumlabel[0];
@@ -1336,18 +1354,20 @@
 								}
 								if(fieldXML.@sort[0]){
 									if(fieldXML.@sort[0] == ""){
-										str += "NA";
+										str += "NA~";
 									}else{
-										str += fieldXML.@sort[0];
+										str += fieldXML.@sort[0] + "~";
 									}
 								}else{
-									str += "NA";
+									str += "NA~";
 								}
+								str += fldOrder;
 								gridFields.push(str);
 							}
 						}
 						if (fieldXML.@hyperlinkgridfield[0]){
 							if (fieldXML.@hyperlinkgridfield[0]=="true"){
+								fldOrder++;
 								var str2:String = fieldXML.@name[0] + "~";
 								if(fieldXML.@alias[0]){
 									if(fieldXML.@alias[0] == ""){
@@ -1387,13 +1407,14 @@
 								}
 								if(fieldXML.@hyperlinkgridicon[0]){
 									if(fieldXML.@hyperlinkgridicon[0] == ""){
-										str2 += "NA";
+										str2 += "NA~";
 									}else{
-										str2 += fieldXML.@hyperlinkgridicon[0];
+										str2 += fieldXML.@hyperlinkgridicon[0] + "~";
 									}
 								}else{
-									str2 += "NA";
+									str2 += "NA~";
 								}
+								str2 += fldOrder;
 								gridHyperFields.push(str2);
 							}
 						}
@@ -2190,7 +2211,6 @@
 					if(typeQ == "layer"){
 						qFeatLayer.renderer = new SimpleRenderer(getFeatLyrSymbol(qFeatLayer, "queryFeaturesText"));
 					}
-					//qFeatLayer.selectionColor = getGlowColor(getFeatLyrSymbol(qFeatLayer, "queryFeaturesText"));
 					qFeatLayer.addEventListener(FlexEvent.HIDE, featLayer_hideHandler);
 					featLyrLen = qFeatLayer.selectedFeatures.length;
 					map.addLayer(qFeatLayer);
@@ -3179,30 +3199,6 @@
 			}
 
 			/*
-			* Return the color to use for the featurelayer selection color
-			* @param Symbol sym the symbol for the specific featureLayer
-			* @return uint the uint of the symbol or a default of Yellow
-			*/
-			private function getGlowColor(sym:Symbol):uint
-			{
-				var retClr:uint;
-				if(sym is SimpleFillSymbol){
-					if((sym as SimpleFillSymbol).outline.color){
-						retClr = (sym as SimpleFillSymbol).outline.color;
-					}else{
-						retClr = (sym as SimpleFillSymbol).color;
-					}
-				}else if(sym is SimpleLineSymbol){
-					retClr = (sym as SimpleFillSymbol).color;
-				}else if(sym is SimpleMarkerSymbol){
-					retClr = (sym as SimpleMarkerSymbol).color;
-				}else{
-					retClr = 0xFFFF00;
-				}
-				return retClr;
-			}
-
-			/*
 			* Create search results for the widgets results view to dispay
 			* @param Array feats the graphics that are selected in the FeatureLayer
 			* @param XMLList queryFields the xml list that specifys details about the fields
@@ -3720,6 +3716,7 @@
 					var arr:Object = popCBwithUniqueQue.shift();
 					popCBwithUnique(arr.ufld, arr.sitemval, arr.udatefmt, arr.uuseutc);
 				}
+				validateSearch();
 			}
 
 			/*
@@ -3744,10 +3741,13 @@
 				for each (var val:String in uArray){
 					var uval:String = val;
 					var ulbl:String = val;
-					var uVal:Object = {
+					var uVal:SearchDDItem = new SearchDDItem;
+					uVal.label = ulbl;
+					uVal.value = uval;
+					/*var uVal:Object = {
 						value: uval,
 						label: ulbl
-					};
+					};*/
 					configUserVals.push(uVal);
 				}
 				sItemVal.setCBDataProvider(configUserVals);
@@ -3790,10 +3790,9 @@
 					for each (stype in queryLayer.layerDetails.types){
 						var stVal:String = stype.id;
 						var stLbl:String = stype.name;
-						var stOVal:Object = {
-							value: stVal,
-							label: stLbl
-						};
+						var stOVal:SearchDDItem = new SearchDDItem;
+						stOVal.label = stLbl;
+						stOVal.value = stVal;
 						configSubTypeVals.push(stOVal);
 					}
 					sItemVal.setCBDataProvider(configSubTypeVals);
@@ -3801,10 +3800,9 @@
 					for each (stype in queryLayer.tableDetails.types){
 						var stTVal:String = stype.id;
 						var stTLbl:String = stype.name;
-						var stTOVal:Object = {
-							value: stTVal,
-							label: stTLbl
-						};
+						var stTOVal:SearchDDItem = new SearchDDItem;
+						stTOVal.label = stTLbl;
+						stTOVal.value = stTVal;
 						configSubTypeVals.push(stTOVal);
 					}
 					sItemVal.setCBDataProvider(configSubTypeVals);
@@ -3877,10 +3875,9 @@
 					for each (var codedValue:CodedValue in codedValueDomain.codedValues){
 						var dVal:String = codedValue.code;
 						var dLbl:String = codedValue.name;
-						var domVal:Object = {
-							value: dVal,
-							label: dLbl
-						};
+						var domVal:SearchDDItem = new SearchDDItem;
+						domVal.label = dLbl;
+						domVal.value = dVal;
 						configDomainVals.push(domVal);
 					}
 					sItemVal.setCBDataProvider(configDomainVals);
@@ -4169,6 +4166,7 @@
 				relateFields = [];
 				relateHyperFields = [];
 				sumField = "";
+				var fldOrder:int = -1;
 
 				var selRelateURL:String;
 
@@ -4219,6 +4217,7 @@
 					}else{
 						rFields = relFields.field;
 						for each (var fieldXML:XML in rFields){
+							fldOrder++;
 							if(fieldXML.@sum[0] && fieldXML.@sum[0] == "true"){
 								if(fieldXML.@sumlabel[0]){
 									lblSum = fieldXML.@sumlabel[0];
@@ -4274,15 +4273,17 @@
 							}
 							if(fieldXML.@sort[0]){
 								if(fieldXML.@sort[0] == ""){
-									str += "NA";
+									str += "NA~";
 								}else{
-									str += fieldXML.@sort[0];
+									str += fieldXML.@sort[0] + "~";
 								}
 							}else{
-								str += "NA";
+								str += "NA~";
 							}
-							if(!fieldXML.@hyperlinkgridfield[0])
+							str += fldOrder;
+							if(!fieldXML.@hyperlinkgridfield[0]){
 								relateFields.push(str);
+							}
 							if (fieldXML.@hyperlinkgridfield[0]){
 								if (fieldXML.@hyperlinkgridfield[0]=="true"){
 									var str2:String = fieldXML.@name[0] + "~";
@@ -4324,13 +4325,14 @@
 									}
 									if(fieldXML.@hyperlinkgridicon[0]){
 										if(fieldXML.@hyperlinkgridicon[0] == ""){
-											str2 += "NA";
+											str2 += "NA~";
 										}else{
-											str2 += fieldXML.@hyperlinkgridicon[0];
+											str2 += fieldXML.@hyperlinkgridicon[0] + "~";
 										}
 									}else{
-										str2 += "NA";
+										str2 += "NA~";
 									}
+									str2 += fldOrder;
 									relateHyperFields.push(str2);
 								}
 							}
@@ -4381,6 +4383,7 @@
 				}
 
 				function relateChoosen(evt:RelateChosenEvent):void{
+					var cfldOrder:int = -1;
 					var relArr:Array;
 					if(queryLayer.layerDetails){
 						relArr = queryLayer.layerDetails.relationships;
@@ -4435,6 +4438,7 @@
 					}else{
 						rFields = relFields.field;
 						for each (var fieldXML:XML in rFields){
+							cfldOrder++;
 							if(fieldXML.@sum[0] && fieldXML.@sum[0] == "true"){
 								if(fieldXML.@sumlabel[0]){
 									lblSum = fieldXML.@sumlabel[0];
@@ -4490,13 +4494,14 @@
 							}
 							if(fieldXML.@sort[0]){
 								if(fieldXML.@sort[0] == ""){
-									str += "NA";
+									str += "NA~";
 								}else{
-									str += fieldXML.@sort[0];
+									str += fieldXML.@sort[0] + "~";
 								}
 							}else{
-								str += "NA";
+								str += "NA~";
 							}
+							str += cfldOrder;
 							if(!fieldXML.@hyperlinkgridfield[0]){
 								relateFields.push(str);
 							}
@@ -4541,13 +4546,14 @@
 									}
 									if(fieldXML.@hyperlinkgridicon[0]){
 										if(fieldXML.@hyperlinkgridicon[0] == ""){
-											str2 += "NA";
+											str2 += "NA~";
 										}else{
-											str2 += fieldXML.@hyperlinkgridicon[0];
+											str2 += fieldXML.@hyperlinkgridicon[0] + "~";
 										}
 									}else{
-										str2 += "NA";
+										str2 += "NA~";
 									}
+									str2 += cfldOrder;
 									relateHyperFields.push(str2);
 								}
 							}

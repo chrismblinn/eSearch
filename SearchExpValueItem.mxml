@@ -92,7 +92,7 @@
 				cbSearch.includeInLayout = true;
 				cbSearch.prompt = "";
 				cbSearch.dataProvider = new ArrayCollection(value);
-				cbSearch.selectedIndex = 0;
+				(_isValueRequired)?cbSearch.selectedIndex = -1:cbSearch.selectedIndex = 0;
 			}
 			
 			public function restrictTextBox(rangeDomain:RangeDomain):void
@@ -202,7 +202,7 @@
 			*/
 			public function hasAValue():Boolean
 			{
-				return (textValue != noValue);
+				return (textValue != noValue && textValue);
 			}
 			
 			/*
@@ -210,12 +210,9 @@
 			*/
 			public function isValid():Boolean
 			{
-				if (isValueRequired)
-				{
+				if (isValueRequired){
 					return hasAValue();	
-				}
-				else
-				{
+				}else{
 					// value not required so anything goes
 					return true;
 				}

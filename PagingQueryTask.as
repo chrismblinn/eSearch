@@ -312,6 +312,7 @@ package widgets.eSearch
 		private function replaceDatesWithStrings():void
 		{
 			var val:String;
+			var uVal:SearchDDItem;
 			for(var i:int=0; i<uniqueValues.length; i++){
 				var dateMS:Number = Number(uniqueValues[i].value);
 				if (!isNaN(dateMS)){
@@ -327,11 +328,20 @@ package widgets.eSearch
 			if(_isRequired == false){
 				if(blankStringExists){
 					uniqueValues.shift();
-					uniqueValues.splice(0,0,{value: " ", label: '" "'});
+					uVal = new SearchDDItem;
+					uVal.label = " ";
+					uVal.value = '" "';
+					uniqueValues.splice(0, 0, uVal);
 				}
-				uniqueValues.splice(0,0,{value: "", label: ""});
+				uVal = new SearchDDItem;
+				uVal.label = "";
+				uVal.value = "";
+				uniqueValues.splice(0, 0, uVal);
 			}
-			uniqueValues.push({value: "allu", label: "all"});
+			uVal = new SearchDDItem;
+			uVal.label = "all";
+			uVal.value = "allu";
+			uniqueValues.push(uVal);
 			dispatchEvent(new FlexEvent("pagingComplete"));
 			isQuerying = false;
 		}
@@ -373,7 +383,7 @@ package widgets.eSearch
 			
 			query.where = "";
 			query.text = null;
-			
+			var uVal:SearchDDItem;
 			featuresProcessed += featureSet.attributes.length;
 			
 			allValues = allValues.concat(featureSet.attributes);	
@@ -389,12 +399,21 @@ package widgets.eSearch
 					if(_isRequired == false){
 						//trace(ObjectUtil.toString(uniqueValues));
 						if(blankStringExists){
+							uVal = new SearchDDItem;
+							uVal.label = " ";
+							uVal.value = '" "';
 							uniqueValues.shift();
-							uniqueValues.splice(0,0,{value: " ", label: '" "'});
+							uniqueValues.splice(0, 0, uVal);
 						}
-						uniqueValues.splice(0,0,{value: "", label: ""});
+						uVal = new SearchDDItem;
+						uVal.label = "";
+						uVal.value = "";
+						uniqueValues.splice(0, 0, uVal);
 					}
-					uniqueValues.push({value: "allu", label: "all"});
+					uVal = new SearchDDItem;
+					uVal.label = "all";
+					uVal.value = "allu";
+					uniqueValues.push(uVal);
 					dispatchEvent(new FlexEvent("pagingComplete"));
 					isQuerying = false;
 					return;

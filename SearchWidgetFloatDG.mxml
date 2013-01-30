@@ -108,6 +108,7 @@
 			private var _footerDateFormat:String;
 			private var _footerPageofPage:String;
 			private var _footerDisclaimer:String;
+			private var gFieldsAc:ArrayCollection;
 			
 			public function set featlayer(value:FeatureLayer):void
 			{
@@ -253,6 +254,7 @@
 			
 			public function set dgColumns(value:Array):void
 			{
+				gFieldsAc = new ArrayCollection;
 				resultsGrid.columns = null;
 				sortAC = new ArrayCollection();
 				sumFormat = "";
@@ -262,7 +264,7 @@
 				var dgCol:GridColumn;
 				var jdgCol:joinDataGridColumn;
 				var dgColArr:ArrayList = new ArrayList();
-				
+				var fldObj:Object;
 				if(_hasRelates){
 					dgCol = new GridColumn();
 					dgCol.dataField = "icon";
@@ -273,11 +275,17 @@
 					dgCol.labelFunction = getFileName;
 					dgCol.itemRenderer = new ClassFactory(widgets.eSearch.HyperLinkIconColumn);
 					dgColArr.addItem(dgCol);
+					fldObj = new Object();
+					fldObj.order = 0;
+					fldObj.field = dgCol.dataField;
+					gFieldsAc.addItem(fldObj);
 				}
 				
 				for(var i:int=0; i < _dgColumns.length; i++)
 				{
-					var cArr:Array = _dgColumns[i].split("~");						
+					var cArr:Array = _dgColumns[i].split("~");
+					fldObj = new Object();
+					fldObj.order = cArr[7];
 					if(cArr[0].indexOf( "." ) != -1){
 						jdgCol= new joinDataGridColumn(cArr[0]);
 						jdgCol.labelFunction = getLabel;
@@ -321,6 +329,8 @@
 						}
 						HeaderText[cArr[0]] = jdgCol.headerText;
 						dgColArr.addItem(jdgCol);
+						fldObj.field = jdgCol.dataField;
+						gFieldsAc.addItem(fldObj);
 					}else{
 						dgCol= new GridColumn(cArr[0]);
 						dgCol.labelFunction = getLabel;
@@ -364,12 +374,20 @@
 						}
 						HeaderText[cArr[0]] = dgCol.headerText;
 						dgColArr.addItem(dgCol);
+						fldObj.field = dgCol.dataField;
+						gFieldsAc.addItem(fldObj);
 					}
 				}
+				fldObj = new Object();
+				fldObj.order = 9999;
 				dgCol = new GridColumn("oid");
 				dgCol.visible = false;
 				dgColArr.addItem(dgCol);
+				fldObj.field = dgCol.dataField;
+				gFieldsAc.addItem(fldObj);
 				resultsGrid.columns = dgColArr;
+				(resultsGrid.columns.getItemAt(resultsGrid.columnsLength - 1) as GridColumn).width = NaN;
+				sortGridFldCols();
 			}
 			
 			public function set dgFieldAliases(value:Object):void
@@ -788,14 +806,36 @@
 				return retVal;
 			}
 			
+			private function sortGridFldCols():void
+			{
+				var isrt:Sort = new Sort();
+				isrt.fields = [new SortField("order",false,true)];
+				gFieldsAc.sort = isrt;
+				gFieldsAc.refresh();
+				var uSortedFlds:ArrayList = resultsGrid.columns as ArrayList;
+				var sortArr:ArrayList = new ArrayList;
+				for(var s:int = 0; s < gFieldsAc.length; s++){
+					for(var g:int = 0; g< uSortedFlds.length; g++){
+						if((uSortedFlds.getItemAt(g) as GridColumn).dataField == gFieldsAc[s].field){
+							sortArr.addItem(uSortedFlds.getItemAt(g));
+							break;
+						}
+					}
+				}
+				resultsGrid.columns = sortArr;
+			}
+			
 			public function set dgHyperColumns(value:Array):void
 			{
+				var fldObj:Object;
 				_dgHyperColumns = value;
 				var dgCol:GridColumn;
 				var dgColArr:ArrayList = resultsGrid.columns as ArrayList;
 				hypercols = new ArrayCollection();
 				for(var i:int=0; i < _dgHyperColumns.length; i++){
 					var cArr:Array = _dgHyperColumns[i].split("~");
+					fldObj = new Object();
+					fldObj.order = cArr[6];
 					hypercols.addItem({field: cArr[0], name: cArr[1], alias: cArr[2], pre: cArr[3], suf: cArr[4], icon: cArr[5]});
 					dgCol= new GridColumn(cArr[0]);
 					dgCol.labelFunction = labelFunc2;
@@ -816,8 +856,11 @@
 						dgCol.itemRenderer = new ClassFactory(widgets.eSearch.HyperLinkColumn);
 					}
 					dgColArr.addItem(dgCol);
+					fldObj.field = dgCol.dataField;
+					gFieldsAc.addItem(fldObj);
 				}
 				resultsGrid.columns = dgColArr;
+				sortGridFldCols();
 			}
 			
 			public function set zoomScale(value:Number):void
