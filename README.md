@@ -6,6 +6,11 @@
 
 ## Version Updates
 
+Version 3.1.7 - 1/30/2013
+* Fixed issue with required fields and dropdownlist executing search before all required fields are completed.
+* Re-use a map layer token from the identify manager if the same layer is configured for a search.
+* Honor gridfield and gridhyperlinkfield order set in the eSearchWidget.xml (add in order specified).
+
 Version 3.1.6 - 1/25/2013
 * Fixed major bug introduced in 3.1.5 with adding and removing form selections
 * Fixed bug, when clicking on a popup the datagrid opens.
