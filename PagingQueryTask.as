@@ -400,8 +400,8 @@ package widgets.eSearch
 						//trace(ObjectUtil.toString(uniqueValues));
 						if(blankStringExists){
 							uVal = new SearchDDItem;
-							uVal.label = " ";
-							uVal.value = '" "';
+							uVal.value = " ";
+							uVal.label = '" "';
 							uniqueValues.shift();
 							uniqueValues.splice(0, 0, uVal);
 						}

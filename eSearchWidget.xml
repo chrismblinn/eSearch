@@ -9,12 +9,10 @@
 			<name>Louisville Zoning</name>
 			<url>http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Louisville/LOJIC_LandRecords_Louisville/MapServer/2</url>
 			<expressions>
-				<expression alias="Zoning Type" textsearchlabel="Search Zoning Type:" isvaluerequired="true">
+				<expression alias="Zoning Type" textsearchlabel="Search Zoning Type:">
 					<values>
-						<!-- <value prompt="Example: OR1" isvaluerequired="true" userlist="OR1,C2,OTF,all" >ZONING_CODE = '[value]'</value> -->
-						<value prompt="Example: OR1" uniquevalsfromfield="ZONING_CODE" isvaluerequired="true" >ZONING_CODE = '[value]'</value>
-						<!-- <value prompt="Example: RESIDENTIAL" isvaluerequired="true" userlist="RESIDENTIAL,OFFICE" operator="AND">ZONING_TYPE = '[value]'</value> -->
-						<value prompt="Example: RESIDENTIAL" isvaluerequired="true" uniquevalsfromfield="ZONING_TYPE" operator="AND">ZONING_TYPE = '[value]'</value>
+						<value prompt="Example: OR1" uniquevalsfromfield="ZONING_CODE" isvaluerequired="false" >ZONING_CODE = '[value]'</value>
+						<value prompt="Example: RESIDENTIAL" isvaluerequired="false" uniquevalsfromfield="ZONING_TYPE" operator="AND">ZONING_TYPE = '[value]'</value>
 					</values>
 				</expression>
 				<expression alias="Zoning Code" textsearchlabel="Search Zoning:" isvaluerequired="true">
@@ -38,11 +36,11 @@
 			<autoopendatagrid>false</autoopendatagrid>
 			<queryattachments>false</queryattachments>
 			<relates/>
-			<!-- <symbology>
+			<symbology>
 				<simplefillsymbol color="0xff0000" alpha="0.5">
 					<outline color="0xff0000" alpha="0.8" width="2" />
 				</simplefillsymbol>
-			</symbology> -->
+			</symbology>
 		</layer>
 		<layer>
 			<token/>
@@ -107,60 +105,6 @@
             <autoopendatagrid>true</autoopendatagrid>
             <queryattachments>false</queryattachments>		
         </layer>
-        <layer>
-			<definitionexpression></definitionexpression>
-			<token>2kCPbVBpo8IV7om3OkU687Icgll6QWtD1RtxFqiDkowgHy29J3_pCxEYMh1kCZ4R</token>
-			<enableexport>true</enableexport>
-			<name>County Roads</name>
-			<url>http://gislap183/arcgis/rest/services/Roads/MapServer/1</url>
-			<expressions>
-				<expression alias="Road Name" textsearchlabel="Search Road Name:">
-					<values>
-						<value prompt="Example: Mud St." uniquevalsfromfield="Name" isvaluerequired="false" >Name = '[value]'</value>
-					</values>
-				</expression>
-			</expressions>
-			<graphicalsearchlabel>Use one of the graphical search tools to select Road</graphicalsearchlabel>
-			<spatialsearchlayer>true</spatialsearchlayer>
-			<titlefield></titlefield>
-			<fields all="false">
-				<field name="Name" gridfield="true" sort="asc|1|string"/>
-				<field name="Classification" gridfield="true" />
-				<field name="Length_" numberformat="2|,|." />
-				<field name="Width" gridfield="true" />
-				<field name="L_F_ADD" gridfield="true" />
-				<field name="L_T_ADD" gridfield="true" />
-				<field name="R_F_ADD" gridfield="true" />
-				<field name="R_T_ADD" gridfield="true" />
-				<field name="PREFIX" gridfield="true" />
-				<field name="PRETYPE" gridfield="true" />
-				<field name="RD_NAME" gridfield="true" />
-				<field name="TYPE" gridfield="true" />
-				<field name="SUFFIX" gridfield="true" />
-				<field name="ZIP_L" gridfield="true" />
-				<field name="ZIP_R" gridfield="true" />
-			</fields>
-			<links/>
-			<zoomscale usegeometry="true" zoompercent="1.2"></zoomscale>
-			<autoopendatagrid>false</autoopendatagrid>
-			<queryattachments>false</queryattachments>
-			<relates>
-				<relate id="0" label="Average Daily Traffic" enableexport="true" enableprintgrid="true"
-					icon="assets/images/i_flag.png" printtitle="Related Average Daily Traffic">
-					<fields all="false">
-						<field name="Date_" dateformat="MM/DD/YYYY" sort="asc|1|date"/>
-						<field name="Road_Name" />
-						<field name="Road_ID" />
-						<field name="Location" />
-						<field name="ADT" sum="true" sumlabel="ADT Total Count: " sort="asc|2|numeric"/>
-						<field name="Percent_Tr" />
-					</fields>
-				</relate>
-			</relates>
-			<symbology>
-				<simplelinesymbol color="0xff0000" alpha="0.5" width="3" />
-			</symbology>
-		</layer>
 		<layer>
 			<token/>
 			<definitionexpression></definitionexpression>
@@ -230,7 +174,7 @@
 			<fields all="false">
 				<field name="DESCRIPTION" alias="Description" gridfield="true" />
 				<field name="URL" alias="Show Image" hyperlinkgridfield="true"
-					hyperlinkaliastext="Get Traffic Image" visible="false" hyperlinkgridicon="assets/images/i_camera.png" />
+					hyperlinkaliastext="Get Traffic Image" visible="false" />
 				<field name="ONLINE" alias="Online" gridfield="true"
 					gridfieldonly="false" />
 				<field name="LAST_UPDATED" alias="Last Updated" gridfield="true"
@@ -242,11 +186,11 @@
 					<icon><![CDATA[assets/images/i_camera.png]]></icon>
 				</link>
 			</links>
-			<zoomscale usegeometry="true" zoompercent="2"></zoomscale>
+			<zoomscale>5000</zoomscale>
 			<queryattachments>false</queryattachments>
-			<!-- <symbology>
+			<symbology>
 				<picturemarkersymbol url="assets/images/i_camera.png" height="30" width="30" xoffset="0" yoffset="0" />
-			</symbology> -->
+			</symbology>
 		</layer>
 		<layer>
 			<token/>
@@ -419,7 +363,7 @@
 			<spatialsearchlayer>true</spatialsearchlayer>
 			<titlefield>Name</titlefield>
 			<fields all="false">
-				<field name="PPIN" gridfield="true" alias="Parcel Identifcation Number"/>
+				<field name="PPIN" gridfield="true" alias="Parcel Identifcation Number" hyperlinkgridfield="false"/>
 				<field name="NAME" gridfield="true" sort="asc|1|string"/>
 				<field name="STREET_ADDRESS" gridfield="true" />
 				<field name="USE_CODE" gridfield="true" />
@@ -501,7 +445,7 @@
 			</expressions>
 			<titlefield>sf_311_serviceoid</titlefield>
 			<fields all="false">
-				<field name="sf_311_serviceoid" alias="Incident OID" gridfield="true"/>
+				<field name="sf_311_serviceoid" alias="Incident OID"/>
 				<field name="agree_with_incident" alias="Website Link" hyperlinkgridfield="true"
 					hyperlinkaliastext="Go to Website" 
 					linkprefix="http://someWebSite/aspx/web/details.aspx?p_entity=" 
@@ -587,7 +531,7 @@
 	<enablebuffergraphicbutton>true</enablebuffergraphicbutton>
 	<selectedgraphicaltool></selectedgraphicaltool><!-- possible values are extent or polygon or mappoint or polyline or nothing -->
 	<multipartgraphicsearch>true</multipartgraphicsearch>
-	<floatorfixed>float</floatorfixed><!-- possible values are fixed and float -->
+	<floatorfixed>fixed</floatorfixed><!-- possible values are fixed and float -->
 	<relatetooltip>Show Relates</relatetooltip>
 	<relateicon>widgets/eSearch/assets/images/i_relate.png</relateicon>
 	<labels>

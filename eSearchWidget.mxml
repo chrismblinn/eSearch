@@ -350,7 +350,7 @@
 
 			//Build Constants
 			protected const VERSION:String = "3.1.7";
-			protected const BUILDDATE:String = "1/??/2013";
+			protected const BUILDDATE:String = "1/30/2013";
 
 			//Resources
 			[Embed(source="assets/images/i_about.png")]
