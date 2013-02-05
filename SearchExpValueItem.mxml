@@ -11,16 +11,17 @@
 	
 	<fx:Script>
 		<![CDATA[
-			import com.esri.ags.layers.supportClasses.RangeDomain;
-			
-			import mx.collections.ArrayCollection;
-			import mx.controls.ToolTip;
-			import mx.events.FlexEvent;
-			import mx.events.ValidationResultEvent;
-			import mx.validators.NumberValidator;
-			
-			import spark.components.TextInput;
-			import spark.events.IndexChangeEvent;
+            import com.esri.ags.layers.supportClasses.RangeDomain;
+            
+            import mx.collections.ArrayCollection;
+            import mx.controls.ToolTip;
+            import mx.events.FlexEvent;
+            import mx.events.ValidationResultEvent;
+            import mx.utils.ObjectUtil;
+            import mx.validators.NumberValidator;
+            
+            import spark.components.TextInput;
+            import spark.events.IndexChangeEvent;
 		
 			private var _type:String;
 			
@@ -56,6 +57,19 @@
 			{
 				_isValueRequired = value;
 			}
+            
+            private var _isAutoSubmitdisabled:Boolean = false;
+            
+            // does the expression get auto submitted
+            public function get isAutoSubmitdisabled():Boolean
+            {
+                return _isAutoSubmitdisabled;
+            }
+            
+            public function set isAutoSubmitdisabled(value:Boolean):void
+            {
+                _isAutoSubmitdisabled = value;
+            }
 			
 			// the text that represents "no value"
 			// defaults to ""
@@ -112,7 +126,7 @@
 				numberValidator.triggerEvent = "enter";
 				numberValidator.exceedsMaxError +=  " " + rangeDomain.minValue.toString() + " - " + rangeDomain.maxValue.toString();
 				numberValidator.lowerThanMinError += " " + rangeDomain.minValue.toString() + " - " + rangeDomain.maxValue.toString();
-				numberValidator.addEventListener(ValidationResultEvent.VALID, AutoSubmitSearch);
+                numberValidator.addEventListener(ValidationResultEvent.VALID, AutoSubmitSearch);
 			}
 			
 			private function RaiseValueChanged(event:Event):void
@@ -123,8 +137,10 @@
 			
 			private function AutoSubmitSearch(event:Event):void
 			{
-				var eventObj:Event = new Event("submitSearch"); 
-				dispatchEvent(eventObj);
+                if(!isAutoSubmitdisabled){
+				    var eventObj:Event = new Event("submitSearch"); 
+				    dispatchEvent(eventObj);
+                }
 			}
 			
 			public function changeToTextBox():void
@@ -226,11 +242,11 @@
 				// when new entry is selected
 				cbSearch.addEventListener(IndexChangeEvent.CHANGE, RaiseValueChanged);
 				
-				// automatically submit search when enter is pressed in text box
+                // automatically submit search when enter is pressed in text box
 				txtSearch.addEventListener(FlexEvent.ENTER, AutoSubmitSearch);
-				
-				// automatically submit search when entry is selected
-				cbSearch.addEventListener(IndexChangeEvent.CHANGE, AutoSubmitSearch);
+                    
+                // automatically submit search when entry is selected
+                cbSearch.addEventListener(IndexChangeEvent.CHANGE, AutoSubmitSearch);
 				
 				//Set the font size to make the asterisk more visible
 				txtIsRequired.setStyle("fontSize", 22);

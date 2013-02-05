@@ -6,6 +6,10 @@
 
 ## Version Updates
 
+Version 3.1.8 - 2/5/2013
+* Fixed Localization issue with export2csvoptionlabel and export2txtoptionlabel
+* Added autosubmit to expression values to allow control over whether a dropdown list automatically fires the search upon selection and textbox when the enter key is pressed. The default is true if this attribute is not used.
+
 Version 3.1.7 - 1/30/2013
 * Fixed issue with required fields and dropdownlist executing search before all required fields are completed.
 * Re-use a map layer token from the identify manager if the same layer is configured for a search.
