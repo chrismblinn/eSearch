@@ -11,7 +11,7 @@
 			<expressions>
 				<expression alias="Zoning Type" textsearchlabel="Search Zoning Type:">
 					<values>
-						<value prompt="Example: OR1" uniquevalsfromfield="ZONING_CODE" isvaluerequired="false" >ZONING_CODE = '[value]'</value>
+						<value prompt="Example: OR1" uniquevalsfromfield="ZONING_CODE" isvaluerequired="true" autosubmit="false">ZONING_CODE = '[value]'</value>
 						<value prompt="Example: RESIDENTIAL" isvaluerequired="false" uniquevalsfromfield="ZONING_TYPE" operator="AND">ZONING_TYPE = '[value]'</value>
 					</values>
 				</expression>

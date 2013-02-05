@@ -6,6 +6,10 @@
 
 ## Version Updates
 
+Version 3.1.8 - 2/5/2013
+* Fixed Localization issue with export2csvoptionlabel and export2txtoptionlabel
+* Added autosubmit to expression values to allow control over whether a dropdown list automatically fires the search upon selection and textbox when the enter key is pressed. The default is true if this attribute is not used.
+
 Version 3.1.6 - 1/25/2013
 * Fixed major bug introduced in 3.1.5 with adding and removing form selections
 * Fixed bug, when clicking on a popup the datagrid opens.

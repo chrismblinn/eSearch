@@ -1,6 +1,11 @@
 package widgets.eSearch
 {
-	[Bindable] public class SearchDDItem extends Object
+    import flash.events.EventDispatcher;
+    
+    [Bindable]
+    [RemoteClass(alias="widgets.eSearch.SearchDDItem")]
+
+	public class SearchDDItem extends EventDispatcher
 	{
 		public function SearchDDItem()
 		{
@@ -9,6 +14,6 @@ package widgets.eSearch
 		
 		public var value:String = "";
 		
-		public var label:String = "";
+        public var label:String = "";
 	}
 }

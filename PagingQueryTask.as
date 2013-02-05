@@ -499,7 +499,10 @@ package widgets.eSearch
 				if(propertyName == " "){
 					blankStringExists = true;
 				}
-				distinctValuesCollection.addItem({value:propertyName, label:propertyName});
+                const uVal:SearchDDItem = new SearchDDItem();
+                uVal.label = propertyName;
+                uVal.value = propertyName;
+                distinctValuesCollection.addItem(uVal);
 			}
 			
 			distinctValuesCollection.source.sortOn("value");

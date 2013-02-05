@@ -229,6 +229,9 @@
 			[Bindable] private var NewSelectionMethodTip:String;
 			[Bindable] private var AddSelectionMethodTip:String;
 			[Bindable] private var RemoveSelectionMethodTip:String;
+            private var expBtnLbl:String;
+            private var exp2csvOptLbl:String;
+            private var exp2txtOptLbl:String;
 
 			//Properties
 			private var qFeatSet:FeatureSet;
@@ -307,9 +310,6 @@
 			private var relatescsvName:String;
 			private var queryMultiImgField:String;
 			private var csvSep:String;
-			private var expBtnLbl:String;
-			private var exp2csvOptLbl:String;
-			private var exp2txtOptLbl:String;
 			private var lblSum:String;
 			private var sumField:String;
 			private var disableButtons:String;
@@ -349,17 +349,17 @@
 			private var resultSATSymbol:Symbol;
 
 			//Build Constants
-			protected const VERSION:String = "3.1.7";
-			protected const BUILDDATE:String = "1/30/2013";
+			protected const VERSION:String = "3.1.8";
+			protected const BUILDDATE:String = "2/5/2013";
 
 			//Resources
-			[Embed(source="assets/images/i_about.png")]
+			[Embed(source="widgets/eSearch/assets/images/i_about.png")]
 			private var iconClass:Class;
 
 			[Embed(source="widgets/eSearch/assets/images/i_relate.png")]
 			private var relateClass:Class;
 
-			[Embed(source="assets/images/i_table.png")]
+			[Embed(source="widgets/eSearch/assets/images/i_table.png")]
 			private var satClass:Class;
 
 			private function init():void
@@ -412,8 +412,8 @@
 					loadingLabel = configXML.labels.loadinglabel || "Loading...";
 					selectionLabel = configXML.labels.selectionlabel || "Features Selected:";
 					gridresultsLabel = configXML.labels.gridresultslabel || "Show Results in Grid";
-					exp2csvOptLbl = configXML.labels.export2csvbuttonlabel || "Export to CSV...";
-					exp2txtOptLbl = configXML.labels.export2txtbuttonlabel || "Export to Txt...";
+					exp2csvOptLbl = configXML.labels.export2csvoptionlabel || "Export to CSV...";
+					exp2txtOptLbl = configXML.labels.export2txtoptionlabel || "Export to Txt...";
 					expBtnLbl = configXML.labels.exportbtnlabel || "Export...";
 					_csvName = configXML.labels.csvdefaultname || "Selected Records";
 					relatescsvName = configXML.labels.relatescsvdefaultname || "Related Records";
@@ -630,6 +630,7 @@
 								var valUserList:String = lyrExprVals[v].@userlist;
 								var valUniqueFromField:String = lyrExprVals[v].@uniquevalsfromfield;
 								var valDomain:Boolean = lyrExprVals[v].@usedomain && lyrExprVals[v].@usedomain == "true";
+                                var valDisableAutoSubmit:Boolean = lyrExprVals[v].@autosubmit && lyrExprVals[v].@autosubmit == "false";
 								var valSubType:Boolean = lyrExprVals[v].@usesubtype && lyrExprVals[v].@usesubtype == "true";
 								var valDateFormat:String = lyrExprVals[v].@dateformat || "";
 								var valUseUTC:Boolean = lyrExprVals[v].@useutc && lyrExprVals[v].@useutc == "true";
@@ -637,17 +638,18 @@
 								var isOptional:Boolean = lyrExprVals[v].@isvaluerequired && lyrExprVals[v].@isvaluerequired == "false";
 								var operatorValue:String =  lyrExprVals[v].@operator;
 								var exprVals:Object = {
-									prompt: valPrompt,
-									expression: valExpr,
-									field: valField,
-									usedomain: valDomain,
-									userlist: valUserList,
-									uniquevalsfromfield: valUniqueFromField,
-									isvaluerequired : !isOptional,
-									operator : operatorValue,
-									usesubtype: valSubType,
-									dateformat: valDateFormat,
-									useutc: valUseUTC
+									prompt:valPrompt,
+									expression:valExpr,
+									field:valField,
+									usedomain:valDomain,
+									userlist:valUserList,
+									uniquevalsfromfield:valUniqueFromField,
+									isvaluerequired:!isOptional,
+                                    disableautosubmit:valDisableAutoSubmit,
+									operator:operatorValue,
+									usesubtype:valSubType,
+									dateformat:valDateFormat,
+									useutc:valUseUTC
 								};
 								configLayerExprsVals.push(exprVals)
 							}
@@ -813,6 +815,7 @@
 								var tblDomain:Boolean = tblExprVals[v].@usedomain && tblExprVals[v].@usedomain == "true";
 								var tblSubType:Boolean = tblExprVals[v].@usesubtype && tblExprVals[v].@usesubtype == "true";
 								var tblDateFormat:String = tblExprVals[v].@dateformat || "";
+                                var tblDisableAutoSubmit:Boolean = tblExprVals[v].@autosubmit && tblExprVals[v].@autosubmit == "false";
 								var tblUseUTC:Boolean = tblExprVals[v].@useutc && tblExprVals[v].@useutc == "true";
 								// if config is given and set to false explicitly, then make it optional (aka not required). Otherwise, default to being required
 								var isOptionalt:Boolean = tblExprVals[v].@isvaluerequired && tblExprVals[v].@isvaluerequired == "false";
@@ -825,6 +828,7 @@
 									userlist: tblUserList,
 									uniquevalsfromfield: tblUniqueFromField,
 									isvaluerequired: !isOptionalt,
+                                    disableautosubmit: tblDisableAutoSubmit,
 									operator: operatorValuet,
 									usesubtype: tblSubType,
 									dateformat: tblDateFormat,
@@ -1010,6 +1014,7 @@
 							sItemVal = searchGroup.getElementAt(0) as SearchExpValueItem;
 							sItemVal.changeToTextBox();
 							sItemVal.setPrompt = cfg.prompt;
+                            sItemVal.isAutoSubmitdisabled = cfg.disableautosubmit;
 							sItemVal.isValueRequired = cfg.isvaluerequired;// set the required property from the config
 							sItemVal.setRequiredText = requiredLbl;
 							sItemVal.setRequiredTooltip = requiredTooltip;
@@ -1024,6 +1029,7 @@
 							sItemVal.wTemplateWidth = wTemplate.width;
 							sItemVal.percentWidth = 100;
 							sItemVal.setPrompt = cfg.prompt;
+                            sItemVal.isAutoSubmitdisabled = cfg.disableautosubmit;
 							sItemVal.isValueRequired = cfg.isvaluerequired;// set the required property from the config
 							sItemVal.setRequiredText = requiredLbl;
 							sItemVal.setRequiredTooltip = requiredTooltip;
@@ -1477,6 +1483,7 @@
 					if(v == 0){
 						sItemVal = searchGroup.getElementAt(0) as SearchExpValueItem;
 						sItemVal.setPrompt = cfg.prompt;
+                        sItemVal.isAutoSubmitdisabled = cfg.disableautosubmit;
 						// set the required property from the config
 						sItemVal.isValueRequired = cfg.isvaluerequired;
 						sItemVal.setRequiredText = requiredLbl;
@@ -1490,6 +1497,7 @@
 						sItemVal.wTemplateWidth = wTemplate.width;
 						sItemVal.percentWidth = 100;
 						sItemVal.setPrompt = cfg.prompt;
+                        sItemVal.isAutoSubmitdisabled = cfg.disableautosubmit;
 						// set the required property from the config
 						sItemVal.isValueRequired = cfg.isvaluerequired;
 						sItemVal.setRequiredText = requiredLbl;
@@ -1779,6 +1787,7 @@
 					if(v == 0){
 						sItemVal = searchGroup.getElementAt(0) as SearchExpValueItem;
 						sItemVal.setPrompt = cfg.prompt;
+                        sItemVal.isAutoSubmitdisabled = cfg.disableautosubmit;
 						// set the required property from the config
 						sItemVal.isValueRequired = cfg.isvaluerequired;
 						sItemVal.setRequiredText = requiredLbl;
@@ -1792,6 +1801,7 @@
 						sItemVal.wTemplateWidth = wTemplate.width;
 						sItemVal.percentWidth = 100;
 						sItemVal.setPrompt = cfg.prompt;
+                        sItemVal.isAutoSubmitdisabled = cfg.disableautosubmit;
 						// set the required property from the config
 						sItemVal.isValueRequired = cfg.isvaluerequired;
 						sItemVal.setRequiredText = requiredLbl;
@@ -1866,6 +1876,7 @@
 					if(v == 0){
 						sItemVal = searchGroup.getElementAt(0) as SearchExpValueItem;
 						sItemVal.setPrompt = cfg.prompt;
+                        sItemVal.isAutoSubmitdisabled = cfg.disableautosubmit;
 						sItemVal.isValueRequired = cfg.isvaluerequired;// set the required property from the config
 						sItemVal.setRequiredText = requiredLbl;
 						sItemVal.setRequiredTooltip = requiredTooltip;
@@ -1878,6 +1889,7 @@
 						sItemVal.wTemplateWidth = wTemplate.width;
 						sItemVal.percentWidth = 100;
 						sItemVal.setPrompt = cfg.prompt;
+                        sItemVal.isAutoSubmitdisabled = cfg.disableautosubmit;
 						sItemVal.isValueRequired = cfg.isvaluerequired;// set the required property from the config
 						sItemVal.setRequiredText = requiredLbl;
 						sItemVal.setRequiredTooltip = requiredTooltip;
@@ -3744,10 +3756,6 @@
 					var uVal:SearchDDItem = new SearchDDItem;
 					uVal.label = ulbl;
 					uVal.value = uval;
-					/*var uVal:Object = {
-						value: uval,
-						label: ulbl
-					};*/
 					configUserVals.push(uVal);
 				}
 				sItemVal.setCBDataProvider(configUserVals);
