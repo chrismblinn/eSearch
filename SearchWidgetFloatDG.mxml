@@ -19,40 +19,39 @@
 	</Search:layout>
 	<fx:Script>
 		<![CDATA[
-			import com.esri.ags.Graphic;
-			import com.esri.ags.Map;
-			import com.esri.ags.geometry.Geometry;
-			import com.esri.ags.geometry.MapPoint;
-			import com.esri.ags.layers.FeatureLayer;
-			import com.esri.ags.layers.supportClasses.CodedValue;
-			import com.esri.ags.layers.supportClasses.CodedValueDomain;
-			import com.esri.ags.layers.supportClasses.FeatureType;
-			import com.esri.ags.portal.PopUpRenderer;
-			import com.esri.ags.portal.supportClasses.PopUpInfo;
-			import com.esri.ags.portal.supportClasses.PopUpMediaInfo;
-			import com.esri.viewer.BaseWidget;
-			import com.esri.viewer.ViewerContainer;
-			
-			import mx.collections.ArrayCollection;
-			import mx.collections.ArrayList;
-			import mx.collections.IViewCursor;
-			import mx.controls.Alert;
-			import mx.core.UIComponent;
-			import mx.events.FlexEvent;
-			import mx.managers.PopUpManager;
-			import mx.utils.ObjectUtil;
-			
-			import spark.collections.Sort;
-			import spark.collections.SortField;
-			import spark.components.Button;
-			import spark.components.gridClasses.GridColumn;
-			import spark.events.GridEvent;
-			import spark.formatters.CurrencyFormatter;
-			import spark.formatters.DateTimeFormatter;
-			import spark.formatters.NumberFormatter;
-			
-			import widgets.eSearch.utils.PrintProperties;
-			import widgets.eSearch.utils.PrintUtil;
+            import com.esri.ags.Graphic;
+            import com.esri.ags.Map;
+            import com.esri.ags.geometry.Geometry;
+            import com.esri.ags.geometry.MapPoint;
+            import com.esri.ags.layers.FeatureLayer;
+            import com.esri.ags.layers.supportClasses.CodedValue;
+            import com.esri.ags.layers.supportClasses.CodedValueDomain;
+            import com.esri.ags.layers.supportClasses.FeatureType;
+            import com.esri.ags.portal.PopUpRenderer;
+            import com.esri.ags.portal.supportClasses.PopUpInfo;
+            import com.esri.ags.portal.supportClasses.PopUpMediaInfo;
+            import com.esri.viewer.BaseWidget;
+            import com.esri.viewer.ViewerContainer;
+            
+            import mx.collections.ArrayCollection;
+            import mx.collections.ArrayList;
+            import mx.collections.IViewCursor;
+            import mx.controls.Alert;
+            import mx.core.FlexGlobals;
+            import mx.managers.PopUpManager;
+            import mx.utils.ObjectUtil;
+            
+            import spark.collections.Sort;
+            import spark.collections.SortField;
+            import spark.components.DataGrid;
+            import spark.components.gridClasses.GridColumn;
+            import spark.events.GridEvent;
+            import spark.formatters.CurrencyFormatter;
+            import spark.formatters.DateTimeFormatter;
+            import spark.formatters.NumberFormatter;
+            
+            import widgets.eSearch.utils.PrintProperties;
+            import widgets.eSearch.utils.PrintUtil;
 		
 			private var _data:Array;
 			private var hitimer:uint;
@@ -97,7 +96,6 @@
 			private var sortAC:ArrayCollection;
 			private var dgSort:Sort = new Sort();
 			private var HeaderText:Object = {};
-			private var uic:UIComponent;
 			private var popUpRenderer:PopUpRenderer = new PopUpRenderer();
 			private var map:Map = ViewerContainer.getInstance().mapManager.map;
 			private var columnIndexes:Vector.<int>;
@@ -610,103 +608,74 @@
 				}
 				return (header + lineSeparator + data);
 			}
-			
-			// this is going to be executed whenever the data provider changes:
-			[Bindable("dataChange")]
-			private function calcMaxLengths(input:Array):Array {
-				// if there are items in the DP:
-				if ( input.length > 0 ) {
-					// and no SPECIAL child exists:
-					if ( getChildByName("$someTempUICToRemoveAfterFinished") == null ) {
-						// create new SPECIAL child
-						// this is required to call measureText
-						// if you use custom data grid item renderer
-						// then create instance of it instead of UIComponent:
-						uic = new UIComponent();
-						// do not show and do not mess with the sizes:
-						uic.includeInLayout = false;
-						uic.visible = false;
-						// name it to leverage get getChildByName method:
-						uic.name = "$someTempUICToRemoveAfterFinished";
-						// add event listener:
-						uic.addEventListener(FlexEvent.CREATION_COMPLETE, onTempUICCreated);
-						// add to parent:
-						this.addElement(uic);
-					}
-				}
-				// return an input:
-				return input;
-			}
-			
-			// called when SPECIAL child is created:
-			private function onTempUICCreated(event:FlexEvent):void {
-				// keep the ref to the SPECIAL child:
-				var renderer:UIComponent = UIComponent(event.target);
-				// output - this will contain max size for each column:
-				var maxLengths:Object = {};
-				// temp variables:
-				var key:String = "";
-				var i:int=0;
-				var h:int=0;
-				var dp:Object = resultsGrid.dataProvider;
-				// for each item in the DP:
-				for ( i=0; i<dp.length; i++ ) {
-					var o:Object = dp[i];
-					// for each key in the DP row:
-					for ( key in o ) {
-						// if the output doesn't have current key yet create it and set to 0:
-						if ( !maxLengths.hasOwnProperty(key) ) {
-							maxLengths[key] = 0;
-						}
-						// check if it's simple object (may cause unexpected issues for Boolean):
-						if ( ObjectUtil.isSimple(o[key]) ) {
-							// measure the text:
-							var cellMetrics:TextLineMetrics = renderer.measureText(o[key] + "W");
-							// and if the width is greater than longest found up to now:
-							if ( cellMetrics.width > maxLengths[key] ) {
-								// set it as the longest one:
-								maxLengths[key] = cellMetrics.width;
-							}
-						}
-					}
-				}
-				
-				// apply column sizes:
-				for ( key in maxLengths ) {
-					for ( i=0; i<resultsGrid.columnsLength; i++ ) {
-						// if the column actually exists:
-						if ((resultsGrid.columns.getItemAt(i) as GridColumn).dataField == key ) {
-							var cellMetrics2:TextLineMetrics = renderer.measureText((resultsGrid.columns.getItemAt(i) as GridColumn).headerText + "W");
-							if ( cellMetrics2.width + 18 > Number(maxLengths[key]) + 12 ) {
-								(resultsGrid.columns.getItemAt(i) as GridColumn).width = cellMetrics2.width + 18;
-							} else {
-								(resultsGrid.columns.getItemAt(i) as GridColumn).width = Number(maxLengths[key]) + 12;
-							}							
-						}
-					}
-				}
-				//Now check if a hyperlink field has an alias and set the field width based on that alias or the header text
-				for each (var obj:Object in hypercols){
-					for ( i=0; i<resultsGrid.columnsLength; i++ ) {
-						if ( (resultsGrid.columns.getItemAt(i) as GridColumn).dataField.toUpperCase() == obj.field.toUpperCase()) {
-							if(obj.alias != "NA"){
-								cellMetrics2 = renderer.measureText((resultsGrid.columns.getItemAt(i) as GridColumn).headerText + "W");
-								var cellMetrics3:TextLineMetrics = renderer.measureText(obj.alias + "W");
-								if(cellMetrics3.width + 18 < cellMetrics2.width + 18){
-									(resultsGrid.columns.getItemAt(i) as GridColumn).width = cellMetrics2.width + 18;
-								}else{
-									(resultsGrid.columns.getItemAt(i) as GridColumn).width = cellMetrics3.width + 18;
-								}
-							}
-						}
-					}
-				} 
-				// cleanup:
-				try{
-					removeElement(uic);
-				}
-				catch(error:Error){};
-			}
+            
+            // this is going to be executed when ever the data provider changes:
+            [Bindable("dataChange")]
+            private function calcMaxLengths(input:Array):Array {
+                // if there are items in the DP:
+                if ( input.length > 0 ) {
+                    var maxLengths:Object = {};
+                    // temp variables:
+                    var key:String = "";
+                    var i:int=0;
+                    var h:int=0;
+                    var dp:Object = input;
+                    // for each item in the DP:
+                    for ( i=0; i<dp.length; i++ ) {
+                        var o:Object = dp[i];
+                        // for each key in the DP row:
+                        for ( key in o ) {
+                            // if the output doesn't have current key yet create it and set to 0:
+                            if ( !maxLengths.hasOwnProperty(key) ) {
+                                maxLengths[key] = 0;
+                            }
+                            // check if it's simple object (may cause unexpected issues for Boolean):
+                            if ( ObjectUtil.isSimple(o[key]) ) {
+                                // measure the text:
+                                var cellMetrics:TextLineMetrics = FlexGlobals.topLevelApplication.measureText(o[key] + "W");
+                                // and if the width is greater than longest found up to now:
+                                if ( cellMetrics.width > maxLengths[key] ) {
+                                    // set it as the longest one:
+                                    maxLengths[key] = cellMetrics.width;
+                                }
+                            }
+                        }
+                    }
+                    
+                    // apply column sizes:
+                    for ( key in maxLengths ) {
+                        for ( i=0; i<resultsGrid.columnsLength; i++ ) {
+                            // if the column actually exists:
+                            if ((resultsGrid.columns.getItemAt(i) as GridColumn).dataField == key ) {
+                                var cellMetrics2:TextLineMetrics = FlexGlobals.topLevelApplication.measureText((resultsGrid.columns.getItemAt(i) as GridColumn).headerText + "W");
+                                if ( cellMetrics2.width + 18 > Number(maxLengths[key]) + 12 ) {
+                                    (resultsGrid.columns.getItemAt(i) as GridColumn).width = cellMetrics2.width + 18;
+                                } else {
+                                    (resultsGrid.columns.getItemAt(i) as GridColumn).width = Number(maxLengths[key]) + 12;
+                                }							
+                            }
+                        }
+                    }
+                    //Now check if a hyperlink field has an alias and set the field width based on that alias or the header text
+                    for each (var obj:Object in hypercols){
+                        for ( i=0; i<resultsGrid.columnsLength; i++ ) {
+                            if ( (resultsGrid.columns.getItemAt(i) as GridColumn).dataField.toUpperCase() == obj.field.toUpperCase()) {
+                                if(obj.alias != "NA"){
+                                    cellMetrics2 = FlexGlobals.topLevelApplication.measureText((resultsGrid.columns.getItemAt(i) as GridColumn).headerText + "W");
+                                    var cellMetrics3:TextLineMetrics = FlexGlobals.topLevelApplication.measureText(obj.alias + "W");
+                                    if(cellMetrics3.width + 18 < cellMetrics2.width + 18){
+                                        (resultsGrid.columns.getItemAt(i) as GridColumn).width = cellMetrics2.width + 18;
+                                    }else{
+                                        (resultsGrid.columns.getItemAt(i) as GridColumn).width = cellMetrics3.width + 18;
+                                    }
+                                }
+                            }
+                        }
+                    } 
+                }
+                // return an input:
+                return input;
+            }
 			
 			private function getGridColumn(key:String):GridColumn
 			{

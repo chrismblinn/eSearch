@@ -6,6 +6,14 @@
 
 ## Version Updates
 
+Version 3.1.9 - 2/19/2013
+* autoopendatagrid is now honored by the fixed datagrid as well as the floating datagrid.
+* Drop down lists no longer initalize with no item selected as they did in versions 3.1.7 & 8.
+* Handle IN SQL statements in expressions and automatic single quoting of values if expression is expecting strings.
+* Fixed escaping of single quotes in user values if more than one exist (i.e. O'Malley and O'Leary Inc).
+* Added integration with the Enhanced Locate Widget.
+* Fixed issue where widget title button for results was not always selected (shown with underline) when results view was activated.
+
 Version 3.1.8 - 2/5/2013
 * Fixed Localization issue with export2csvoptionlabel and export2txtoptionlabel
 * Added autosubmit to expression values to allow control over whether a dropdown list automatically fires the search upon selection and textbox when the enter key is pressed. The default is true if this attribute is not used.

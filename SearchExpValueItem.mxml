@@ -17,7 +17,6 @@
             import mx.controls.ToolTip;
             import mx.events.FlexEvent;
             import mx.events.ValidationResultEvent;
-            import mx.utils.ObjectUtil;
             import mx.validators.NumberValidator;
             
             import spark.components.TextInput;
@@ -106,7 +105,8 @@
 				cbSearch.includeInLayout = true;
 				cbSearch.prompt = "";
 				cbSearch.dataProvider = new ArrayCollection(value);
-				(_isValueRequired)?cbSearch.selectedIndex = -1:cbSearch.selectedIndex = 0;
+				//(_isValueRequired)?cbSearch.selectedIndex = -1:cbSearch.selectedIndex = 0;
+                cbSearch.selectedIndex = 0;
 			}
 			
 			public function restrictTextBox(rangeDomain:RangeDomain):void

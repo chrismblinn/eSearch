@@ -212,6 +212,7 @@
 			[Bindable] private var zoomallTip:String;
 			[Bindable] private var drawGraLabel:String;
 			[Bindable] private var bufferGraLabel:String;
+            [Bindable] private var elocateGraLabel:String;
 			[Bindable] private var msgVisible:Boolean = false;
 			[Bindable] private var searchLayerLabel:String;
 			[Bindable] private var bufferLabel:String;
@@ -236,12 +237,14 @@
 			//Properties
 			private var qFeatSet:FeatureSet;
 			[Bindable] private var drawGraphicsLayer:GraphicsLayer;
+            [Bindable] private var locateGraphicsLayer:GraphicsLayer;
 			[Bindable] private var bufferGraphicsLayer:GraphicsLayer;
 			private var graphicsLayerBuffer:GraphicsLayer;
 			private var graGraphicsLayer:GraphicsLayer;
 			[Bindable] private var pagingQueryTask:PagingQueryTask = new PagingQueryTask;
 			[Bindable] public var searchResultAC:ArrayCollection;
 			[Bindable] private var eDrawEnabled:Boolean = false;
+            [Bindable] private var eLocateEnabled:Boolean = false;
 			[Bindable] private var pBufferEnabled:Boolean = false;
 			[Bindable] private var applyBufferLabel:String;
 			[Bindable] private var multiPartGraphicSearch:Boolean;
@@ -349,8 +352,8 @@
 			private var resultSATSymbol:Symbol;
 
 			//Build Constants
-			protected const VERSION:String = "3.1.8";
-			protected const BUILDDATE:String = "2/5/2013";
+			protected const VERSION:String = "3.1.9";
+			protected const BUILDDATE:String = "2/19/2013";
 
 			//Resources
 			[Embed(source="widgets/eSearch/assets/images/i_about.png")]
@@ -392,8 +395,9 @@
 					bufferoutlinewidthlbl = configXML.labels.bufferoutlinewidth || "Outline Width";
 					configbuffergraTip = configXML.labels.configbuffergra || "Configure buffer graphic properties...";
 					lblTolerance = configXML.labels.addtolerance || "Add search tolerance to point selection";
-					drawGraLabel = configXML.labels.existingdrawgraphicslabel || "Use Existing Draw Widget Graphics";
+					drawGraLabel = configXML.labels.existingdrawgraphicslabel || "Use Existing Enhanced Draw Widget Graphics";
 					bufferGraLabel = configXML.labels.existingbuffergraphicslabel || "Use Existing Point Buffer Widget Graphics";
+                    elocateGraLabel = configXML.labels.existinglocategraphicslabel || "Use Existing Enhanced Locate Widget Graphics";
 					graphicalsearchLabel = configXML.labels.graphicalsearchlabel || "Graphical Search";
 					textsearchLabel = configXML.labels.textsearchlabel || "Text Search";
 					includetextquerywarnTip = configXML.labels.includetextquerywarn || "Must be the same search layer in both\ngraphical and text search pages.";
@@ -474,6 +478,7 @@
 					keepGraSearchEnabled = configXML.keepgraphicalsearchenabled && configXML.keepgraphicalsearchenabled == "true";
 					autoZoom = configXML.autozoomtoresults && configXML.autozoomtoresults == "true";
 					eDrawEnabled = configXML.enabledrawgraphicbutton && configXML.enabledrawgraphicbutton == "true";
+                    eLocateEnabled = configXML.enablelocategraphicbutton && configXML.enablelocategraphicbutton == "true";
 					pBufferEnabled = configXML.enablebuffergraphicbutton && configXML.enablebuffergraphicbutton == "true";
 					multiPartGraphicSearch = configXML.multipartgraphicsearch && configXML.multipartgraphicsearch == "true";
 					(multiPartGraphicSearch.valueOf() == true) ? graFeatureQueryBtn.visible = true : graFeatureQueryBtn.visible = false;
@@ -496,6 +501,24 @@
 							}
 						});
 					}
+                    
+                    if(eLocateEnabled){
+                        eLocateBtn.filters = [cOver];
+                        eLocateBtn.buttonMode = eLocateBtn.useHandCursor = eLocateBtn.enabled = false;
+                        map.addEventListener(MapEvent.LAYER_ADD, checkForeLocateGL);
+                        MapUtil.forEachMapLayer(map, function(layer:Layer):void
+                        {
+                            if(layer.name.toLowerCase() == "elocate features"){
+                                locateGraphicsLayer = layer as GraphicsLayer;
+                                if(locateGraphicsLayer.numGraphics > 0){
+                                    checkeLocateNumGras(null);
+                                }
+                                locateGraphicsLayer.addEventListener(GraphicEvent.GRAPHIC_ADD, checkeLocateNumGras);
+                                locateGraphicsLayer.addEventListener(GraphicEvent.GRAPHIC_REMOVE, checkeLocateNumGras);
+                                locateGraphicsLayer.addEventListener(GraphicsLayerEvent.GRAPHICS_CLEAR, checkeLocateNumGras);
+                            }
+                        });
+                    }
 
 					if(pBufferEnabled){
 						pBufferBtn.filters = [cOver];
@@ -1581,6 +1604,7 @@
 				queryEnableExport = configSearchText[slayerId].enableexport;
 				queryEnablePrint = configSearchText[slayerId].enableprint;
 				queryPrintTitle = (configSearchText[slayerId].printtitle != "")?configSearchText[slayerId].printtitle:configSearchText[slayerId].label;
+                openDataGrid = configSearchText[slayerId].opendg;
 				var fields:XMLList;
 
 				if(configSearchText[slayerId].layer){
@@ -1595,11 +1619,18 @@
 					var myPattern:RegExp = /\[value\]/g;
 					var expr:String;
 					var eVal:String;
-					if(queryExpr != "[value]"){//meaning an open SQL expression
-						eVal = value.replace("'","''");
-					}else{
-						eVal = value;
-					}
+                    if(queryExpr == "[value]" || queryExpr.toLowerCase().indexOf(" in (") > 0){
+                        //meaning an open SQL expression or an SQL with an IN Statement
+                        eVal = value;
+                    }else{
+                        eVal = value.replace(/'/g,"''");
+                    };
+                    /*If the expression is an IN Statement and the the value is a string then
+                    replace the user defines comma seperated values with single quoted values*/
+                    if(queryExpr.toLowerCase().indexOf(" in (") > 0 && queryExpr.toLowerCase().indexOf("'[value]'") > -1){
+                        //replace the begining and trailing single qoutes is they exist
+                        eVal = eVal.replace(/^'|'$/g, "").replace(/,|','/g, "','");
+                    }
 					expr = queryExpr.replace(myPattern, eVal);
 					query.where = expr;
 					query.outSpatialReference = map.spatialReference;
@@ -1693,7 +1724,8 @@
 									includeDateInFooter: dgfooterincdate,
 									footerDateFormat : dgfooterdateformat,
 									footerPageofPage: dgfooterpageofpage,
-									footerDisclaimer: dgfooterdisclaimer
+									footerDisclaimer: dgfooterdisclaimer,
+                                    autoOpenDataGrid: openDataGrid
 								};
 								var dgconfigArr:ArrayCollection = new ArrayCollection();
 								dgconfigArr.addItem(dgConfig);
@@ -2266,13 +2298,19 @@
 					for(var sg:Number = 0; sg < searchGroup.numElements; sg++){
 						sItemVal = searchGroup.getElementAt(sg) as SearchExpValueItem;
 						queryExpr = configSearchText[i].expr[j].values[sg].expression;
-
-						if(queryExpr != "[value]"){//meaning an open SQL expression
-							eVal = sItemVal.textValue.replace("'","''");
-						}else{
-							eVal = sItemVal.textValue;
-						};
-
+                        
+                        if(queryExpr == "[value]" || queryExpr.toLowerCase().indexOf(" in (") > 0){
+                            //meaning an open SQL expression or an SQL with an IN Statement
+                            eVal = sItemVal.textValue;
+                        }else{
+                            eVal = sItemVal.textValue.replace(/'/g,"''");
+                        };
+                        /*If the expression is an IN Statement and the the value is a string then
+                        replace the user defines comma seperated values with single quoted values*/
+                        if(queryExpr.toLowerCase().indexOf(" in (") > 0 && queryExpr.toLowerCase().indexOf("'[value]'") > -1){
+                            //replace the begining and trailing single qoutes is they exist
+                            eVal = eVal.replace(/^'|'$/g, "").replace(/,|','/g, "','");
+                        }
 						if (sItemVal.isValueRequired && !sItemVal.hasAValue()){
 							// no value specified so skip this part of where clause
 							continue;
@@ -2281,10 +2319,9 @@
 						if(sItemVal.textValue.toLowerCase() == "all" && !sItemVal.isTextBox()){
 							var mExpr:String = queryExpr.replace("=", "IN(") + ")";
 							var uList:String = configSearchText[i].expr[j].values[sg].userlist;
-							uList = uList.replace(",all", "");
-							uList = uList.replace(",ALL", "");
+                            var myPat:RegExp = /,all/gi;
+                            uList = uList.replace(myPat, "");
 							var uaList:Array = uList.split(",");
-
 							if(mExpr.indexOf("'[value]'") > -1){
 								uList = uaList.join("','");
 							}
@@ -2430,7 +2467,8 @@
 									includeDateInFooter: dgfooterincdate,
 									footerDateFormat : dgfooterdateformat,
 									footerPageofPage: dgfooterpageofpage,
-									footerDisclaimer: dgfooterdisclaimer
+									footerDisclaimer: dgfooterdisclaimer,
+                                    autoOpenDataGrid: openDataGrid
 								};
 								var dgconfigArr:ArrayCollection = new ArrayCollection();
 								dgconfigArr.addItem(dgConfig);
@@ -2549,17 +2587,17 @@
 						for(var sg:Number = 0; sg < searchGroup.numElements; sg++){
 							sItemVal = searchGroup.getElementAt(sg) as SearchExpValueItem;
 							queryExpr = configSearchText[i].expr[j].values[sg].expression;
-
-							if(queryExpr != "[value]"){//meaning an open SQL expression
-								eVal = sItemVal.textValue.replace("'","''");
-							}else{
-								eVal = sItemVal.textValue;
-							}
+                            if(queryExpr == "[value]" || queryExpr.toLowerCase().indexOf(" in (") > 0){
+                                //meaning an open SQL expression or an SQL with an IN Statement
+                                eVal = sItemVal.textValue;
+                            }else{
+                                eVal = sItemVal.textValue.replace(/'/g,"''");
+                            };
 							if(sItemVal.textValue.toLowerCase() == "all" && !sItemVal.isTextBox()){
 								var mExpr:String = queryExpr.replace("=", "IN(") + ")";
 								var uList:String = configSearchText[i].expr[j].values[sg].userlist;
-								uList = uList.replace(",all", "");
-								uList = uList.replace(",ALL", "");
+                                var myPat:RegExp = /,all/gi;
+                                uList = uList.replace(myPat, "");
 								if(mExpr.indexOf("'[value]'") > -1){
 									uList = uList.replace(",", "','");
 								}
@@ -2704,7 +2742,8 @@
 									includeDateInFooter: dgfooterincdate,
 									footerDateFormat : dgfooterdateformat,
 									footerPageofPage: dgfooterpageofpage,
-									footerDisclaimer: dgfooterdisclaimer
+									footerDisclaimer: dgfooterdisclaimer,
+                                    autoOpenDataGrid: openDataGrid
 								};
 								var dgconfigArr:ArrayCollection = new ArrayCollection();
 								dgconfigArr.addItem(dgConfig);
@@ -3955,6 +3994,30 @@
 					showMessage("There are no graphics available",false);
 				}
 			}
+            
+            /*
+            * Get the graphic(s) of the eLocate widget and use those to do a graphical search
+            */
+            private function getLocateGra():void
+            {
+                if(locateGraphicsLayer){
+                    var geom:Geometry
+                    var graLayAC:ArrayCollection = locateGraphicsLayer.graphicProvider as ArrayCollection;
+                    if (graLayAC.length > 1){
+                        geom = unionGeoms2(locateGraphicsLayer);
+                        queryFeaturesGraphical(geom, "esriSpatialRelIntersects", configSearchGraphical[(cboLayerGraphical.selectedIndex<0)?0:cboLayerGraphical.selectedIndex]);
+                    }else if (graLayAC.length == 1){
+                        geom = (graLayAC[0] as Graphic).geometry;
+                        queryFeaturesGraphical(geom, "esriSpatialRelIntersects", configSearchGraphical[(cboLayerGraphical.selectedIndex<0)?0:cboLayerGraphical.selectedIndex]);
+                    }else if(locateGraphicsLayer.graphicProvider.length == 0){
+                        showStateResults();
+                        showMessage("There are no graphics available",false);
+                    }
+                }else{
+                    showStateResults();
+                    showMessage("There are no graphics available",false);
+                }
+            }
 
 			/*
 			* Get the graphic(s) of the buffer widget and use those to do a graphical search
@@ -3996,7 +4059,24 @@
 					}
 				});
 			}
-
+            
+            /*
+            * Check to see if the eLocate widgets graphics layer exists in the map and if so add eventlisteners
+            * for when graphics are added, deleted, or the graphicsLayer is cleared
+            */
+            private function checkForeLocateGL(evt:Event):void
+            {
+                MapUtil.forEachMapLayer(map, function(layer:Layer):void
+                {
+                    if(layer.name.toLowerCase() == "elocate features"){
+                        locateGraphicsLayer = layer as GraphicsLayer;
+                        locateGraphicsLayer.addEventListener(GraphicEvent.GRAPHIC_ADD, checkeLocateNumGras);
+                        locateGraphicsLayer.addEventListener(GraphicEvent.GRAPHIC_REMOVE, checkeLocateNumGras);
+                        locateGraphicsLayer.addEventListener(GraphicsLayerEvent.GRAPHICS_CLEAR, checkeLocateNumGras);
+                    }
+                });
+            }
+            
 			/*
 			* Check to see if the eDraw widgets graphics layer has any graphics and if so enable the eDraw widget button
 			*/
@@ -4010,6 +4090,20 @@
 					eDrawBtn.buttonMode = eDrawBtn.useHandCursor = eDrawBtn.enabled = (drawGraphicsLayer.numGraphics > 0);
 				}
 			}
+            
+            /*
+            * Check to see if the eLocate widgets graphics layer has any graphics and if so enable the eLocate widget button
+            */
+            private function checkeLocateNumGras(event:Event):void
+            {
+                if (!executingURLquery){
+                    clearMessage();
+                }
+                if(locateGraphicsLayer){
+                    eLocateBtn.filters = (locateGraphicsLayer.numGraphics > 0)?[]:[cOver];
+                    eLocateBtn.buttonMode = eLocateBtn.useHandCursor = eLocateBtn.enabled = (locateGraphicsLayer.numGraphics > 0);
+                }
+            }
 
 			/*
 			* Check to see if the buffer widgets graphics layer exists in the map and if so add eventlisteners
@@ -5052,19 +5146,14 @@
 				if(!disGrid && !disResult){
 					lState = currentState;
 					currentState = "resultsList";
-					if(configSearchText.length){
-						if(configSpatialSearchLayers.length){
-							wTemplate.selectedTitlebarButtonIndex = 4;
-						}else{
-							wTemplate.selectedTitlebarButtonIndex = 3;
-						}
-					}else{
-						if(configSpatialSearchLayers.length){
-							wTemplate.selectedTitlebarButtonIndex = 3;
-						}else{
-							wTemplate.selectedTitlebarButtonIndex = 2;
-						}
-					}
+                    
+                    //Determine which button index is the results button based on the label
+                    for(var tb:int=0; tb < wTemplate.headerToolGroup.numElements; tb++){
+                        var tbb:TitlebarButton = wTemplate.headerToolGroup.getElementAt(tb) as TitlebarButton;
+                        if(tbb.toolTip == resultsLabel){
+                            wTemplate.selectedTitlebarButtonIndex = tb;
+                        }
+                    }
 				}
 			}
 
@@ -5490,6 +5579,13 @@
 					  width="100%"
 					  gap="10"
 					  horizontalAlign="center">
+                <s:Image id="eLocateBtn"
+                         width="40" height="40"
+                         click="getLocateGra()"
+                         source= "{WIDGET_URL + 'i_draw_locate.png'}"
+                         toolTip="{elocateGraLabel}"
+                         visible="{eLocateEnabled}"
+                         includeInLayout="{eLocateEnabled}" />
 				<s:Image id="eDrawBtn"
 						  width="40" height="40"
 						  click="getDrawGra()"

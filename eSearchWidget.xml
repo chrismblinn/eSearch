@@ -527,8 +527,9 @@
 	<csvseparator>,</csvseparator>
 	<disablebuttons></disablebuttons><!--possible values one or more not all four search types comma separated text,graphic,spatial,result,datagrid -->
 	<defaultselectionoption>textInput</defaultselectionoption><!--possible values only one graphicalInput or textInput or spatialInput -->
-	<enabledrawgraphicbutton>true</enabledrawgraphicbutton>
-	<enablebuffergraphicbutton>true</enablebuffergraphicbutton>
+	<enabledrawgraphicbutton>false</enabledrawgraphicbutton>
+        <enablelocategraphicbutton>false</enablelocategraphicbutton>
+	<enablebuffergraphicbutton>false</enablebuffergraphicbutton>
 	<selectedgraphicaltool></selectedgraphicaltool><!-- possible values are extent or polygon or mappoint or polyline or nothing -->
 	<multipartgraphicsearch>true</multipartgraphicsearch>
 	<floatorfixed>fixed</floatorfixed><!-- possible values are fixed and float -->
