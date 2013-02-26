@@ -5,6 +5,11 @@
 [![Image of Enhanced Search Widget](https://raw.github.com/rscheitlin/eSearch/master/Preview.jpg "Example Enhanced Search Widget app")](http://gis.calhouncounty.org/FlexViewer3.1/index.html?config=config-eSearch.xml&esearch=2&slayer=3&exprnum=1)
 
 ## Version Updates
+Version 3.1.10 - 2/26/2013
+* Changed appearance of multiple expressions to have an alternating background color so they are easy to distinguish for one another.
+* Fixed potential bug with buffering by adding spatial reference to buffer request.
+* Fixed RTE (runtime error) with Apply Buffer before a search is performed.
+* Documented useproxy for layers.
 
 Version 3.1.9 - 2/19/2013
 * autoopendatagrid is now honored by the fixed datagrid as well as the floating datagrid.

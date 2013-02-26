@@ -36,7 +36,7 @@
 
 	<viewer:transitions>
 		<s:Transition autoReverse="true" toState="*">
-			<s:Fade targets="{[graphicalInput, textInput, spatialInput, resultsList]}"/>
+			<s:Fade targets="{[resultsList,graphicalInput,textInput,spatialInput]}"/>
 		</s:Transition>
 	</viewer:transitions>
 
@@ -352,8 +352,8 @@
 			private var resultSATSymbol:Symbol;
 
 			//Build Constants
-			protected const VERSION:String = "3.1.9";
-			protected const BUILDDATE:String = "2/19/2013";
+			protected const VERSION:String = "3.1.10";
+			protected const BUILDDATE:String = "2/26/2013";
 
 			//Resources
 			[Embed(source="widgets/eSearch/assets/images/i_about.png")]
@@ -1062,6 +1062,9 @@
 							sItemVal.addEventListener("valueChanged", onValueChanged);
 							sItemVal.addEventListener("submitSearch", onSearchSubmitted);
 							sItemVal.addEventListener(FocusEvent.FOCUS_IN, searchGroupItem_focusInHandler);
+                            if ((v%2) == 1) {
+                                sItemVal.setBGcolor = getStyle('rolloverColor');
+                            }
 							searchGroup.addElement(sItemVal);
 						}
 
@@ -1515,6 +1518,9 @@
 							sItemVal.operator = cfg.operator;
 						};
 						sItemVal.changeToTextBox();
+                        if ((v%2) == 1) {
+                            sItemVal.setBGcolor = getStyle('rolloverColor');
+                        }
 					}else{
 						sItemVal = new SearchExpValueItem;
 						sItemVal.wTemplateWidth = wTemplate.width;
@@ -1531,6 +1537,9 @@
 						sItemVal.addEventListener("valueChanged", onValueChanged);
 						sItemVal.addEventListener("submitSearch", onSearchSubmitted);
 						sItemVal.addEventListener(FocusEvent.FOCUS_IN, searchGroupItem_focusInHandler);
+                        if ((v%2) == 1) {
+                            sItemVal.setBGcolor = getStyle('rolloverColor');
+                        }
 						searchGroup.addElement(sItemVal);
 					}
 					if(configSearchText[slayerId].expr[exprNum].values[v].usedomain){
@@ -1828,6 +1837,9 @@
 							sItemVal.operator = cfg.operator;
 						};
 						sItemVal.changeToTextBox();
+                        if ((v%2) == 1) {
+                            sItemVal.setBGcolor = getStyle('rolloverColor');
+                        }
 					}else{
 						sItemVal = new SearchExpValueItem;
 						sItemVal.wTemplateWidth = wTemplate.width;
@@ -1844,6 +1856,9 @@
 						sItemVal.addEventListener("valueChanged", onValueChanged);
 						sItemVal.addEventListener("submitSearch", onSearchSubmitted);
 						sItemVal.addEventListener(FocusEvent.FOCUS_IN, searchGroupItem_focusInHandler);
+                        if ((v%2) == 1) {
+                            sItemVal.setBGcolor = getStyle('rolloverColor');
+                        }
 						searchGroup.addElement(sItemVal);
 					}
 					if(configSearchText[i].expr[0].values[v].usedomain){
@@ -1915,6 +1930,9 @@
 						if (cfg.operator){
 							sItemVal.operator = cfg.operator;
 						};
+                        if ((v%2) == 1) {
+                            sItemVal.setBGcolor = getStyle('rolloverColor');
+                        }
 						sItemVal.changeToTextBox();
 					}else{
 						sItemVal = new SearchExpValueItem;
@@ -1931,6 +1949,9 @@
 						sItemVal.addEventListener("valueChanged", onValueChanged);
 						sItemVal.addEventListener("submitSearch", onSearchSubmitted);
 						sItemVal.addEventListener(FocusEvent.FOCUS_IN, searchGroupItem_focusInHandler);
+                        if ((v%2) == 1) {
+                            sItemVal.setBGcolor = getStyle('rolloverColor');
+                        }
 						searchGroup.addElement(sItemVal);
 					}
 					if(configSearchText[i].expr[j].values[v].usedomain){
@@ -2080,13 +2101,14 @@
 						rType = "point";
 					}else if (graphic.geometry.type == "esriGeometryPoint" && addTolerance.selected){
 						var ext2:Extent = createExtentAroundMapPoint(graphic.geometry as MapPoint, pointSearchTolerance) as Extent;
-						var pA2:Array = [];
+                        mPoly = ext2.toPolygon();
+						/*var pA2:Array = [];
 						pA2.push(new MapPoint(ext2.xmin,ext2.ymin,ext2.spatialReference));
 						pA2.push(new MapPoint(ext2.xmin,ext2.ymax,ext2.spatialReference));
 						pA2.push(new MapPoint(ext2.xmax,ext2.ymax,ext2.spatialReference));
 						pA2.push(new MapPoint(ext2.xmax,ext2.ymin,ext2.spatialReference));
 						pA2.push(new MapPoint(ext2.xmin,ext2.ymin,ext2.spatialReference));
-						mPoly.addRing(pA2);
+						mPoly.addRing(pA2);*/
 						rType = "poly";
 						mPoly.spatialReference = ext2.spatialReference;
 					}
@@ -2896,7 +2918,11 @@
 				if(isGraphicalBufferOp){
 					graLayAC = graGraphicsLayer.graphicProvider as ArrayCollection;
 				}else{
-					graLayAC = qFeatLayer.graphicProvider as ArrayCollection;
+                    if(!qFeatLayer){
+                        graLayAC = new ArrayCollection([]);
+                    }else{
+					    graLayAC = qFeatLayer.graphicProvider as ArrayCollection;
+                    }
 				}
 				if (graLayAC.length > 0){
 					geomArr = [];
@@ -2939,6 +2965,7 @@
 					bufferParameters.unit = unit;
 					bufferParameters.distances = dist;
 					bufferParameters.unionResults = true;
+                    bufferParameters.outSpatialReference = map.spatialReference;
 					geometryService.addEventListener(GeometryServiceEvent.BUFFER_COMPLETE, bufferCompleteHandler);
 					geometryService.buffer(bufferParameters);
 
@@ -5527,7 +5554,7 @@
 					 visible="{pagingQueryTask.isQuerying}"
 					 includeInLayout="{pagingQueryTask.isQuerying}"/>
 			<s:Scroller width="100%" height="100%" hasFocusableChildren="true">
-				<s:VGroup id="searchGroup" width="100%" paddingTop="3" paddingBottom="3">
+				<s:VGroup id="searchGroup" width="100%" paddingTop="3" paddingBottom="3" gap="-1">
 					<Search:SearchExpValueItem width="100%" wTemplateWidth="{wTemplate.width}" />
 				</s:VGroup>
 			</s:Scroller>
