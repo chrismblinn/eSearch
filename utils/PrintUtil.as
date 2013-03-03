@@ -1,6 +1,7 @@
 package widgets.eSearch.utils
 {
 	import flash.display.Sprite;
+	import flash.display.Stage;
 	import flash.geom.Rectangle;
 	import flash.printing.PrintJob;
 	import flash.text.TextField;
@@ -83,8 +84,8 @@ package widgets.eSearch.utils
 			  downsizing has to occur */
 			return value / 1.5;
 		}
-		
-		public static function printDataGrid(printProps:PrintProperties):void {
+        
+		public static function printDataGrid(printProps:PrintProperties, stage:Stage = null, browserName:String="NA"):void {
 			var pageArray:Array = [];
 			var printJob:PrintJob = new PrintJob();
 			var sheetArr:Array;
@@ -93,17 +94,19 @@ package widgets.eSearch.utils
 			
 			if (printJob.start()){
 				try{
-					var mpageWidth:Number = printJob.pageWidth - 72; //this equals a .5 inch margin on left and right
-					var mpageHeight:Number = printJob.paperHeight - 72; //this equals a .5 inch margin on left and right
+                    //trace(browserName + " Page Width: " + printJob.pageWidth);
+                    //trace(browserName + " Page Height: " + printJob.pageHeight);
+					var mpageWidth:Number = printJob.pageWidth - ((browserName=="Chrome")?0:72); //this equals a .5 inch margin on left and right
+					var mpageHeight:Number = printJob.pageHeight - ((browserName=="Chrome")?0:72); //this equals a .5 inch margin on left and right
 					
 					sheetArr = returnArrayOfSheetsNeededHorizontally(mpageWidth,printProps.dataGrid);
-					var topM:int = 80;
+					var topM:int = ((browserName=="Chrome")?40:80);
 					
 					//Report Title
 					var rheader:TextField = new TextField();
 					rheader.x = 0
-					rheader.y = 36;
-					rheader.width = printJob.paperWidth;
+					rheader.y = ((browserName=="Chrome")?0:36);
+					rheader.width = printJob.pageWidth;
 					rheader.height = 24;
 					rheader.multiline = false;
 					rheader.focusRect = new ClassFactory(null);
@@ -123,7 +126,7 @@ package widgets.eSearch.utils
 					rheader.setTextFormat(format);
 					sheetArr[0].addChild(rheader);
 					
-					var currPosX:int = 36;
+					var currPosX:int = ((browserName=="Chrome")?0:32);
 					var currPos:int = topM;
 					
 					try{
@@ -151,7 +154,7 @@ package widgets.eSearch.utils
 						
 						var txt:TextField;
 						var format2:TextFormat;
-						var currHPosX1:int = 36;
+						var currHPosX1:int = ((browserName=="Chrome")?0:36);
 						var hSheetIndx:int = 0;
 						var headers:Array = [];
 						
@@ -177,7 +180,7 @@ package widgets.eSearch.utils
 							currHPosX1 += convP2MM(dataGridColumn.width);
 							
 							if (currHPosX1 > mpageWidth){
-								currHPosX1 = 36;
+								currHPosX1 = ((browserName=="Chrome")?0:36);
 								if((hSheetIndx + 1) < sheetArr.length){
 									hSheetIndx++;
 								}
@@ -210,7 +213,7 @@ package widgets.eSearch.utils
 						while (!cursor.afterLast){
 							var object:Object = null;
 							object = cursor.current;
-							var currPosX1:int = 36;
+							var currPosX1:int = ((browserName=="Chrome")?0:36);
 							var myBGColor:uint = 0xffffff;
 							hSheetIndx = 0;
 							
@@ -237,7 +240,7 @@ package widgets.eSearch.utils
 								currPosX1 += convP2MM(dataGridColumn.width);
 								
 								if (currPosX1 > mpageWidth){
-									currPosX1 = 36;
+									currPosX1 = ((browserName=="Chrome")?0:36);
 									if((hSheetIndx + 1) < sheetArr.length){
 										hSheetIndx++;
 									}
@@ -314,10 +317,15 @@ package widgets.eSearch.utils
 				//Add page footers
 				for (var ps:int=0; ps<pageArray.length; ps++){
 					var pageSprite:Sprite = pageArray[ps] as Sprite;
+                    
+                    //Google Chrome Print work around
+                    if (stage){
+                        stage.addChild(pageSprite);
+                    }
 					var footer:TextField = new TextField();
-					footer.x = 36
-					footer.y = printJob.paperHeight - 36;
-					footer.width = printJob.paperWidth;
+					footer.x = ((browserName=="Chrome")?0:36)
+					footer.y = printJob.pageHeight - ((browserName=="Chrome")?0:36);
+					footer.width = printJob.pageWidth;
 					footer.height = 30;
 					footer.focusRect = new ClassFactory(null);
 					var formatf:TextFormat = new TextFormat();
@@ -336,8 +344,8 @@ package widgets.eSearch.utils
 					if(printProps.includedate){
 						footer =  new TextField();
 						footer.x = 36;
-						footer.y = printJob.paperHeight - 36;
-						footer.width = printJob.paperWidth - 72;
+						footer.y = printJob.pageHeight - ((browserName=="Chrome")?0:36);
+						footer.width = printJob.pageWidth - ((browserName=="Chrome")?36:72);
 						footer.height = 30;
 						footer.focusRect = new ClassFactory(null);
 						
@@ -352,8 +360,8 @@ package widgets.eSearch.utils
 					if(printProps.disclaimer != ""){
 						footer =  new TextField();
 						footer.x = 36;
-						footer.y = printJob.paperHeight - 36;
-						footer.width = printJob.paperWidth - 72;
+						footer.y = printJob.pageHeight - ((browserName=="Chrome")?0:36);
+						footer.width = printJob.pageWidth - ((browserName=="Chrome")?0:72);
 						footer.height = 30;
 						footer.focusRect = new ClassFactory(null);
 						
@@ -366,12 +374,18 @@ package widgets.eSearch.utils
 					printJob.addPage(pageSprite, new Rectangle(0, 0, printJob.paperWidth,printJob.paperHeight));
 				}
 				printJob.send();
-				
-				//Clean up Objects
-				pageArray = null;
-				printJob = null;
-				sheetArr = null;
-				sheetHeaders = null;
+                //Google Chrome Print work around
+                for (var ps2:int=0; ps2<pageArray.length; ps2++){
+                    var pageSprite2:Sprite = pageArray[ps2] as Sprite;
+                    if (stage && stage.contains(pageSprite2)){
+                        stage.removeChild(pageSprite2);//once done remove from stage
+                    }
+                }
+                //Clean up Objects
+                pageArray = null;
+                printJob = null;
+                sheetArr = null;
+                sheetHeaders = null;
 			}
 		}
 	}

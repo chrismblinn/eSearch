@@ -22,7 +22,6 @@
 			import com.esri.ags.layers.supportClasses.CodedValue;
 			import com.esri.ags.layers.supportClasses.CodedValueDomain;
 			import com.esri.ags.layers.supportClasses.FeatureType;
-			import com.esri.ags.layers.supportClasses.LayerDetails;
 			import com.esri.ags.portal.PopUpRenderer;
 			import com.esri.ags.portal.supportClasses.PopUpInfo;
 			import com.esri.ags.portal.supportClasses.PopUpMediaInfo;
@@ -1206,7 +1205,7 @@
 				resultsGrid.sortByColumns(columnIndexes, true);
 			}
 			
-			private function getFeatureType(typeID:String, lDtls:LayerDetails):FeatureType
+			private function getFeatureType(typeID:String, lDtls:*):FeatureType
 			{
 				var result:FeatureType;
 				
@@ -1680,7 +1679,7 @@
 				printProps.pageofpage = _footerPageofPage;
 				printProps.disclaimer = _footerDisclaimer;
 				printProps.includedate = _footerIncludeDate;
-				PrintUtil.printDataGrid(printProps);
+				PrintUtil.printDataGrid(printProps, this.stage, getUserAgent());
 			}
 			
 			protected function rPrintDDGBtn_clickHandler(event:MouseEvent):void
@@ -1696,8 +1695,45 @@
 				printProps.pageofpage = _footerPageofPage;
 				printProps.disclaimer = _footerDisclaimer;
 				printProps.includedate = _footerIncludeDate;
-				PrintUtil.printDataGrid(printProps);
+				PrintUtil.printDataGrid(printProps, this.stage, getUserAgent());
 			}
+            
+            private static function getUserAgent():String
+            {
+                var userAgent:String;
+                try
+                {
+                    userAgent = ExternalInterface.call("window.navigator.userAgent.toString");
+                    var browser:String = "[Unknown Browser]";
+                    
+                    if (userAgent.indexOf("Safari") != -1)
+                    {
+                        browser = "Safari";
+                    }
+                    if (userAgent.indexOf("Firefox") != -1)
+                    {
+                        browser = "Firefox";
+                    }
+                    if (userAgent.indexOf("Chrome") != -1)
+                    {
+                        browser = "Chrome";
+                    }
+                    if (userAgent.indexOf("MSIE") != -1)
+                    {
+                        browser = "Internet Explorer";
+                    }
+                    if (userAgent.indexOf("Opera") != -1)
+                    {
+                        browser = "Opera";
+                    }
+                }
+                catch (e:Error)
+                {
+                    //could not access ExternalInterface in containing page
+                    return "[No ExternalInterface]";
+                }
+                return browser;
+            }
 			
 		]]>
 	</fx:Script>

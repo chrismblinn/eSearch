@@ -24,7 +24,6 @@
 			import com.esri.ags.layers.supportClasses.CodedValue;
 			import com.esri.ags.layers.supportClasses.CodedValueDomain;
 			import com.esri.ags.layers.supportClasses.FeatureType;
-			import com.esri.ags.layers.supportClasses.LayerDetails;
 			import com.esri.viewer.ViewerContainer;
 			
 			import mx.collections.ArrayCollection;
@@ -764,14 +763,14 @@
 							var typeID:String = _layerDetails.typeIdField ? attributes[fld.name] : null;
 							if (_layerDetails.typeIdField && fld.name.toUpperCase() == _layerDetails.typeIdField.toUpperCase()){
 								// replace value with feature type name
-								var featureType:FeatureType = getFeatureType(typeID,_layerDetails);
+								var featureType:FeatureType = getFeatureType(typeID);
 								if (featureType && featureType.name){
 									attributes[fld.name] = featureType.name;
 								}
 							}else{
 								// replace value with coded value name if one exists
 								if (typeID){
-									var fType:FeatureType = getFeatureType(typeID,_layerDetails);
+									var fType:FeatureType = getFeatureType(typeID);
 									if (fType){
 										cDomain = fType.domains[fld.name] as CodedValueDomain;
 									}
@@ -859,11 +858,11 @@
 				resultsGrid.sortByColumns(columnIndexes, true);
 			}
 			
-			private function getFeatureType(typeID:String, lDtls:LayerDetails):FeatureType
+			private function getFeatureType(typeID:String):FeatureType
 			{
 				var result:FeatureType;
 				
-				for each (var featureType:FeatureType in lDtls.types){
+				for each (var featureType:FeatureType in _layerDetails.types){
 					if (typeID == featureType.id){
 						result = featureType;
 						break;
@@ -908,8 +907,45 @@
 				printProps.pageofpage = _footerPageofPage;
 				printProps.disclaimer = _footerDisclaimer;
 				printProps.includedate = _footerIncludeDate;
-				PrintUtil.printDataGrid(printProps);
+				PrintUtil.printDataGrid(printProps, this.stage, getUserAgent());
 			}
+            
+            private static function getUserAgent():String
+            {
+                var userAgent:String;
+                try
+                {
+                    userAgent = ExternalInterface.call("window.navigator.userAgent.toString");
+                    var browser:String = "[Unknown Browser]";
+                    
+                    if (userAgent.indexOf("Safari") != -1)
+                    {
+                        browser = "Safari";
+                    }
+                    if (userAgent.indexOf("Firefox") != -1)
+                    {
+                        browser = "Firefox";
+                    }
+                    if (userAgent.indexOf("Chrome") != -1)
+                    {
+                        browser = "Chrome";
+                    }
+                    if (userAgent.indexOf("MSIE") != -1)
+                    {
+                        browser = "Internet Explorer";
+                    }
+                    if (userAgent.indexOf("Opera") != -1)
+                    {
+                        browser = "Opera";
+                    }
+                }
+                catch (e:Error)
+                {
+                    //could not access ExternalInterface in containing page
+                    return "[No ExternalInterface]";
+                }
+                return browser;
+            }
 			
 		]]>
 	</fx:Script>
