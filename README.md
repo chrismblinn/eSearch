@@ -5,6 +5,12 @@
 [![Image of Enhanced Search Widget](https://raw.github.com/rscheitlin/eSearch/master/Preview.jpg "Example Enhanced Search Widget app")](http://gis.calhouncounty.org/FlexViewer3.1/index.html?config=config-eSearch.xml&esearch=2&slayer=3&exprnum=1)
 
 ## Version Updates
+Version 3.1.12 - 3/6/2013
+* Fix bug where useproxy was not being honored in the UniqueValsfromField.
+* Fix spelling of disablelinksifnull attribute.
+* Allow hyperlinkaliastext to use a field as well as a hard coded string.
+* Allow link alias to use a field as well as a hard coded string.
+
 Version 3.1.11 - 3/2/20123
 * Fixed RTE (runtime error) with related data when relate has subtype.
 * Graphical search buttons now toggle.

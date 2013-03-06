@@ -20,30 +20,31 @@
 	</Search:layout>
 	<fx:Script>
 		<![CDATA[
-			import com.esri.ags.Map;
-			import com.esri.ags.layers.supportClasses.CodedValue;
-			import com.esri.ags.layers.supportClasses.CodedValueDomain;
-			import com.esri.ags.layers.supportClasses.FeatureType;
-			import com.esri.viewer.ViewerContainer;
-			
-			import mx.collections.ArrayCollection;
-			import mx.collections.ArrayList;
-			import mx.collections.IViewCursor;
-			import mx.controls.Alert;
-			import mx.core.FlexGlobals;
-			import mx.managers.PopUpManager;
-			import mx.utils.ObjectUtil;
-			
-			import spark.collections.Sort;
-			import spark.collections.SortField;
-			import spark.components.DataGrid;
-			import spark.components.gridClasses.GridColumn;
-			import spark.formatters.CurrencyFormatter;
-			import spark.formatters.DateTimeFormatter;
-			import spark.formatters.NumberFormatter;
-			
-			import widgets.eSearch.utils.PrintProperties;
-			import widgets.eSearch.utils.PrintUtil;
+            import com.esri.ags.Map;
+            import com.esri.ags.layers.supportClasses.CodedValue;
+            import com.esri.ags.layers.supportClasses.CodedValueDomain;
+            import com.esri.ags.layers.supportClasses.FeatureType;
+            import com.esri.ags.utils.StringUtil;
+            import com.esri.viewer.ViewerContainer;
+            
+            import mx.collections.ArrayCollection;
+            import mx.collections.ArrayList;
+            import mx.collections.IViewCursor;
+            import mx.controls.Alert;
+            import mx.core.FlexGlobals;
+            import mx.managers.PopUpManager;
+            import mx.utils.ObjectUtil;
+            
+            import spark.collections.Sort;
+            import spark.collections.SortField;
+            import spark.components.DataGrid;
+            import spark.components.gridClasses.GridColumn;
+            import spark.formatters.CurrencyFormatter;
+            import spark.formatters.DateTimeFormatter;
+            import spark.formatters.NumberFormatter;
+            
+            import widgets.eSearch.utils.PrintProperties;
+            import widgets.eSearch.utils.PrintUtil;
 		
 			private var _data:Array;
 			private var _resultsGrid:DataGrid; 
@@ -693,7 +694,9 @@
 				for each (var obj:Object in hypercols){
 					if(obj.field.toUpperCase() == column.dataField.toUpperCase()){
 						if(obj.alias != "NA"){
-							retVal = obj.alias;
+                            //handle if the alias is a field and not a string
+                            var sub:String = StringUtil.substitute(obj.alias, item);
+                            retVal = (sub)?sub:obj.alias;
 						}
 					}
 				}

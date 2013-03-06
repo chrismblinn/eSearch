@@ -27,6 +27,7 @@
 			import com.esri.ags.portal.supportClasses.PopUpMediaInfo;
 			import com.esri.viewer.AppEvent;
 			import com.esri.viewer.ViewerContainer;
+            import com.esri.ags.utils.StringUtil;
 			
 			import mx.collections.ArrayCollection;
 			import mx.collections.ArrayList;
@@ -961,7 +962,9 @@
 				for each (var obj:Object in hypercols){
 					if(obj.field.toUpperCase() == column.dataField.toUpperCase()){
 						if(obj.alias != "NA"){
-							retVal = obj.alias;
+                            //handle if the alias is a field and not a string
+                            var sub:String = StringUtil.substitute(obj.alias, item);
+							retVal = (sub)?sub:obj.alias;
 						}
 					}
 				}

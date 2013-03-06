@@ -352,8 +352,9 @@
 			private var resultSATSymbol:Symbol;
 
 			//Build Constants
-			protected const VERSION:String = "3.1.11";
-			protected const BUILDDATE:String = "3/2/2013";
+			protected const VERSION:String = "3.1.12";
+			protected const BUILDDATE:String = "3/6/2013";
+            
 
 			//Resources
 			[Embed(source="widgets/eSearch/assets/images/i_about.png")]
@@ -693,13 +694,13 @@
 						for (l = 0; l < lyrLinkList.length(); l++){
 							var lyrLink:String = XML(lyrLinkList[l]).text() || "";
 							var lyrLinkAlias:String = lyrLinkList[l].@alias || "";
-							var lyrLinkdiableIfNull:Boolean = lyrLinkList[l].@diablelinksifnull && lyrLinkList[l].@diablelinksifnull == "true";
+							var lyrLinkdisableIfNull:Boolean = lyrLinkList[l].@disablelinksifnull && lyrLinkList[l].@disablelinksifnull == "true";
 							var lyrIcon:String = XML(lyrLinkList[l]).child("icon") || "";
 							var linkObj:Object = {
 								link: lyrLink,
 								alias: lyrLinkAlias,
 								icon: lyrIcon,
-								diablelinksifnull: lyrLinkdiableIfNull
+								disablelinksifnull: lyrLinkdisableIfNull
 							};
 							lyrLinks.push(linkObj);
 						}
@@ -876,13 +877,13 @@
 						for (l = 0; l < tblLinkList.length(); l++){
 							var tblLink:String = XML(tblLinkList[l]).text() || "";
 							var tblLinkAlias:String = tblLinkList[l].@alias || "";
-							var tblLinkdiableIfNull:Boolean = tblLinkList[l].@diablelinksifnull && tblLinkList[l].@diablelinksifnull == "true";
+							var tblLinkdisableIfNull:Boolean = tblLinkList[l].@disablelinksifnull && tblLinkList[l].@disablelinksifnull == "true";
 							var tblIcon:String = XML(tblLinkList[l]).child("icon") || "";
 							var tbllinkObj:Object = {
 								link: tblLink,
 								alias: tblLinkAlias,
 								icon: tblIcon,
-								diablelinksifnull: tblLinkdiableIfNull
+								disablelinksifnull: tblLinkdisableIfNull
 							};
 							tblLinks.push(tbllinkObj);
 						}
@@ -3330,7 +3331,7 @@
 						var alias:String = "";
 						var linkicon:String = "";
 						var linkFieldNull:Boolean;
-						if(qLinks[a].diablelinksifnull){
+						if(qLinks[a].disablelinksifnull){
 							var lfields:Array = getFieldsFromCDATA(qLinks[a].link);
 							for (var lf:int=0; lf<lfields.length; lf++){
 								if(!graphic.attributes[lfields[lf]] || graphic.attributes[lfields[lf]] == ""){
@@ -3344,9 +3345,9 @@
 						}else{
 							link = com.esri.ags.utils.StringUtil.substitute(qLinks[a].link, graphic.attributes);
 						}
-						alias = qLinks[a].alias;
+                        var sub:String = com.esri.ags.utils.StringUtil.substitute(qLinks[a].alias, graphic.attributes);
+						alias = (sub) ? sub : qLinks[a].alias;
 						linkicon = com.esri.ags.utils.StringUtil.substitute(qLinks[a].icon, graphic.attributes);
-
 						var lObj:Object ={
 							link: link,
 							icon: linkicon,
@@ -3786,8 +3787,9 @@
 				}else{
 					var vNum:Number = (queryLayer.layerDetails)?queryLayer.layerDetails.version:queryLayer.tableDetails.version;
 					var isTenOrGreater:Boolean = (vNum >= 10);
+                    
 					pagingQueryTask = new PagingQueryTask(queryLayer.url, targetField, isTenOrGreater, sItemVal,
-						uniqueCache, sItemVal.isValueRequired, targetDateFormat, uUseUTC, queryLayer.token);
+						uniqueCache, sItemVal.isValueRequired, targetDateFormat, uUseUTC, queryLayer.token, queryLayer.proxyURL);
 					pagingQueryTask.addEventListener("pagingComplete",pagingQueryTask_complete);
 					pagingQueryTask.execute();
 				}

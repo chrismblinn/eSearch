@@ -52,6 +52,7 @@ package widgets.eSearch
 		private var _useUTC:Boolean;
 		private var blankStringExists:Boolean;
 		private var _token:String;
+        private var _proxy:String;
 		
 		private var query:Query = new Query;
 		private var queryTask:QueryTask = new QueryTask();
@@ -68,7 +69,7 @@ package widgets.eSearch
 		public function PagingQueryTask(url:String="", fieldName:String="", useAMF:Boolean=false, 
 										sItemVal:SearchExpValueItem=null, uniqueCache:Object=null, 
 										isRequired:Boolean=false, dateFormat:String="",
-										useUTC:Boolean=false, token:String=null)
+										useUTC:Boolean=false, token:String=null, proxy:String=null)
 		{
 			_url = url;
 			_fieldName = fieldName;
@@ -79,6 +80,7 @@ package widgets.eSearch
 			_dateFormat = dateFormat;
 			_useUTC = useUTC;
 			_token = token;
+            _proxy = proxy;
 		}
 
 		/**
@@ -285,6 +287,9 @@ package widgets.eSearch
 			queryTask.url = _url;
 			queryTask.useAMF = _useAMF;
 			queryTask.token = _token;
+            if(_proxy){
+                queryTask.proxyURL = _proxy;
+            }
 			queryTask.executeForIds(query, new AsyncResponder(onExecuteForIdsComplete, queryTask_faultHandler));
 		}
 		
@@ -303,6 +308,9 @@ package widgets.eSearch
 			query.objectIds = objectIdsArray;
 			queryTask.useAMF = _useAMF;
 			queryTask.token = _token;
+            if(_proxy){
+                queryTask.proxyURL = _proxy;
+            }
 			queryTask.execute(query, new AsyncResponder(queryTask_executeCompleteHandler, queryTask_faultHandler));
 		}
 		
@@ -438,6 +446,9 @@ package widgets.eSearch
 				query.objectIds = objectIdsArray.slice(iStart, iStart + iMaxRecords);
 				queryTask.useAMF = _useAMF;
 				queryTask.token = _token;
+                if(_proxy){
+                    queryTask.proxyURL = _proxy;
+                }
 				queryTask.execute(query, new AsyncResponder(queryTask_executeCompleteHandler, 
 															queryTask_faultHandler));
 				

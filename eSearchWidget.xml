@@ -181,7 +181,7 @@
 					gridfieldonly="false" dateformat="MM/DD/YYYY" useutc="true" />
 			</fields>
 			<links>
-				<link alias="View Traffic Photo" diablelinksifnull="true">
+				<link alias="View Traffic Photo" disablelinksifnull="true">
 					<![CDATA[{URL}]]>
 					<icon><![CDATA[assets/images/i_camera.png]]></icon>
 				</link>
@@ -280,7 +280,7 @@
 				<field name="ZIP_R" gridfield="true" />
 			</fields>
 			<links>
-				<link alias="View Mon. Ref Sheet" diablelinksifnull="true">
+				<link alias="View Mon. Ref Sheet" disablelinksifnull="true">
 					<![CDATA[http://somesite/gis/map/map_search/mrs_test.cfm?mrspoint={RD_NAME}&lat={ZIP_L}&long={ZIP_R}]]>
 					<icon><![CDATA[assets/images/w_link.png]]></icon>
 				</link> 
@@ -416,7 +416,7 @@
 				<field name="REPLSCORE" alias="Replacement Score" gridfield="true"/>
 			</fields>
 			<links>
-				<link alias="View Traffic Photo" diablelinksifnull="true">
+				<link alias="View Traffic Photo" disablelinksifnull="true">
 					<![CDATA[{agree_with_incident}]]>
 					<icon><![CDATA[assets/images/i_camera.png]]></icon>
 				</link>
@@ -455,7 +455,7 @@
 				<field name="notes" alias="Notes" gridfield="true"/>
 			</fields>
 			<links>
-				<link alias="View Traffic Photo" diablelinksifnull="true">
+				<link alias="View Traffic Photo" disablelinksifnull="true">
 					<![CDATA[{agree_with_incident}]]>
 					<icon><![CDATA[assets/images/i_camera.png]]></icon>
 				</link>
