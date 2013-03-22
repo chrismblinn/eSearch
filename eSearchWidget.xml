@@ -2,44 +2,6 @@
 <!-- See Enhanced Search Widget XML Configuration.pdf for detailed explanation -->
 <configuration>
 	<layers>
-        <!-- <layer>
-            <definitionexpression/>
-            <enableexport>false</enableexport>
-            <enableprintgrid title="Selected Parcels">true</enableprintgrid>
-            <name>Parcels</name>
-            <url>http://maps3.murfreesborotn.gov/mboro/rest/services/GIS/PARCELS/MapServer/1</url>
-            <expressions>
-                <expression alias="OWNER NAME" textsearchlabel="Search by Owner Name:">
-                    <values>
-                        <value prompt="Example: SMITH JOSEPH">upper(RuthLIS.DBO.CURRENT_GIS_OWNER_ADDRESS.NAME1) like upper('%[value]%')</value>
-                    </values>
-                </expression>
-                <expression alias="GISLINK" textsearchlabel="Search by Parcel GISLINK Number:">
-                    <values>
-                        <value prompt="Example: 091N C 00900">RuthLIS.DBO.Parcels.GISLINK = '[value]'</value>
-                    </values>
-                </expression>
-            </expressions>
-            <graphicalsearchlabel>Use one of the graphical search tools to select Parcels</graphicalsearchlabel>
-            <spatialsearchlayer>true</spatialsearchlayer>
-            <titlefield>RuthLIS.DBO.Parcels.GISLINK</titlefield>
-            <fields all="false">
-                <field name="RuthLIS.DBO.Parcels.GISLINK" visible="true" gridfield="true"/>
-                <field name="RuthLIS.DBO.CURRENT_GIS_OWNER_ADDRESS.NAME1" alias="PROPERTY OWNER" gridfield="true"/>
-                <field name="RuthLIS.DBO.CURRENT_GIS_OWNER_ADDRESS.ADDRESS1" alias="OWNER ADDRESS" gridfield="true"/>
-                <field name="RuthLIS.DBO.CURRENT_GIS_OWNER_ADDRESS.CITY" alias="OWNER CITY" gridfield="true"/>
-                <field name="RuthLIS.DBO.CURRENT_GIS_OWNER_ADDRESS.STATE" alias="OWNER STATE" gridfield="true"/>
-                <field name="RuthLIS.DBO.CURRENT_GIS_OWNER_ADDRESS.ZIPCODE" alias="OWNER ZIPCODE" gridfield="true"/>
-                <field name="RuthLIS.DBO.Parcels.STREETNO" alias="STREET NUMBER" gridfield="true"/>
-                <field name="RuthLIS.DBO.Parcels.STREETNAME" alias="STREET NAME" visible="true" gridfield="true"/>
-                <field name="RuthLIS.DBO.CURRENT_GIS_OWNER_ADDRESS.ACCOUNTNO" linkprefix="http://rutherfordcounty.org/apps/propertydata/REALRESULTS.ASPX?acct=" linksuffix="&amp;version=20121231999&amp;taxyear=2012" hyperlinkaliastext="ASSESSOR LINK" visible="true" hyperlinkgridfield="true"/>
-            </fields>
-            <links/>
-            <zoomscale usegeometry="true" zoompercent="1.6"/>
-            <autoopendatagrid>true</autoopendatagrid>
-            <relates/>
-            <queryattachments>false</queryattachments>
-        </layer> -->
 		<layer>
 			<token/>
 			<definitionexpression></definitionexpression>
@@ -93,172 +55,6 @@
 					<outline color="0xff0000" alpha="0.8" width="2" />
 				</simplefillsymbol>
 			</symbology>
-		</layer>
-		<layer>
-			<token/>
-            <definitionexpression/>
-            <enableexport>true</enableexport>
-            <name>Water Sample Data</name>
-            <url>http://localhost:6080/arcgis/rest/services/Mining/MapServer/0</url>
-            <expressions>
-                <expression alias="Permit Number" textsearchlabel="Search by Permit Number:" isvaluerequired="false">
-                    <values>
-                        <value prompt="Example: 2351952" isvaluerequired="false">PERMIT_NUM = '[value]'</value>
-                    </values>
-                </expression>
-                <expression alias="MRP" textsearchlabel="Search by MRP:" isvaluerequired="false">
-                    <values>
-                        <value prompt="Example: YES" isvaluerequired="false" uniquevalsfromfield="MRP">MRP = '[value]'</value>
-                    </values>
-                </expression>
-                <expression alias="Sample Date" textsearchlabel="Search by Sample Date:" isvaluerequired="false">
-                    <values>
-                        <value prompt="Example: 5/15/1985" isvaluerequired="false" uniquevalsfromfield="SMPL_DATE" dateformat="MM/DD/YYYY" useutc="true">SMPL_DATE = date'[value]'</value>
-                    </values>
-                </expression>
-            </expressions>
-            <graphicalsearchlabel>Use one of the graphical search tools to select Zoning</graphicalsearchlabel>
-            <spatialsearchlayer>true</spatialsearchlayer>
-            <titlefield>PERMIT_NUM</titlefield>
-            <fields all="false">
-				<field name="PERMIT_NUM" gridfield="true"/>
-				<field name="LAT_DEG" gridfield="true"/>
-				<field name="LAT_MIN" gridfield="true"/>
-				<field name="LAT_SEC" gridfield="true"/>
-				<field name="LNG_DEG" gridfield="true"/>
-				<field name="LNG_MIN" gridfield="true"/>
-				<field name="LNG_SEC" gridfield="true"/>
-				<field name="LOC_NAME" gridfield="true"/>
-				<field name="LOC_TYPE" gridfield="true"/>
-				<field name="SMPL_DATE" gridfield="true" dateformat="MM/DD/YYYY"/>
-				<field name="DISCH_RATE" gridfield="true"/>
-				<field name="WATER_TEMP" gridfield="true"/>
-				<field name="DEPTH" gridfield="true"/>
-				<field name="ACID" gridfield="true"/>
-				<field name="ALK" gridfield="true"/>
-				<field name="DPTH" gridfield="true"/>
-				<field name="DSCHG" gridfield="true"/>
-				<field name="FED" gridfield="true"/>
-				<field name="FET" gridfield="true"/>
-				<field name="FLOW" gridfield="true"/>
-				<field name="MND" gridfield="true"/>
-				<field name="MNT" gridfield="true"/>
-				<field name="OILGR" gridfield="true"/>
-				<field name="PH" gridfield="true"/>
-				<field name="SO4" gridfield="true"/>
-				<field name="SPCON" gridfield="true"/>
-				<field name="SS" gridfield="true"/>
-				<field name="TDS" gridfield="true"/>
-				<field name="TSS" gridfield="true"/>
-				<field name="MRP" gridfield="true"/>
-            </fields>
-            <links/>
-            <zoomscale usegeometry="true" zoompercent="2"/>
-            <autoopendatagrid>true</autoopendatagrid>
-            <queryattachments>false</queryattachments>		
-        </layer>
-        <layer>
-			<definitionexpression></definitionexpression>
-			<token>GWgf5iHCS20Xqesft6rEwW7AhRHk1zj_dlUFQRUnm1AFR6yYgku-4kwUMaGs_xI4</token>
-			<enableexport>true</enableexport>
-			<name>County Roads</name>
-			<url>http://gislap183/arcgis/rest/services/Roads/MapServer/1</url>
-			<expressions>
-				<expression alias="Road Name" textsearchlabel="Search Road Name:">
-					<values>
-						<value prompt="Example: Mud St." uniquevalsfromfield="Name" isvaluerequired="false" >Name = '[value]'</value>
-					</values>
-				</expression>
-			</expressions>
-			<graphicalsearchlabel>Use one of the graphical search tools to select Road</graphicalsearchlabel>
-			<spatialsearchlayer>true</spatialsearchlayer>
-			<titlefield></titlefield>
-			<fields all="false">
-				<field name="Name" gridfield="true" sort="asc|1|string"/>
-				<field name="Classification" gridfield="true" />
-				<field name="Length_" numberformat="2|,|." />
-				<field name="Width" gridfield="true" />
-				<field name="L_F_ADD" gridfield="true" />
-				<field name="L_T_ADD" gridfield="true" />
-				<field name="R_F_ADD" gridfield="true" />
-				<field name="R_T_ADD" gridfield="true" />
-				<field name="PREFIX" gridfield="true" />
-				<field name="PRETYPE" gridfield="true" />
-				<field name="RD_NAME" gridfield="true" />
-				<field name="TYPE" gridfield="true" />
-				<field name="SUFFIX" gridfield="true" />
-				<field name="ZIP_L" gridfield="true" />
-				<field name="ZIP_R" gridfield="true" />
-			</fields>
-			<links/>
-			<zoomscale usegeometry="true" zoompercent="1.2"></zoomscale>
-			<autoopendatagrid>false</autoopendatagrid>
-			<queryattachments>false</queryattachments>
-			<relates>
-				<relate id="0" label="Average Daily Traffic" enableexport="true" enableprintgrid="true"
-					icon="assets/images/i_flag.png" printtitle="Related Average Daily Traffic">
-					<fields all="false">
-						<field name="Date_" dateformat="MM/DD/YYYY" sort="asc|1|date"/>
-						<field name="Road_Name" />
-						<field name="Road_ID" />
-						<field name="Location" />
-						<field name="ADT" sum="true" sumlabel="ADT Total Count: " sort="asc|2|numeric"/>
-						<field name="Percent_Tr" />
-					</fields>
-				</relate>
-			</relates>
-			<symbology>
-				<simplelinesymbol color="0xff0000" alpha="0.5" width="3" />
-			</symbology>
-		</layer>
-		<layer>
-			<token/>
-			<definitionexpression></definitionexpression>
-			<enableexport>true</enableexport>
-			<name>Sub Types</name>
-			<url>http://gislap183/arcgis/rest/services/SubTypes/MapServer/0</url>
-			<expressions>
-				<expression alias="Fitting Type" textsearchlabel="Search Type:" isvaluerequired="false">
-					<values>
-						<value prompt="Example: TEE" usesubtype="true" isvaluerequired="false" autosubmit="false">TYPECODE = [value]</value>
-					</values>
-				</expression>
-			</expressions>
-			<graphicalsearchlabel>Use one of the graphical search tools to select Zoning</graphicalsearchlabel>
-			<spatialsearchlayer>true</spatialsearchlayer>
-			<titlefield>FACILITY_I</titlefield>
-			<fields all="false">
-				<field name="STOP_NUM" />
-				<field name="DCM_STOP_N" />
-				<field name="ANGLE" />
-				<field name="ELEVATION" />
-				<field name="H_CONFID" />
-				<field name="H_DATE" />
-				<field name="DEPTH_BURI" />
-				<field name="SIZE_ONE" />
-				<field name="SIZE_TWO" />
-				<field name="SIZE_THREE" />
-				<field name="SIZE_FOUR" />
-				<field name="FACILITY_I" />
-				<field name="WMN_TYPE" />
-				<field name="PWTYPE" />
-				<field name="SUB_TYPE" />
-				<field name="LOCATION" />
-				<field name="OPER_DISTR" />
-				<field name="MUNICIPALI" />
-				<field name="CONTRACTOR" />
-				<field name="OWNER" />
-				<field name="COVER_TYPE" />
-				<field name="STATUS" />
-				<field name="TYPECODE" />
-				<field name="MATERIAL" />
-				<field name="Enabled" />
-			</fields>
-			<links/>
-			<zoomscale usegeometry="true" zoompercent="2"></zoomscale>
-			<autoopendatagrid>false</autoopendatagrid>
-			<queryattachments>false</queryattachments>
-			<relates/>
 		</layer>
 		<layer>
 			<token/>
@@ -335,13 +131,13 @@
 			<relates></relates>
 			<queryattachments>true</queryattachments>
 		</layer>
-		<layer>
+		<!--<layer>
 			<token/>
 			<definitionexpression></definitionexpression>
 			<enableexport>true</enableexport>
 			<enableprintgrid>true</enableprintgrid>
 			<name>Road Centerlines</name>
-			<url>http://gis.calhouncounty.org/ArcGIS/rest/services/Highway/MapServer/5</url>
+			<url>http://someServer/ArcGIS/rest/services/someService/MapServer/5</url>
 			<expressions>
 				<expression alias="Road Name and Zip" textsearchlabel="Search by Road Name and Left Zipcode and Right Zip:">
 					<values>
@@ -453,7 +249,7 @@
 			<enableexport>true</enableexport>
 			<enableprintgrid>true</enableprintgrid>
 			<name>Calhoun Parcels</name>
-			<url>http://gis.calhouncounty.org/ArcGIS2/rest/services/ParcelViewer/MapServer/67</url>
+			<url>http://someserver/ArcGIS2/rest/services/someservice/MapServer/67</url>
 			<expressions>
 				<expression alias="PPIN" textsearchlabel="Search by Parcel Id Number:">
 					<values>
@@ -470,8 +266,7 @@
 			<spatialsearchlayer>true</spatialsearchlayer>
 			<titlefield>Name</titlefield>
 			<fields all="false">
-				<!-- <field name="PPIN" gridfield="true" alias="Parcel Identifcation Number"/> -->
-                <field name="PPIN" alias="Parcel Identifcation Number" hyperlinkgridfield="true" hyperlinkaliastext="{PPIN}" linkprefix="http://www.clermontauditorrealestate.org/Datalets/Datalet.aspx?UseSearch=no&apos;pin=" />
+				<field name="PPIN" gridfield="true" alias="Parcel Identifcation Number"/>
 				<field name="NAME" gridfield="true" sort="asc|1|string"/>
 				<field name="STREET_ADDRESS" gridfield="true" />
 				<field name="USE_CODE" gridfield="true" />
@@ -498,7 +293,7 @@
 			<autoopendatagrid>true</autoopendatagrid>
 			<relates />
 			<queryattachments>false</queryattachments>
-		</layer>
+		</layer>-->
 	</layers>
 	<tables><!-- This section is ONLY for tables (i.e. data that has no geometry)! -->
 		<table>
