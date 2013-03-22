@@ -25,9 +25,9 @@
 			import com.esri.ags.portal.PopUpRenderer;
 			import com.esri.ags.portal.supportClasses.PopUpInfo;
 			import com.esri.ags.portal.supportClasses.PopUpMediaInfo;
+			import com.esri.ags.utils.StringUtil;
 			import com.esri.viewer.AppEvent;
 			import com.esri.viewer.ViewerContainer;
-            import com.esri.ags.utils.StringUtil;
 			
 			import mx.collections.ArrayCollection;
 			import mx.collections.ArrayList;
@@ -963,8 +963,14 @@
 					if(obj.field.toUpperCase() == column.dataField.toUpperCase()){
 						if(obj.alias != "NA"){
                             //handle if the alias is a field and not a string
+                            //and if the field has been concatenated with a prefix and or suffix then get the original instead
                             var sub:String = StringUtil.substitute(obj.alias, item);
-							retVal = (sub)?sub:obj.alias;
+                            var hyperAttribCache:String = (sub)?HyperAttribsCache[sub]:null;
+                            if (!hyperAttribCache){
+							    retVal = (sub)?sub:obj.alias;
+                            }else{
+                                retVal = (hyperAttribCache)?hyperAttribCache:obj.alias;
+                            }
 						}
 					}
 				}
@@ -1089,8 +1095,10 @@
 				sortRelateGridFldCols();
 			}
 
+            private var HyperAttribsCache:Dictionary;
 			private function dProvider(value:Object):void
 			{
+                HyperAttribsCache = new Dictionary();
 				_data = ObjectUtil.copy(value) as Array;
 				for each(var attributes:Object in _data){
 					for(var i:int=0; i<hypercols.length; i++){
@@ -1101,6 +1109,7 @@
 							&& String(attributes[hypercols[i].field]) != "unavailable"){
 							var pre:String = (hypercols[i].pre == "NA") ? "" : String(hypercols[i].pre);
 							var suf:String = (hypercols[i].suf == "NA") ? "" : String(hypercols[i].suf);
+                            HyperAttribsCache[String(pre + String(attributes[hypercols[i].field]) + suf)] = attributes[hypercols[i].field];
 							attributes[hypercols[i].field] = String(pre + String(attributes[hypercols[i].field]) + suf);
 						}
 					}
@@ -1224,6 +1233,9 @@
 			
 			private function rdProvider(value:Object):void
 			{
+                if(!HyperAttribsCache){
+                    HyperAttribsCache = new Dictionary();
+                }
 				_rdata = ObjectUtil.copy(value)  as Array;
 				for each(var attributes:Object in _rdata){
 					for(var i:int=0; i<rhypercols.length; i++){
@@ -1231,6 +1243,7 @@
 						if(String(attributes[rhypercols[i].field]) != "" && String(attributes[rhypercols[i].field]) != " " && String(attributes[rhypercols[i].field]) != null){
 							var pre:String = (rhypercols[i].pre == "NA") ? "" : String(rhypercols[i].pre);
 							var suf:String = (rhypercols[i].suf == "NA") ? "" : String(rhypercols[i].suf);
+                            HyperAttribsCache[String(pre + String(attributes[hypercols[i].field]) + suf)] = attributes[hypercols[i].field];
 							attributes[rhypercols[i].field] = pre + String(attributes[rhypercols[i].field]) + suf;
 						}
 					}
@@ -1425,7 +1438,7 @@
 						if(!_disableRelateTab){
 							_disableRelateTab == true;
 						}
-                        if(theObj.autoOpenDataGrid){
+                        if(therObj.autoOpenDataGrid){
                             panel_rollOverHandler(null);
                         }
 					}

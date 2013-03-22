@@ -352,9 +352,8 @@
 			private var resultSATSymbol:Symbol;
 
 			//Build Constants
-			protected const VERSION:String = "3.1.12";
-			protected const BUILDDATE:String = "3/6/2013";
-            
+			protected const VERSION:String = "3.2";
+			protected const BUILDDATE:String = "3/22/2013";
 
 			//Resources
 			[Embed(source="widgets/eSearch/assets/images/i_about.png")]
@@ -740,6 +739,7 @@
 						const layer:FeatureLayer = new FeatureLayer(lyrURL, null, (lyrToken != "")?lyrToken:null);
 //
 						layer.name = layer.id = "hiddenLayer_" + lyrLabel;
+                        layer.selectionColor = NaN;
 						layer.mode = FeatureLayer.MODE_SELECTION;
 						if (useProxy && configData.proxyUrl){
 							layer.proxyURL = configData.proxyUrl;
@@ -1919,8 +1919,8 @@
 					}
 				}
 				var sItemVal:SearchExpValueItem;
-				for(var v:int=0; v<configSearchText[i].expr[j].values.length; v++){
-					var cfg:Object = configSearchText[i].expr[j].values[v];
+                for(var v:int=0; v<configSearchText[i].expr[j].values.length; v++){
+                    var cfg:Object = configSearchText[i].expr[j].values[v];
 					if(v == 0){
 						sItemVal = searchGroup.getElementAt(0) as SearchExpValueItem;
 						sItemVal.setPrompt = cfg.prompt;
@@ -2116,13 +2116,6 @@
 					}else if (graphic.geometry.type == "esriGeometryPoint" && addTolerance.selected){
 						var ext2:Extent = createExtentAroundMapPoint(graphic.geometry as MapPoint, pointSearchTolerance) as Extent;
                         mPoly = ext2.toPolygon();
-						/*var pA2:Array = [];
-						pA2.push(new MapPoint(ext2.xmin,ext2.ymin,ext2.spatialReference));
-						pA2.push(new MapPoint(ext2.xmin,ext2.ymax,ext2.spatialReference));
-						pA2.push(new MapPoint(ext2.xmax,ext2.ymax,ext2.spatialReference));
-						pA2.push(new MapPoint(ext2.xmax,ext2.ymin,ext2.spatialReference));
-						pA2.push(new MapPoint(ext2.xmin,ext2.ymin,ext2.spatialReference));
-						mPoly.addRing(pA2);*/
 						rType = "poly";
 						mPoly.spatialReference = ext2.spatialReference;
 					}
@@ -2167,13 +2160,7 @@
 
 					if(graphic.geometry.type == "esriGeometryEnvelope"){
 						var ext:Extent = graphic.geometry as Extent;
-						var pA:Array = [];
-						pA.push(new MapPoint(ext.xmin,ext.ymin,ext.spatialReference));
-						pA.push(new MapPoint(ext.xmin,ext.ymax,ext.spatialReference));
-						pA.push(new MapPoint(ext.xmax,ext.ymax,ext.spatialReference));
-						pA.push(new MapPoint(ext.xmax,ext.ymin,ext.spatialReference));
-						pA.push(new MapPoint(ext.xmin,ext.ymin,ext.spatialReference));
-						mPoly.addRing(pA);
+                        mPoly = ext.toPolygon();
 						rType = "poly";
 					}
 				}
@@ -2389,7 +2376,7 @@
 					// on result
 					function onResult(feats:Array, token:XMLList = null):void
 					{
-						try{
+						//try{
 							createFeatureSet(feats);
 							qFeatLayer.selectionColor = Number.NaN;
 							var gid:Number = 0;
@@ -2526,10 +2513,10 @@
 									}
 								}
 							}
-						}
-						catch (error:Error){
-							showMessage(error.message, false);
-						}
+						//}
+						//catch (error:Error){
+						//	showMessage(error.message, false);
+						//}
 					}
 
 					//on fault
@@ -3555,13 +3542,14 @@
 								if(searchResultAC[r2].graphic == result[r].graphic){
 									searchResultAC.removeItemAt(r2);
 									break;
-								}
+                                }
 							}
 						}
 						result = searchResultAC;
 					}
 				}
 				return result;
+                
 			}
 
 			/*
@@ -4799,7 +4787,8 @@
 								footerDateFormat : dgfooterdateformat,
 								footerPageofPage: dgfooterpageofpage,
 								footerDisclaimer: dgfooterdisclaimer,
-								widgetTitle: relPrintTitle
+								widgetTitle: relPrintTitle,
+                                autoOpenDataGrid: openDataGrid
 							};
 							var dgconfigArr:ArrayCollection = new ArrayCollection();
 							dgconfigArr.addItem(dgConfig);
@@ -4812,7 +4801,7 @@
 				//on fault
 				function onFault(event:Fault,data:Object):void
 				{
-					Alert.show(event.faultDetail.toString(), "Fault", 4, wTemplate);
+					Alert.show(event.faultString, "Fault", 4, wTemplate, null, relateClass);
 				}
 			}
 

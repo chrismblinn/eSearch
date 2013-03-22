@@ -323,7 +323,7 @@ package widgets.eSearch.utils
                         stage.addChild(pageSprite);
                     }
 					var footer:TextField = new TextField();
-					footer.x = ((browserName=="Chrome")?0:36)
+					footer.x = ((browserName=="Chrome")?0:36);
 					footer.y = printJob.pageHeight - ((browserName=="Chrome")?0:36);
 					footer.width = printJob.pageWidth;
 					footer.height = 30;

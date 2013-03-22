@@ -2,6 +2,44 @@
 <!-- See Enhanced Search Widget XML Configuration.pdf for detailed explanation -->
 <configuration>
 	<layers>
+        <!-- <layer>
+            <definitionexpression/>
+            <enableexport>false</enableexport>
+            <enableprintgrid title="Selected Parcels">true</enableprintgrid>
+            <name>Parcels</name>
+            <url>http://maps3.murfreesborotn.gov/mboro/rest/services/GIS/PARCELS/MapServer/1</url>
+            <expressions>
+                <expression alias="OWNER NAME" textsearchlabel="Search by Owner Name:">
+                    <values>
+                        <value prompt="Example: SMITH JOSEPH">upper(RuthLIS.DBO.CURRENT_GIS_OWNER_ADDRESS.NAME1) like upper('%[value]%')</value>
+                    </values>
+                </expression>
+                <expression alias="GISLINK" textsearchlabel="Search by Parcel GISLINK Number:">
+                    <values>
+                        <value prompt="Example: 091N C 00900">RuthLIS.DBO.Parcels.GISLINK = '[value]'</value>
+                    </values>
+                </expression>
+            </expressions>
+            <graphicalsearchlabel>Use one of the graphical search tools to select Parcels</graphicalsearchlabel>
+            <spatialsearchlayer>true</spatialsearchlayer>
+            <titlefield>RuthLIS.DBO.Parcels.GISLINK</titlefield>
+            <fields all="false">
+                <field name="RuthLIS.DBO.Parcels.GISLINK" visible="true" gridfield="true"/>
+                <field name="RuthLIS.DBO.CURRENT_GIS_OWNER_ADDRESS.NAME1" alias="PROPERTY OWNER" gridfield="true"/>
+                <field name="RuthLIS.DBO.CURRENT_GIS_OWNER_ADDRESS.ADDRESS1" alias="OWNER ADDRESS" gridfield="true"/>
+                <field name="RuthLIS.DBO.CURRENT_GIS_OWNER_ADDRESS.CITY" alias="OWNER CITY" gridfield="true"/>
+                <field name="RuthLIS.DBO.CURRENT_GIS_OWNER_ADDRESS.STATE" alias="OWNER STATE" gridfield="true"/>
+                <field name="RuthLIS.DBO.CURRENT_GIS_OWNER_ADDRESS.ZIPCODE" alias="OWNER ZIPCODE" gridfield="true"/>
+                <field name="RuthLIS.DBO.Parcels.STREETNO" alias="STREET NUMBER" gridfield="true"/>
+                <field name="RuthLIS.DBO.Parcels.STREETNAME" alias="STREET NAME" visible="true" gridfield="true"/>
+                <field name="RuthLIS.DBO.CURRENT_GIS_OWNER_ADDRESS.ACCOUNTNO" linkprefix="http://rutherfordcounty.org/apps/propertydata/REALRESULTS.ASPX?acct=" linksuffix="&amp;version=20121231999&amp;taxyear=2012" hyperlinkaliastext="ASSESSOR LINK" visible="true" hyperlinkgridfield="true"/>
+            </fields>
+            <links/>
+            <zoomscale usegeometry="true" zoompercent="1.6"/>
+            <autoopendatagrid>true</autoopendatagrid>
+            <relates/>
+            <queryattachments>false</queryattachments>
+        </layer> -->
 		<layer>
 			<token/>
 			<definitionexpression></definitionexpression>
@@ -9,10 +47,14 @@
 			<name>Louisville Zoning</name>
 			<url>http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Louisville/LOJIC_LandRecords_Louisville/MapServer/2</url>
 			<expressions>
-				<expression alias="Zoning Type" textsearchlabel="Search Zoning Type:">
+				<expression alias="Zoning Type" textsearchlabel="Search Zoning Type:" isvaluerequired="true">
 					<values>
-						<value prompt="Example: OR1" uniquevalsfromfield="ZONING_CODE" isvaluerequired="true" autosubmit="false">ZONING_CODE = '[value]'</value>
-						<value prompt="Example: RESIDENTIAL" isvaluerequired="false" uniquevalsfromfield="ZONING_TYPE" operator="AND">ZONING_TYPE = '[value]'</value>
+                        <value prompt="Example: OR1" isvaluerequired="true" operator="AND">upper(ZONING_CODE) LIKE upper('%[value]%')</value>
+                        <value prompt="Example: RESIDENTIAL" isvaluerequired="true" operator="AND">ZONING_TYPE = '[value]'</value>
+						<!-- <value prompt="Example: OR1" isvaluerequired="true" userlist="all,OR1,C2,OTF" autosubmit="false" operator="AND">ZONING_CODE = '[value]'</value> -->
+						<!-- <value prompt="Example: RESIDENTIAL" isvaluerequired="true" userlist="RESIDENTIAL,OFFICE" operator="AND" autosubmit="false">ZONING_TYPE = '[value]'</value> -->
+						<value prompt="Example: OR1" uniquevalsfromfield="ZONING_CODE" isvaluerequired="true" autosubmit="false" operator="AND">ZONING_CODE = '[value]'</value>
+						<value prompt="Example: RESIDENTIAL" uniquevalsfromfield="ZONING_TYPE" isvaluerequired="true" autosubmit="false" operator="AND">ZONING_TYPE = '[value]'</value>
 					</values>
 				</expression>
 				<expression alias="Zoning Code" textsearchlabel="Search Zoning:" isvaluerequired="true">
@@ -26,6 +68,16 @@
 						<value prompt="Example: RES MULTI-FAMILY" isvaluerequired="true">upper(ZONING_NAME) LIKE upper('%[value]%')</value>
 					</values>
 				</expression>
+                <expression alias="Multiple Zoning Name" textsearchlabel="Search Zoning Name [ Example: RES MULTI-FAMILY ]:">
+                    <values>
+                        <value prompt="Example: COMMERCIAL,COMM MANUFACTURING" isvaluerequired="true">ZONING_NAME IN ('[value]')</value>
+                    </values>
+                </expression>
+                <expression alias="Open SQL" textsearchlabel="Search by Typing Full SQL:">
+                    <values>
+                        <value prompt="Example: ZONING_NAME = 'COMM MANUFACTURING' AND ZONING_TYPE = 'COMMERCIAL-INDUSTRIAL'">[value]</value>
+                    </values>
+                </expression>
 			</expressions>
 			<graphicalsearchlabel>Use one of the graphical search tools to select Zoning</graphicalsearchlabel>
 			<spatialsearchlayer>false</spatialsearchlayer>
@@ -105,6 +157,60 @@
             <autoopendatagrid>true</autoopendatagrid>
             <queryattachments>false</queryattachments>		
         </layer>
+        <layer>
+			<definitionexpression></definitionexpression>
+			<token>GWgf5iHCS20Xqesft6rEwW7AhRHk1zj_dlUFQRUnm1AFR6yYgku-4kwUMaGs_xI4</token>
+			<enableexport>true</enableexport>
+			<name>County Roads</name>
+			<url>http://gislap183/arcgis/rest/services/Roads/MapServer/1</url>
+			<expressions>
+				<expression alias="Road Name" textsearchlabel="Search Road Name:">
+					<values>
+						<value prompt="Example: Mud St." uniquevalsfromfield="Name" isvaluerequired="false" >Name = '[value]'</value>
+					</values>
+				</expression>
+			</expressions>
+			<graphicalsearchlabel>Use one of the graphical search tools to select Road</graphicalsearchlabel>
+			<spatialsearchlayer>true</spatialsearchlayer>
+			<titlefield></titlefield>
+			<fields all="false">
+				<field name="Name" gridfield="true" sort="asc|1|string"/>
+				<field name="Classification" gridfield="true" />
+				<field name="Length_" numberformat="2|,|." />
+				<field name="Width" gridfield="true" />
+				<field name="L_F_ADD" gridfield="true" />
+				<field name="L_T_ADD" gridfield="true" />
+				<field name="R_F_ADD" gridfield="true" />
+				<field name="R_T_ADD" gridfield="true" />
+				<field name="PREFIX" gridfield="true" />
+				<field name="PRETYPE" gridfield="true" />
+				<field name="RD_NAME" gridfield="true" />
+				<field name="TYPE" gridfield="true" />
+				<field name="SUFFIX" gridfield="true" />
+				<field name="ZIP_L" gridfield="true" />
+				<field name="ZIP_R" gridfield="true" />
+			</fields>
+			<links/>
+			<zoomscale usegeometry="true" zoompercent="1.2"></zoomscale>
+			<autoopendatagrid>false</autoopendatagrid>
+			<queryattachments>false</queryattachments>
+			<relates>
+				<relate id="0" label="Average Daily Traffic" enableexport="true" enableprintgrid="true"
+					icon="assets/images/i_flag.png" printtitle="Related Average Daily Traffic">
+					<fields all="false">
+						<field name="Date_" dateformat="MM/DD/YYYY" sort="asc|1|date"/>
+						<field name="Road_Name" />
+						<field name="Road_ID" />
+						<field name="Location" />
+						<field name="ADT" sum="true" sumlabel="ADT Total Count: " sort="asc|2|numeric"/>
+						<field name="Percent_Tr" />
+					</fields>
+				</relate>
+			</relates>
+			<symbology>
+				<simplelinesymbol color="0xff0000" alpha="0.5" width="3" />
+			</symbology>
+		</layer>
 		<layer>
 			<token/>
 			<definitionexpression></definitionexpression>
@@ -114,7 +220,7 @@
 			<expressions>
 				<expression alias="Fitting Type" textsearchlabel="Search Type:" isvaluerequired="false">
 					<values>
-						<value prompt="Example: TEE" usesubtype="true" isvaluerequired="false">TYPECODE = [value]</value>
+						<value prompt="Example: TEE" usesubtype="true" isvaluerequired="false" autosubmit="false">TYPECODE = [value]</value>
 					</values>
 				</expression>
 			</expressions>
@@ -174,7 +280,7 @@
 			<fields all="false">
 				<field name="DESCRIPTION" alias="Description" gridfield="true" />
 				<field name="URL" alias="Show Image" hyperlinkgridfield="true"
-					hyperlinkaliastext="Get Traffic Image" visible="false" />
+					hyperlinkaliastext="Show Traffic Image" visible="false" hyperlinkgridicon="assets/images/i_camera.png" />
 				<field name="ONLINE" alias="Online" gridfield="true"
 					gridfieldonly="false" />
 				<field name="LAST_UPDATED" alias="Last Updated" gridfield="true"
@@ -186,7 +292,8 @@
 					<icon><![CDATA[assets/images/i_camera.png]]></icon>
 				</link>
 			</links>
-			<zoomscale>5000</zoomscale>
+			<zoomscale usegeometry="true" zoompercent="2"></zoomscale>
+            <autoopendatagrid>true</autoopendatagrid>
 			<queryattachments>false</queryattachments>
 			<symbology>
 				<picturemarkersymbol url="assets/images/i_camera.png" height="30" width="30" xoffset="0" yoffset="0" />
@@ -206,7 +313,7 @@
 				</expression>
 				<expression alias="Request ID" textsearchlabel="Search by Request ID:" isvaluerequired="true">
 					<values>
-						<value prompt="Example: 508844" isvaluerequired="true">req_id = '[value]'</value>
+						<value prompt="Example: 508844" isvaluerequired="true" autosubmit="false">req_id = '[value]'</value>
 					</values>
 				</expression>
 			</expressions>
@@ -281,7 +388,7 @@
 			</fields>
 			<links>
 				<link alias="View Mon. Ref Sheet" disablelinksifnull="true">
-					<![CDATA[http://somesite/gis/map/map_search/mrs_test.cfm?mrspoint={RD_NAME}&lat={ZIP_L}&long={ZIP_R}]]>
+					<![CDATA[http://somesite/gis/map/map_search/mrs_test.cfm?mrspoint={PREFIX}]]>
 					<icon><![CDATA[assets/images/w_link.png]]></icon>
 				</link> 
 			</links>
@@ -363,7 +470,8 @@
 			<spatialsearchlayer>true</spatialsearchlayer>
 			<titlefield>Name</titlefield>
 			<fields all="false">
-				<field name="PPIN" gridfield="true" alias="Parcel Identifcation Number" hyperlinkgridfield="false"/>
+				<!-- <field name="PPIN" gridfield="true" alias="Parcel Identifcation Number"/> -->
+                <field name="PPIN" alias="Parcel Identifcation Number" hyperlinkgridfield="true" hyperlinkaliastext="{PPIN}" linkprefix="http://www.clermontauditorrealestate.org/Datalets/Datalet.aspx?UseSearch=no&apos;pin=" />
 				<field name="NAME" gridfield="true" sort="asc|1|string"/>
 				<field name="STREET_ADDRESS" gridfield="true" />
 				<field name="USE_CODE" gridfield="true" />
@@ -403,7 +511,7 @@
 			<expressions>
 				<expression alias="Replacement Score Greater Than" textsearchlabel="Search Replacement Score Greater Than:">
 					<values>
-						<value prompt="Example: 100" userlist="60,70,80,90,100">REPLSCORE &gt; [value]</value>
+						<value prompt="Example: 100" userlist="60,70,80,90,100" autosubmit="false">REPLSCORE &gt; [value]</value>
 					</values>
 				</expression>
 			</expressions>
@@ -445,7 +553,7 @@
 			</expressions>
 			<titlefield>sf_311_serviceoid</titlefield>
 			<fields all="false">
-				<field name="sf_311_serviceoid" alias="Incident OID"/>
+				<field name="sf_311_serviceoid" alias="Incident OID" gridfield="true"/>
 				<field name="agree_with_incident" alias="Website Link" hyperlinkgridfield="true"
 					hyperlinkaliastext="Go to Website" 
 					linkprefix="http://someWebSite/aspx/web/details.aspx?p_entity=" 
@@ -468,6 +576,49 @@
 			</relates>
 			<queryattachments>false</queryattachments>
 		</table>
+        <table>
+            <enableexport>true</enableexport>
+            <enableprintgrid>true</enableprintgrid>
+            <name>CondoID</name>
+            <url>http://maps.clermontauditor.org/arcgis/rest/services/Parcels/Parcels_WMAS_Dynamic/MapServer/18</url>
+            <expressions>
+                <expression alias="Search Condos" textsearchlabel="Search by Condo ID:">
+                    <values>
+                        <value prompt="Example: 016704.009H">upper(CondoID) LIKE upper('%[value]%')</value>
+                    </values>
+                </expression>
+            </expressions>
+            <titlefield>CondoID</titlefield>
+            <fields all="false">
+                <field name="CondoID" gridfield="true" alias="Condo ID"/>
+                <field name="PIN" gridfield="true" alias="Parcel ID" />
+            </fields>
+            <links>
+                <link alias="">
+                    <![CDATA[]]>
+                    <icon><![CDATA[]]></icon>
+                </link>
+            </links>
+            <relates>
+                <relate id="0" label="Common Area Parcel" enableexport="true" icon="widgets/eSearch/assets/images/i_relate.png">
+                    <fields all="false">
+                        <field name="PIN" gridfield="true" alias="Parcel Number" />
+                        <field name="FULLADDR" gridfield="true" alias="Full Address" />
+                        <field name="OWN1" gridfield="true" sort="asc|1|string" alias="Owner 1"/>
+                        <field name="OWN2" gridfield="true" alias="Owner 2" />
+                        <field name="LEGAL1" gridfield="true" alias="Legal 1" />
+                        <field name="LEGAL2" gridfield="true" alias="Legal 2" /> 
+                        <field name="LEGAL3" gridfield="true" alias="Legal 3" />
+                        <field name="ACRES" gridfield="true" alias="Acres"/>
+                        <field name="DISTRICT" gridfield="true" alias="District"/>
+                        <field name="NBHD" gridfield="true" alias="Neighborhood Code" />
+                        <field name="IMPDATE" gridfield="true" dateformat="MM/DD/YYYY" useutc="true" alias="Last Updated"/>
+                    </fields>
+                </relate>
+            </relates>
+            <queryattachments>false</queryattachments>
+            <autoopendatagrid>true</autoopendatagrid>
+        </table>
 	</tables>
 	<spatialrelationships>
 		<!-- possible spatial relationships esriSpatialRelIntersects | esriSpatialRelContains 
@@ -527,11 +678,11 @@
 	<csvseparator>,</csvseparator>
 	<disablebuttons></disablebuttons><!--possible values one or more not all four search types comma separated text,graphic,spatial,result,datagrid -->
 	<defaultselectionoption>textInput</defaultselectionoption><!--possible values only one graphicalInput or textInput or spatialInput -->
-	<enabledrawgraphicbutton>false</enabledrawgraphicbutton>
-        <enablelocategraphicbutton>false</enablelocategraphicbutton>
-	<enablebuffergraphicbutton>false</enablebuffergraphicbutton>
+	<enabledrawgraphicbutton>true</enabledrawgraphicbutton>
+	<enablebuffergraphicbutton>true</enablebuffergraphicbutton>
+    <enablelocategraphicbutton>true</enablelocategraphicbutton>
 	<selectedgraphicaltool></selectedgraphicaltool><!-- possible values are extent or polygon or mappoint or polyline or nothing -->
-	<multipartgraphicsearch>true</multipartgraphicsearch>
+	<multipartgraphicsearch>false</multipartgraphicsearch>
 	<floatorfixed>fixed</floatorfixed><!-- possible values are fixed and float -->
 	<relatetooltip>Show Relates</relatetooltip>
 	<relateicon>widgets/eSearch/assets/images/i_relate.png</relateicon>
@@ -544,7 +695,8 @@
 		<norelatesfound>No related features found for: </norelatesfound>
 		<norelatesfoundalerttitle>No Results</norelatesfoundalerttitle>
 		<addtolerance>Add search tolerance to point selection</addtolerance>
-		<existingdrawgraphicslabel>Use Existing eDraw Widget Graphics</existingdrawgraphicslabel>
+		<existingdrawgraphicslabel>Use Existing Enhanced Draw Widget Graphics</existingdrawgraphicslabel>
+        <existinglocategraphicslabel>Use Existing Enhanced Locate Widget Graphics</existinglocategraphicslabel>
 		<existingbuffergraphicslabel>Use Existing Point Buffer Widget Graphics</existingbuffergraphicslabel>
 		<graphicalsearchlabel>Graphical Search</graphicalsearchlabel>
 		<textsearchlabel>Text Search</textsearchlabel>

@@ -695,8 +695,14 @@
 					if(obj.field.toUpperCase() == column.dataField.toUpperCase()){
 						if(obj.alias != "NA"){
                             //handle if the alias is a field and not a string
+                            //and if the field has been concatenated with a prefix and or suffix then get the original instead
                             var sub:String = StringUtil.substitute(obj.alias, item);
-                            retVal = (sub)?sub:obj.alias;
+                            var hyperAttribCache:String = (sub)?HyperAttribsCache[sub]:null;
+                            if (!hyperAttribCache){
+                                retVal = (sub)?sub:obj.alias;
+                            }else{
+                                retVal = (hyperAttribCache)?hyperAttribCache:obj.alias;
+                            }
 						}
 					}
 				}
@@ -745,8 +751,10 @@
 				sortGridFldCols();
 			}
 			
+            private var HyperAttribsCache:Dictionary;
 			public function set dProvider(value:Object):void
 			{
+                HyperAttribsCache = new Dictionary();
 				_data = ObjectUtil.copy(value) as Array;
 				for each(var attributes:Object in _data){
 					for(var i:int=0; i<hypercols.length; i++){
@@ -754,6 +762,7 @@
 						if(attributes[hypercols[i].field] != "" && attributes[hypercols[i].field] != " " && attributes[hypercols[i].field] != null){
 							var pre:String = (hypercols[i].pre == "NA") ? "" : hypercols[i].pre;
 							var suf:String = (hypercols[i].suf == "NA") ? "" : hypercols[i].suf;
+                            HyperAttribsCache[String(pre + String(attributes[hypercols[i].field]) + suf)] = attributes[hypercols[i].field];
 							attributes[hypercols[i].field] = String(pre + attributes[hypercols[i].field] + suf);
 						}
 					}
