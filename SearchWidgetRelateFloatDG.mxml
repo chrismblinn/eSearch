@@ -20,10 +20,19 @@
 	</Search:layout>
 	<fx:Script>
 		<![CDATA[
+            import com.esri.ags.FeatureSet;
+            import com.esri.ags.Graphic;
             import com.esri.ags.Map;
+            import com.esri.ags.geometry.Extent;
+            import com.esri.ags.geometry.MapPoint;
+            import com.esri.ags.layers.FeatureLayer;
             import com.esri.ags.layers.supportClasses.CodedValue;
             import com.esri.ags.layers.supportClasses.CodedValueDomain;
             import com.esri.ags.layers.supportClasses.FeatureType;
+            import com.esri.ags.layers.supportClasses.LayerDetails;
+            import com.esri.ags.tasks.supportClasses.Query;
+            import com.esri.ags.tasks.supportClasses.RelationshipQuery;
+            import com.esri.ags.utils.GraphicUtil;
             import com.esri.ags.utils.StringUtil;
             import com.esri.viewer.ViewerContainer;
             
@@ -33,12 +42,15 @@
             import mx.controls.Alert;
             import mx.core.FlexGlobals;
             import mx.managers.PopUpManager;
+            import mx.rpc.AsyncResponder;
+            import mx.rpc.Fault;
             import mx.utils.ObjectUtil;
             
             import spark.collections.Sort;
             import spark.collections.SortField;
             import spark.components.DataGrid;
             import spark.components.gridClasses.GridColumn;
+            import spark.events.GridEvent;
             import spark.formatters.CurrencyFormatter;
             import spark.formatters.DateTimeFormatter;
             import spark.formatters.NumberFormatter;
@@ -61,6 +73,8 @@
 			private var _numFormat:String = "";
 			private var _csvSep:String = ",";
 			private var _layerDetails:* = null;
+            private var _rRid:Number;
+            private var _rLayer:FeatureLayer;
 			[Bindable] private var _exp2csvBtnLbl:String;
 			[Bindable] private var _exp2txtBtnLbl:String;
 			[Bindable] private var _exportButtonLbl:String;
@@ -86,6 +100,29 @@
 			private var _footerPageofPage:String;
 			private var _footerDisclaimer:String;
 			private var gFieldsAc:ArrayCollection;
+            
+            private var _zoomScale:Number = 5000;
+            private var _zoomPercent:Number = 1.2;
+            
+            public function set zoomScale(value:Number):void
+            {
+                _zoomScale = value;
+            }
+            
+            public function set zoomPercent(value:Number):void
+            {
+                _zoomPercent = value;
+            }
+            
+            public function set rRid(value:Number):void
+            {
+                _rRid = value;
+            }
+            
+            public function set rLayer(value:FeatureLayer):void
+            {
+                _rLayer = value;
+            }
 			
 			public function set dgtitle(value:String):void
 			{
@@ -959,6 +996,99 @@
                 return browser;
             }
 			
+            private function rclickRow(event:GridEvent):void
+            {
+                var oidString:String = _layerDetails.objectIdField;
+                if(!event.itemRenderer || !event.itemRenderer.data){
+                    return;
+                }
+                //Check if the relate layer has layer details or table details
+                if(_layerDetails is LayerDetails){
+                    var query:Query = new Query();
+                    query.returnGeometry = true;
+                    query.objectIds = [event.itemRenderer.data[oidString]];
+                    query.outFields = [oidString];
+                    query.outSpatialReference = map.spatialReference;
+                    _rLayer.selectFeatures(query, FeatureLayer.SELECTION_NEW, new AsyncResponder(result1, fault));
+                }else{
+                    var rq:RelationshipQuery = new RelationshipQuery();
+                    
+                    rq.objectIds = [event.itemRenderer.data[oidString]];
+                    rq.returnGeometry = true;
+                    rq.relationshipId = _rRid;
+                    rq.outFields = [oidString];
+                    rq.outSpatialReference = map.spatialReference;
+                    _rLayer.queryRelatedFeatures(rq, new AsyncResponder(result, fault, event.itemRenderer.data[oidString]));  
+                }
+                
+                function result1(feats:Array, token:Object):void{
+                    if (!feats){
+                        map.cursorManager.removeBusyCursor();
+                        return;
+                    }
+                    if (feats && feats){
+                        if(feats.length == 1 && Graphic(feats[0]).geometry is MapPoint){
+                            var mp:MapPoint = MapPoint(Graphic(feats[0]).geometry);
+                            if(isNaN(_zoomScale)){
+                                map.zoom(1 / 16, MapPoint(mp));
+                                map.centerAt(MapPoint(mp));
+                            }else{
+                                if (map.scale > _zoomScale){
+                                    map.scale = _zoomScale;
+                                }
+                                map.centerAt(mp);
+                            }
+                        }else{
+                            var ext:Extent = GraphicUtil.getGraphicsExtent(feats);
+                            if(isNaN(_zoomScale)){
+                                map.zoomTo(ext.expand(_zoomPercent));
+                            }else{
+                                if (map.scale > _zoomScale){
+                                    map.scale = _zoomScale;
+                                    map.zoomTo(ext);
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                function result(relatedRecords:Object, token:Object = null):void
+                {
+                    var fset:FeatureSet = (relatedRecords[token]);
+                    if (!fset){
+                        map.cursorManager.removeBusyCursor();
+                        return;
+                    }
+                    if (fset && fset.features){
+                        if(fset.features.length == 1 && Graphic(fset.features[0]).geometry is MapPoint){
+                            if(isNaN(_zoomScale)){
+                                map.zoom(1 / 16, MapPoint(fset.features[0]));
+                                map.centerAt(MapPoint(fset.features[0]));
+                            }else{
+                                if (map.scale > _zoomScale){
+                                    map.scale = _zoomScale;
+                                }
+                                map.centerAt(MapPoint(fset.features[0]));
+                            }
+                        }else{
+                            var ext:Extent = GraphicUtil.getGraphicsExtent(fset.features);
+                            if(isNaN(_zoomScale)){
+                                map.zoomTo(ext.expand(_zoomPercent));
+                            }else{
+                                if (map.scale > _zoomScale){
+                                    map.scale = _zoomScale;
+                                    map.zoomTo(ext);
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                function fault(event:Fault, token:Object = null):void
+                {
+                    Alert.show(event.faultString);
+                }
+            }
 		]]>
 	</fx:Script>
 	<fx:Declarations>
@@ -966,6 +1096,7 @@
 	</fx:Declarations>
 	<s:DataGrid id="resultsGrid" height="100%" width="100%" contentBackgroundAlpha="1"
 				horizontalScrollPolicy="auto" resize="dataGridResizeHandler(event)"
+                gridClick="rclickRow(event)"
 				updateComplete="dataGridResizeHandler(event)"/>
 	<Search:controlBarContent>
 		<s:HGroup verticalAlign="middle" paddingLeft="4" >

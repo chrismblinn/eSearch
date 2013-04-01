@@ -14,42 +14,50 @@
 	
 	<fx:Script>
 		<![CDATA[ 
-			import com.esri.ags.Graphic;
-			import com.esri.ags.Map;
-			import com.esri.ags.geometry.Geometry;
-			import com.esri.ags.geometry.MapPoint;
-			import com.esri.ags.layers.FeatureLayer;
-			import com.esri.ags.layers.supportClasses.CodedValue;
-			import com.esri.ags.layers.supportClasses.CodedValueDomain;
-			import com.esri.ags.layers.supportClasses.FeatureType;
-			import com.esri.ags.portal.PopUpRenderer;
-			import com.esri.ags.portal.supportClasses.PopUpInfo;
-			import com.esri.ags.portal.supportClasses.PopUpMediaInfo;
-			import com.esri.ags.utils.StringUtil;
-			import com.esri.viewer.AppEvent;
-			import com.esri.viewer.ViewerContainer;
-			
-			import mx.collections.ArrayCollection;
-			import mx.collections.ArrayList;
-			import mx.collections.IViewCursor;
-			import mx.controls.Alert;
-			import mx.core.FlexGlobals;
-			import mx.events.EffectEvent;
-			import mx.events.MoveEvent;
-			import mx.events.ResizeEvent;
-			import mx.utils.ObjectUtil;
-			
-			import spark.collections.Sort;
-			import spark.collections.SortField;
-			import spark.components.DataGrid;
-			import spark.components.gridClasses.GridColumn;
-			import spark.events.GridEvent;
-			import spark.formatters.CurrencyFormatter;
-			import spark.formatters.DateTimeFormatter;
-			import spark.formatters.NumberFormatter;
-			
-			import widgets.eSearch.utils.PrintProperties;
-			import widgets.eSearch.utils.PrintUtil;
+            import com.esri.ags.FeatureSet;
+            import com.esri.ags.Graphic;
+            import com.esri.ags.Map;
+            import com.esri.ags.geometry.Extent;
+            import com.esri.ags.geometry.Geometry;
+            import com.esri.ags.geometry.MapPoint;
+            import com.esri.ags.layers.FeatureLayer;
+            import com.esri.ags.layers.supportClasses.CodedValue;
+            import com.esri.ags.layers.supportClasses.CodedValueDomain;
+            import com.esri.ags.layers.supportClasses.FeatureType;
+            import com.esri.ags.layers.supportClasses.LayerDetails;
+            import com.esri.ags.portal.PopUpRenderer;
+            import com.esri.ags.portal.supportClasses.PopUpInfo;
+            import com.esri.ags.portal.supportClasses.PopUpMediaInfo;
+            import com.esri.ags.tasks.supportClasses.Query;
+            import com.esri.ags.tasks.supportClasses.RelationshipQuery;
+            import com.esri.ags.utils.GraphicUtil;
+            import com.esri.ags.utils.StringUtil;
+            import com.esri.viewer.AppEvent;
+            import com.esri.viewer.ViewerContainer;
+            
+            import mx.collections.ArrayCollection;
+            import mx.collections.ArrayList;
+            import mx.collections.IViewCursor;
+            import mx.controls.Alert;
+            import mx.core.FlexGlobals;
+            import mx.events.EffectEvent;
+            import mx.events.MoveEvent;
+            import mx.events.ResizeEvent;
+            import mx.rpc.AsyncResponder;
+            import mx.rpc.Fault;
+            import mx.utils.ObjectUtil;
+            
+            import spark.collections.Sort;
+            import spark.collections.SortField;
+            import spark.components.DataGrid;
+            import spark.components.gridClasses.GridColumn;
+            import spark.events.GridEvent;
+            import spark.formatters.CurrencyFormatter;
+            import spark.formatters.DateTimeFormatter;
+            import spark.formatters.NumberFormatter;
+            
+            import widgets.eSearch.utils.PrintProperties;
+            import widgets.eSearch.utils.PrintUtil;
 			
 			[Bindable]
 			private var appWidth:Number;
@@ -83,6 +91,8 @@
 			private var _csvSep:String = ",";
 			private var _layerDetails:* = null;
 			private var _rlayerDetails:* = null;
+            private var _rRid:Number;
+            private var _rLayer:FeatureLayer;
 			[Bindable] private var _exp2csvBtnLbl:String;
 			[Bindable] private var _exp2txtBtnLbl:String;
 			[Bindable] private var _exportButtonLbl:String;
@@ -154,6 +164,8 @@
 			
 			private function init():void
 			{
+                var fl:FeatureLayer = new FeatureLayer();
+                fl
 				if (configXML){
 					var duration:Number = configXML.duration ? configXML.duration : panelIn.duration;
 					if (configXML.height){
@@ -166,6 +178,7 @@
 						movingPanel = true;
 						panelIn.target = panel;
 						panelOut.target = panel;
+                        panel.addEventListener(MoveEvent.MOVE, panel_moveHandler);
 						panelIn.duration = 0;
 						panelIn.play();
 						panelIn.addEventListener(EffectEvent.EFFECT_END, addEvent);
@@ -250,7 +263,7 @@
 					dgCol = new GridColumn();
 					dgCol.dataField = "icon";
 					dgCol.width = 65;
-					dgCol.dataTipField = _relateIcon;
+					dgCol.dataTipField = (_relateIcon)? _relateIcon:"widgets/eSearch/assets/images/i_relate.png";
 					dgCol.showDataTips = false;
 					dgCol.headerText = "Relate(s)";
 					dgCol.labelFunction = getFileName;
@@ -1243,7 +1256,7 @@
 						if(String(attributes[rhypercols[i].field]) != "" && String(attributes[rhypercols[i].field]) != " " && String(attributes[rhypercols[i].field]) != null){
 							var pre:String = (rhypercols[i].pre == "NA") ? "" : String(rhypercols[i].pre);
 							var suf:String = (rhypercols[i].suf == "NA") ? "" : String(rhypercols[i].suf);
-                            HyperAttribsCache[String(pre + String(attributes[hypercols[i].field]) + suf)] = attributes[hypercols[i].field];
+                            HyperAttribsCache[String(pre + String(attributes[rhypercols[i].field]) + suf)] = attributes[rhypercols[i].field];
 							attributes[rhypercols[i].field] = pre + String(attributes[rhypercols[i].field]) + suf;
 						}
 					}
@@ -1371,11 +1384,11 @@
 				
 				if (data.key == "configFixedDatagrid"){
 					if (data.collection[0]){
-						//panel_rollOverHandler(null);
 						var theObj:Object = data.collection[0];
 						mWidgetTitle = theObj.widgetTitle;
 						_layerDetails = theObj.layerDetails;
 						_featLayer = theObj.featLayer;
+                        _hasRelates = theObj.hasRelates;
 						_exp2csvBtnLbl = theObj.csvExportOptionLbl;
 						_exp2txtBtnLbl = theObj.txtExportOptionLbl;
 						_exportButtonLbl = theObj.ExportButtonLbl;
@@ -1384,7 +1397,6 @@
 						_csvName = theObj.csvName;
 						sumField(theObj.sumField);
 						_labelSum = theObj.labelSum;
-						_hasRelates = theObj.hasRelates;
 						dgColumns(theObj.dgColumns);
 						dgHyperColumns(theObj.dgHyperColumns);
 						dProvider(theObj.dProvider);
@@ -1415,6 +1427,8 @@
 				if (data.key == "configRelateFixedDatagrid"){
 					if (data.collection[0]){
 						var therObj:Object = data.collection[0];
+                        _rRid = therObj.relateId;
+                        _rLayer = therObj.relateLayer;
 						_rlayerDetails = therObj.layerDetails;
 						_rdgFieldAliases = therObj.dgFieldAliases;
 						_rcsvName = therObj.csvName;
@@ -1606,6 +1620,100 @@
 				}
 				return retSR;
 			}
+            
+            private function rclickRow(event:GridEvent):void
+            {
+                var oidString:String = _rlayerDetails.objectIdField;
+                if(!event.itemRenderer || !event.itemRenderer.data){
+                    return;
+                }
+                //Check if the relate layer has layer details or table details
+                if(_rlayerDetails is LayerDetails){
+                    var query:Query = new Query();
+                    query.returnGeometry = true;
+                    query.objectIds = [event.itemRenderer.data[oidString]];
+                    query.outFields = [oidString];
+                    query.outSpatialReference = map.spatialReference;
+                    _rLayer.selectFeatures(query, FeatureLayer.SELECTION_NEW, new AsyncResponder(result1, fault));
+                }else{
+                    var rq:RelationshipQuery = new RelationshipQuery();
+                    
+                    rq.objectIds = [event.itemRenderer.data[oidString]];
+                    rq.returnGeometry = true;
+                    rq.relationshipId = _rRid;
+                    rq.outFields = [oidString];
+                    rq.outSpatialReference = map.spatialReference;
+                    _rLayer.queryRelatedFeatures(rq, new AsyncResponder(result, fault, event.itemRenderer.data[oidString]));  
+                }
+                
+                function result1(feats:Array, token:Object):void{
+                    if (!feats){
+                        map.cursorManager.removeBusyCursor();
+                        return;
+                    }
+                    if (feats && feats){
+                        if(feats.length == 1 && Graphic(feats[0]).geometry is MapPoint){
+                            var mp:MapPoint = MapPoint(Graphic(feats[0]).geometry);
+                            if(isNaN(_zoomScale)){
+                                map.zoom(1 / 16, MapPoint(mp));
+                                map.centerAt(MapPoint(mp));
+                            }else{
+                                if (map.scale > _zoomScale){
+                                    map.scale = _zoomScale;
+                                }
+                                map.centerAt(mp);
+                            }
+                        }else{
+                            var ext:Extent = GraphicUtil.getGraphicsExtent(feats);
+                            if(isNaN(_zoomScale)){
+                                map.zoomTo(ext.expand(_zoomPercent));
+                            }else{
+                                if (map.scale > _zoomScale){
+                                    map.scale = _zoomScale;
+                                    map.zoomTo(ext);
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                function result(relatedRecords:Object, token:Object = null):void
+                {
+                    var fset:FeatureSet = (relatedRecords[token]);
+                    if (!fset){
+                        map.cursorManager.removeBusyCursor();
+                        return;
+                    }
+                    if (fset && fset.features){
+                        if(fset.features.length == 1 && Graphic(fset.features[0]).geometry is MapPoint){
+                            if(isNaN(_zoomScale)){
+                                map.zoom(1 / 16, MapPoint(fset.features[0]));
+                                map.centerAt(MapPoint(fset.features[0]));
+                            }else{
+                                if (map.scale > _zoomScale){
+                                    map.scale = _zoomScale;
+                                }
+                                map.centerAt(MapPoint(fset.features[0]));
+                            }
+                        }else{
+                            var ext:Extent = GraphicUtil.getGraphicsExtent(fset.features);
+                            if(isNaN(_zoomScale)){
+                                map.zoomTo(ext.expand(_zoomPercent));
+                            }else{
+                                if (map.scale > _zoomScale){
+                                    map.scale = _zoomScale;
+                                    map.zoomTo(ext);
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                function fault(event:Fault, token:Object = null):void
+                {
+                    Alert.show(event.faultString);
+                }
+            }
 			
 			private function clickRow(event:GridEvent):void
 			{
@@ -1641,15 +1749,12 @@
 						}
 					}else{
 						if(isNaN(_zoomScale)){
-							map.extent = searchResult.graphic.geometry.extent.expand(_zoomPercent);
-							if (!map.extent.contains(searchResult.graphic.geometry)){
-								map.level--;
-							}
+							map.zoomTo(searchResult.graphic.geometry.extent.expand(_zoomPercent));
 						}else{
 							if (map.scale > _zoomScale){
 								map.scale = _zoomScale;
 							}
-							map.centerAt(searchResult.point);
+							map.zoomTo(searchResult.point);
 						}
 					}
 					if(_popupsdiabled == false){
@@ -1799,6 +1904,7 @@
 					<s:VGroup gap="0" height="100%" width="100%" horizontalAlign="center" verticalAlign="middle" maxWidth="{appWidth}">
 						<s:DataGrid id="relatesGrid" height="100%" width="100%"
 									horizontalScrollPolicy="auto"
+                                    gridClick="rclickRow(event)"
 									rollOut="highLightSel(event)"
 									rollOver="unhighLightSel(event)"
 									contentBackgroundAlpha="{getStyle('styleAlpha')}"

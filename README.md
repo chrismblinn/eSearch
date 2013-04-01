@@ -5,6 +5,10 @@
 [![Image of Enhanced Search Widget](https://raw.github.com/rscheitlin/eSearch/master/Preview.jpg "Example Enhanced Search Widget app")](http://gis.calhouncounty.org/FlexViewer3.1/index.html?config=config-eSearch.xml&esearch=2&slayer=3&exprnum=1)
 
 ## Version Updates
+Version 3.2.1 - 4/1/2013
+* Added back the wait cursor that is displayed when a search is executing.
+* Added zoom to supports for row clicks in a related table (if the related data has geometry, both feature to table and table to feature supported).
+
 Version 3.2 - 3/22/2013
 * Recompiled for Flex Viewer 3.2
 * If hyperlinkaliastext is a field that has a linkprefix and or suffix then do not include the linkprefix and or suffix in the alias text.

@@ -114,75 +114,75 @@
 
 	<fx:Script>
 		<![CDATA[
-			import com.esri.ags.FeatureSet;
-			import com.esri.ags.Graphic;
-			import com.esri.ags.Map;
-			import com.esri.ags.SpatialReference;
-			import com.esri.ags.components.IdentityManager;
-			import com.esri.ags.components.supportClasses.Credential;
-			import com.esri.ags.events.DrawEvent;
-			import com.esri.ags.events.GeometryServiceEvent;
-			import com.esri.ags.events.GraphicEvent;
-			import com.esri.ags.events.GraphicsLayerEvent;
-			import com.esri.ags.events.LayerEvent;
-			import com.esri.ags.events.MapEvent;
-			import com.esri.ags.geometry.Extent;
-			import com.esri.ags.geometry.Geometry;
-			import com.esri.ags.geometry.MapPoint;
-			import com.esri.ags.geometry.Multipoint;
-			import com.esri.ags.geometry.Polygon;
-			import com.esri.ags.geometry.Polyline;
-			import com.esri.ags.layers.FeatureLayer;
-			import com.esri.ags.layers.GraphicsLayer;
-			import com.esri.ags.layers.Layer;
-			import com.esri.ags.layers.supportClasses.CodedValue;
-			import com.esri.ags.layers.supportClasses.CodedValueDomain;
-			import com.esri.ags.layers.supportClasses.FeatureType;
-			import com.esri.ags.layers.supportClasses.Field;
-			import com.esri.ags.layers.supportClasses.RangeDomain;
-			import com.esri.ags.layers.supportClasses.Relationship;
-			import com.esri.ags.portal.PopUpRenderer;
-			import com.esri.ags.portal.supportClasses.PopUpInfo;
-			import com.esri.ags.portal.supportClasses.PopUpMediaInfo;
-			import com.esri.ags.renderers.SimpleRenderer;
-			import com.esri.ags.symbols.PictureMarkerSymbol;
-			import com.esri.ags.symbols.SimpleFillSymbol;
-			import com.esri.ags.symbols.SimpleLineSymbol;
-			import com.esri.ags.symbols.SimpleMarkerSymbol;
-			import com.esri.ags.symbols.Symbol;
-			import com.esri.ags.tasks.GeometryService;
-			import com.esri.ags.tasks.GeometryServiceSingleton;
-			import com.esri.ags.tasks.supportClasses.BufferParameters;
-			import com.esri.ags.tasks.supportClasses.Query;
-			import com.esri.ags.tools.DrawTool;
-			import com.esri.ags.utils.GeometryUtil;
-			import com.esri.ags.utils.GraphicUtil;
-			import com.esri.ags.utils.StringUtil;
-			import com.esri.viewer.AppEvent;
-			import com.esri.viewer.ViewerContainer;
-			import com.esri.viewer.components.TitlebarButton;
-			import com.esri.viewer.components.toc.utils.MapUtil;
-			
-			import flash.filters.BitmapFilterQuality;
-			
-			import mx.collections.ArrayCollection;
-			import mx.collections.ArrayList;
-			import mx.collections.IViewCursor;
-			import mx.controls.Alert;
-			import mx.core.IVisualElement;
-			import mx.events.FlexEvent;
-			import mx.managers.PopUpManager;
-			import mx.managers.PopUpManagerChildList;
-			import mx.rpc.AsyncResponder;
-			import mx.rpc.Fault;
-			import mx.rpc.events.FaultEvent;
-			import mx.utils.ObjectUtil;
-			import mx.utils.StringUtil;
-			
-			import spark.components.supportClasses.ItemRenderer;
-			import spark.formatters.CurrencyFormatter;
-			import spark.formatters.DateTimeFormatter;
-			import spark.formatters.NumberFormatter;
+            import com.esri.ags.FeatureSet;
+            import com.esri.ags.Graphic;
+            import com.esri.ags.Map;
+            import com.esri.ags.SpatialReference;
+            import com.esri.ags.components.IdentityManager;
+            import com.esri.ags.components.supportClasses.Credential;
+            import com.esri.ags.events.DrawEvent;
+            import com.esri.ags.events.GeometryServiceEvent;
+            import com.esri.ags.events.GraphicEvent;
+            import com.esri.ags.events.GraphicsLayerEvent;
+            import com.esri.ags.events.LayerEvent;
+            import com.esri.ags.events.MapEvent;
+            import com.esri.ags.geometry.Extent;
+            import com.esri.ags.geometry.Geometry;
+            import com.esri.ags.geometry.MapPoint;
+            import com.esri.ags.geometry.Multipoint;
+            import com.esri.ags.geometry.Polygon;
+            import com.esri.ags.geometry.Polyline;
+            import com.esri.ags.layers.FeatureLayer;
+            import com.esri.ags.layers.GraphicsLayer;
+            import com.esri.ags.layers.Layer;
+            import com.esri.ags.layers.supportClasses.CodedValue;
+            import com.esri.ags.layers.supportClasses.CodedValueDomain;
+            import com.esri.ags.layers.supportClasses.FeatureType;
+            import com.esri.ags.layers.supportClasses.Field;
+            import com.esri.ags.layers.supportClasses.RangeDomain;
+            import com.esri.ags.layers.supportClasses.Relationship;
+            import com.esri.ags.portal.PopUpRenderer;
+            import com.esri.ags.portal.supportClasses.PopUpInfo;
+            import com.esri.ags.portal.supportClasses.PopUpMediaInfo;
+            import com.esri.ags.renderers.SimpleRenderer;
+            import com.esri.ags.symbols.PictureMarkerSymbol;
+            import com.esri.ags.symbols.SimpleFillSymbol;
+            import com.esri.ags.symbols.SimpleLineSymbol;
+            import com.esri.ags.symbols.SimpleMarkerSymbol;
+            import com.esri.ags.symbols.Symbol;
+            import com.esri.ags.tasks.GeometryService;
+            import com.esri.ags.tasks.GeometryServiceSingleton;
+            import com.esri.ags.tasks.supportClasses.BufferParameters;
+            import com.esri.ags.tasks.supportClasses.Query;
+            import com.esri.ags.tools.DrawTool;
+            import com.esri.ags.utils.GeometryUtil;
+            import com.esri.ags.utils.GraphicUtil;
+            import com.esri.ags.utils.StringUtil;
+            import com.esri.viewer.AppEvent;
+            import com.esri.viewer.ViewerContainer;
+            import com.esri.viewer.components.TitlebarButton;
+            import com.esri.viewer.components.toc.utils.MapUtil;
+            
+            import flash.filters.BitmapFilterQuality;
+            
+            import mx.collections.ArrayCollection;
+            import mx.collections.ArrayList;
+            import mx.collections.IViewCursor;
+            import mx.controls.Alert;
+            import mx.core.IVisualElement;
+            import mx.events.FlexEvent;
+            import mx.managers.PopUpManager;
+            import mx.managers.PopUpManagerChildList;
+            import mx.rpc.AsyncResponder;
+            import mx.rpc.Fault;
+            import mx.rpc.events.FaultEvent;
+            import mx.utils.ObjectUtil;
+            import mx.utils.StringUtil;
+            
+            import spark.components.supportClasses.ItemRenderer;
+            import spark.formatters.CurrencyFormatter;
+            import spark.formatters.DateTimeFormatter;
+            import spark.formatters.NumberFormatter;
 
 			//labels
 			[Bindable] private var lblInclueTextQuery:String;
@@ -352,8 +352,10 @@
 			private var resultSATSymbol:Symbol;
 
 			//Build Constants
-			protected const VERSION:String = "3.2";
-			protected const BUILDDATE:String = "3/22/2013";
+			protected const VERSION:String = "3.2.1";
+			protected const BUILDDATE:String = "4/1/2013";
+            //Added back the wait cursor when a search is being performed
+            //Added relates zoom capability if related feature has geometry.
 
 			//Resources
 			[Embed(source="widgets/eSearch/assets/images/i_about.png")]
@@ -367,6 +369,8 @@
 
 			private function init():void
 			{
+                var fLayer:FeatureLayer = new FeatureLayer;
+                
 				sWidget = this;
 				WIDGET_URL = config.substring(0,config.lastIndexOf("/")) + "/assets/images/";
 				if (configXML){
@@ -1026,8 +1030,8 @@
 				if (configSearchText.length){
 					cboLayerText.dataProvider = new ArrayCollection(configSearchText);
 					cboLayerText.width = determineDropDownWidth(configSearchText);
-					if((cboLayerText.width + lblLayerText.measureText(layerLabel).width + 57) > wTemplate.width){
-						cboLayerText.width = (wTemplate.width - (lblLayerText.measureText(layerLabel).width + 57));
+					if((cboLayerText.width + lblLayerText.measureText(layerLabel).width + 122) > wTemplate.width){
+						cboLayerText.width = (wTemplate.width - (lblLayerText.measureText(layerLabel).width + 122));
 					}
 					cboLayerText.selectedIndex = 0;
 					txtLabelText.text = configSearchText[0].expr[0].textlabel;
@@ -1647,6 +1651,7 @@
 					if(queryDefExpr != ""){
 						queryLayer.definitionExpression = queryDefExpr;
 					}
+                    map.cursorManager.setBusyCursor();
 					queryLayer.selectFeatures(query, FeatureLayer.SELECTION_NEW, new AsyncResponder(onResult, onFault, queryFields));
 					showMessage(loadingLabel, true);
 					showStateResults();
@@ -1744,12 +1749,15 @@
 							executingURLquery = false;
 						}
 						catch (error:Error){
+                            map.cursorManager.removeBusyCursor();
 							showMessage(error.message, false);
 						}
+                        map.cursorManager.removeBusyCursor();
 					}
 					//on fault
 					function onFault(info:Object, token:Object = null) : void
 					{
+                        map.cursorManager.removeBusyCursor();
 						showMessage(info.toString(), false);
 					}
 				}
@@ -2003,9 +2011,6 @@
 				addSharedData("Deactivate_DrawTool", null); // to be able to deactivate drawTool on other widgets
 
 				if(event){
-					//graGraphicsLayer.clear();
-					//selectedDrawingIcon = Image(event.currentTarget);
-                    
                     //Allow button to act as toggle buttons
                     if(lastTool == Image(event.currentTarget).name){
                         clearSelectionFilter();
@@ -2369,6 +2374,7 @@
 					if(queryDefExpr != ""){
 						queryLayer.definitionExpression = queryDefExpr;
 					}
+                    map.cursorManager.setBusyCursor();
 					qFeatLayer.selectFeatures(query, selectionMethodText.selectedItem.selectionName, new AsyncResponder(onResult, onFault, queryFields));
 					showMessage(loadingLabel, true);
 					showStateResults();
@@ -2376,7 +2382,7 @@
 					// on result
 					function onResult(feats:Array, token:XMLList = null):void
 					{
-						//try{
+						try{
 							createFeatureSet(feats);
 							qFeatLayer.selectionColor = Number.NaN;
 							var gid:Number = 0;
@@ -2453,6 +2459,7 @@
 									myfloatdg.footerPageofPage = dgfooterpageofpage;
 									myfloatdg.dgtitle = queryPrintTitle;
 								}
+                                map.cursorManager.removeBusyCursor();
 							}else if(floatorfixed == "fixed"){
 								if(!gridFields){
 									gridFields = configSearchText[i].gridfields;
@@ -2496,10 +2503,12 @@
 								var dgconfigArr:ArrayCollection = new ArrayCollection();
 								dgconfigArr.addItem(dgConfig);
 								addSharedData("configFixedDatagrid", dgconfigArr);
+                                map.cursorManager.removeBusyCursor();
 							}
 
 							if (openDataGrid && floatorfixed != "fixed"){
 								showGridResults();
+                                map.cursorManager.removeBusyCursor();
 							}
 							if(autoZoom && searchResultAC.length > 0){
 								if(typeQ == "layer"){
@@ -2513,15 +2522,17 @@
 									}
 								}
 							}
-						//}
-						//catch (error:Error){
-						//	showMessage(error.message, false);
-						//}
+						}
+						catch (error:Error){
+                            map.cursorManager.removeBusyCursor();
+							showMessage(error.message, false);
+						}
 					}
 
 					//on fault
 					function onFault(info:Object, token:Object = null) : void
 					{
+                        map.cursorManager.removeBusyCursor();
 						showMessage(info.toString(), false);
 					}
 				}
@@ -2647,6 +2658,7 @@
 					if(queryDefExpr != ""){
 						queryLayer.definitionExpression = queryDefExpr;
 					}
+                    map.cursorManager.setBusyCursor();
 					queryLayer.selectFeatures(query, (initiator == "graphical")?selectionMethodGraphical.selectedItem.selectionName:selectionMethodSpatial.selectedItem.selectionName, new AsyncResponder(onResult, onFault, queryFields));
 					showMessage(loadingLabel, true);
 					showStateResults();
@@ -2782,8 +2794,10 @@
 									}
 								}
 							}
+                            map.cursorManager.removeBusyCursor();
 						}
 						catch (error:Error){
+                            map.cursorManager.removeBusyCursor();
 							showMessage(error.message, false);
 						}
 					}
@@ -2791,6 +2805,7 @@
 					//on fault
 					function onFault(info:Object, token:Object = null) : void
 					{
+                        map.cursorManager.removeBusyCursor();
 						showMessage(info.toString(), false);
 					}
 				}
@@ -4179,16 +4194,19 @@
 				if(currentState == "resultsList"){
 					currentState = lState;
 					if(lState == "graphicalInput"){
-						wTemplate.selectedTitlebarButtonIndex = 0;
+                        setTitlebarButtonByLabel(graphicalsearchLabel);
 					}else if (lState == "textInput"){
-						wTemplate.selectedTitlebarButtonIndex = 1;
-					}else{
-						wTemplate.selectedTitlebarButtonIndex = 2;
+                        setTitlebarButtonByLabel(textsearchLabel);
+					}else{ //spatial
+                        setTitlebarButtonByLabel(spatialsearchLabel);
 					}
 				}
 				if(qFeatLayer){
 					qFeatLayer.clearSelection();
 				}
+                if(relqueryLayer){
+                    relqueryLayer.clearSelection();
+                }
 				graphicsLayerBuffer.clear();
 				graGraphicsLayer.clear();
 				clearMessage();
@@ -4325,6 +4343,7 @@
 					}
 					if(!relqueryLayer){
 						relqueryLayer = new FeatureLayer(selRelateURL, null, (queryLayer.token != "")?queryLayer.token:null);
+                        relqueryLayer.mode = FeatureLayer.MODE_SELECTION;
 					}
 					if (relqueryLayer && !relqueryLayer.loaded){
 						relqueryLayer.addEventListener(LayerEvent.LOAD, queryLayer_loadHandler);
@@ -4334,6 +4353,10 @@
 						}
 						return;
 					}
+                    if(relqueryLayer.layerDetails){
+                        relqueryLayer.name = relqueryLayer.id = "hiddenLayer_relateLayer";
+                        map.addLayer(relqueryLayer);
+                    }
 
 					relId = searchResult.relates[0].id;
 					relPrintTitle = searchResult.relates[0].printtitle;
@@ -4345,6 +4368,7 @@
 						relatesQuery.outFields = ["*"];
 						relatesQuery.relationshipId = relId;
 						relatesQuery.objectIds = [searchResult.oid];
+                        map.cursorManager.setBusyCursor();
 						queryLayer.queryRelatedFeatures(relatesQuery, new AsyncResponder(onRelateResult, onFault, searchResult.oid));
 					}else{
 						rFields = relFields.field;
@@ -4472,6 +4496,7 @@
 						relatesQuery.outFields = qrelateFields;
 						relatesQuery.relationshipId = relId;
 						relatesQuery.objectIds = [searchResult.oid];
+                        map.cursorManager.setBusyCursor();
 						queryLayer.queryRelatedFeatures(relatesQuery, new AsyncResponder(onRelateResult, onFault, searchResult.oid));
 					}
 				}else{
@@ -4552,6 +4577,7 @@
 					
 					if(!relqueryLayer){
 						relqueryLayer = new FeatureLayer(selRelateURL, null, (queryLayer.token != "")?queryLayer.token:null);
+                        relqueryLayer.mode = FeatureLayer.MODE_SELECTION;
 					}
 					if (relqueryLayer && !relqueryLayer.loaded){
 						relqueryLayer.addEventListener(LayerEvent.LOAD, queryLayer_loadHandler);
@@ -4566,6 +4592,7 @@
 						relatesQuery.outFields = ["*"];
 						relatesQuery.relationshipId = relId;
 						relatesQuery.objectIds = [relOid];
+                        map.cursorManager.setBusyCursor();
 						queryLayer.queryRelatedFeatures(relatesQuery, new AsyncResponder(onRelateResult, onFault, relOid));
 					}else{
 						rFields = relFields.field;
@@ -4690,21 +4717,24 @@
 								}
 							}
 						}
+                        qrelateFields.push((relqueryLayer.layerDetails)?relqueryLayer.layerDetails.objectIdField:relqueryLayer.tableDetails.objectIdField);
 						relatesQuery.outFields = qrelateFields;
 						relatesQuery.relationshipId = relId;
 						relatesQuery.objectIds = [relOid];
+                        map.cursorManager.setBusyCursor();
 						queryLayer.queryRelatedFeatures(relatesQuery, new AsyncResponder(onRelateResult, onFault, relOid));
 					}
 				}
 
 				/*
-				* Process the result of the rekate query and show in the datagrid
+				* Process the result of the relate query and show in the datagrid
 				*/
 				function onRelateResult(relatedRecords:Object, token:Object = null):void
 				{
 					// get related records for the first feature
 					var fset:FeatureSet = (relatedRecords[token]);
 					if (!fset){
+                        map.cursorManager.removeBusyCursor();
 						Alert.show(noRelatesFound + " " + relLbl,noRelatesFoundAlertTitle,4,wTemplate,null,relateClass);
 						return;
 					}
@@ -4767,6 +4797,10 @@
 							relfloatdg.footerDisclaimer = dgfooterdisclaimer;
 							relfloatdg.footerIncludeDate = dgfooterincdate;
 							relfloatdg.footerPageofPage = dgfooterpageofpage;
+                            relfloatdg.rRid = relId;
+                            relfloatdg.rLayer = relqueryLayer;
+                            relfloatdg.zoomPercent = zoomPercent;
+                            relfloatdg.zoomScale = zoomScale;
 						}else if(floatorfixed == "fixed"){
 							var dgConfig:Object = {
 								dgFieldAliases: relfldAliases,
@@ -4788,7 +4822,9 @@
 								footerPageofPage: dgfooterpageofpage,
 								footerDisclaimer: dgfooterdisclaimer,
 								widgetTitle: relPrintTitle,
-                                autoOpenDataGrid: openDataGrid
+                                autoOpenDataGrid: openDataGrid,
+                                relateId: relId,
+                                relateLayer: relqueryLayer
 							};
 							var dgconfigArr:ArrayCollection = new ArrayCollection();
 							dgconfigArr.addItem(dgConfig);
@@ -4796,11 +4832,13 @@
 							addSharedData("switch2RelateTabFixedDataGrid", null);
 						}
 					}
+                    map.cursorManager.removeBusyCursor();
 				}
 
 				//on fault
 				function onFault(event:Fault,data:Object):void
 				{
+                    map.cursorManager.removeBusyCursor();
 					Alert.show(event.faultString, "Fault", 4, wTemplate, null, relateClass);
 				}
 			}
@@ -4839,10 +4877,7 @@
 						}
 					}else{
 						if(isNaN(zoomScale)){
-							map.extent = searchResult.graphic.geometry.extent.expand(zoomPercent);
-							if (!map.extent.contains(searchResult.graphic.geometry)){
-								map.level--;
-							}
+							map.zoomTo(searchResult.graphic.geometry.extent.expand(zoomPercent));
 						}else{
 							if (map.scale > zoomScale){
 								map.scale = zoomScale;
@@ -5157,6 +5192,9 @@
 			{
 				lState = currentState;
 				currentState = "graphicalInput";
+                if(cboLayerGraphical.selectedIndex == -1){
+                    cboLayerGraphical.selectedIndex = 0;
+                }
 			}
 
 			/*
@@ -5177,16 +5215,23 @@
 				if(!disGrid && !disResult){
 					lState = currentState;
 					currentState = "resultsList";
-                    
-                    //Determine which button index is the results button based on the label
-                    for(var tb:int=0; tb < wTemplate.headerToolGroup.numElements; tb++){
-                        var tbb:TitlebarButton = wTemplate.headerToolGroup.getElementAt(tb) as TitlebarButton;
-                        if(tbb.toolTip == resultsLabel){
-                            wTemplate.selectedTitlebarButtonIndex = tb;
-                        }
-                    }
+                    setTitlebarButtonByLabel(resultsLabel);
 				}
 			}
+            
+            /*
+            * Select a titlebar button by label
+            */
+            private function setTitlebarButtonByLabel(label:String):void
+            {
+                //Determine which button index is the desired button based on the label
+                for(var tb:int=0; tb < wTemplate.headerToolGroup.numElements; tb++){
+                    var tbb:TitlebarButton = wTemplate.headerToolGroup.getElementAt(tb) as TitlebarButton;
+                    if(tbb.toolTip == label){
+                        wTemplate.selectedTitlebarButtonIndex = tb;
+                    }
+                }
+            }
 
 			/*
 			* Switch to the Spatial Search view
@@ -5248,11 +5293,7 @@
 					}else{
 						var graphicsExtent:Extent = GraphicUtil.getGraphicsExtent(validateSelectedGeom(qFeatLayer.selectedFeatures));
 						if(graphicsExtent){
-							map.extent = graphicsExtent.expand(zoomPercent);
-							// make sure the whole extent is visible
-							if (!map.extent.contains(graphicsExtent.expand(zoomPercent))){
-								map.level--;
-							}
+							map.zoomTo(graphicsExtent.expand(zoomPercent));
 						}else{
 							var mp2:MapPoint = resultsFeatureSet.features[0].geometry as MapPoint;
 							map.zoom(1 / 16, mp2);

@@ -1152,10 +1152,7 @@
 						}
 					}else{
 						if(isNaN(_zoomScale)){
-							map.extent = searchResult.graphic.geometry.extent.expand(_zoomPercent);
-							if (!map.extent.contains(searchResult.graphic.geometry)){
-								map.level--;
-							}
+							map.zoomTo(searchResult.graphic.geometry.extent.expand(_zoomPercent));
 						}else{
 							if (map.scale > _zoomScale){
 								map.scale = _zoomScale;
