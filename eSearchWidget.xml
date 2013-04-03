@@ -193,6 +193,7 @@
 			<relates>
 				<relate id="0" label="ABIMS Bridge" enableexport="true" icon="assets/images/i_hydro.png">
 					<fields all="true" />
+                                        <zoomscale usegeometry="true" zoompercent="1.6" />
 				</relate>
 				<relate id="1" label="Average Daily Traffic" enableexport="true" enableprintgrid="true"
 					icon="assets/images/i_flag.png" printtitle="Related Average Daily Traffic">
@@ -204,6 +205,7 @@
 						<field name="ADT" sum="true" sumlabel="ADT Total Count: " sort="asc|2|numeric"/>
 						<field name="Percent_Tr" />
 					</fields>
+                                        <zoomscale usegeometry="true" zoompercent="1.6" />
 				</relate>
 				<relate id="2" label="Railroad Crossings" enableexport="true" icon="assets/images/i_folder.png">
 					<fields all="false">
@@ -214,6 +216,7 @@
 						<field name="Clearance" />
 						<field name="Control_Mark" />
 					</fields>
+                                        <zoomscale usegeometry="true" zoompercent="1.6" />
 				</relate>
 				<relate id="3" label="Signs" enableexport="false" enableprintgrid="true" icon="assets/images/i_lego.png">
 					<fields all="false">
@@ -225,6 +228,7 @@
 							hyperlinkaliastext="Get Sign Image" linkprefix="" linksuffix="" />
 						<field name="post" />
 					</fields>
+                                        <zoomscale usegeometry="true" zoompercent="1.6" />
 				</relate>
 				<relate id="4" label="Guardrails" enableexport="true" icon="assets/images/i_clock.png">
 					<fields all="false">
@@ -236,6 +240,7 @@
 						<field name="Type_start_a" />
 						<field name="Comments" />
 					</fields>
+                                        <zoomscale usegeometry="true" zoompercent="1.6" />
 				</relate>
 			</relates>
 			<queryattachments>false</queryattachments>
@@ -367,53 +372,11 @@
 				<relate id="1" label="Incident Priority Service Request" enableexport="true" icon="widgets/eSearch/assets/images/i_relate.png"
 					enableprintgrid="true" printitle="Incident Priority Service Request">
 					<fields all="true" />
+				        <zoomscale usegeometry="true" zoompercent="1.6" />
 				</relate>
 			</relates>
 			<queryattachments>false</queryattachments>
 		</table>
-        <table>
-            <enableexport>true</enableexport>
-            <enableprintgrid>true</enableprintgrid>
-            <name>CondoID</name>
-            <url>http://maps.clermontauditor.org/arcgis/rest/services/Parcels/Parcels_WMAS_Dynamic/MapServer/18</url>
-            <expressions>
-                <expression alias="Search Condos" textsearchlabel="Search by Condo ID:">
-                    <values>
-                        <value prompt="Example: 016704.009H">upper(CondoID) LIKE upper('%[value]%')</value>
-                    </values>
-                </expression>
-            </expressions>
-            <titlefield>CondoID</titlefield>
-            <fields all="false">
-                <field name="CondoID" gridfield="true" alias="Condo ID"/>
-                <field name="PIN" gridfield="true" alias="Parcel ID" />
-            </fields>
-            <links>
-                <link alias="">
-                    <![CDATA[]]>
-                    <icon><![CDATA[]]></icon>
-                </link>
-            </links>
-            <relates>
-                <relate id="0" label="Common Area Parcel" enableexport="true" icon="widgets/eSearch/assets/images/i_relate.png">
-                    <fields all="false">
-                        <field name="PIN" gridfield="true" alias="Parcel Number" />
-                        <field name="FULLADDR" gridfield="true" alias="Full Address" />
-                        <field name="OWN1" gridfield="true" sort="asc|1|string" alias="Owner 1"/>
-                        <field name="OWN2" gridfield="true" alias="Owner 2" />
-                        <field name="LEGAL1" gridfield="true" alias="Legal 1" />
-                        <field name="LEGAL2" gridfield="true" alias="Legal 2" /> 
-                        <field name="LEGAL3" gridfield="true" alias="Legal 3" />
-                        <field name="ACRES" gridfield="true" alias="Acres"/>
-                        <field name="DISTRICT" gridfield="true" alias="District"/>
-                        <field name="NBHD" gridfield="true" alias="Neighborhood Code" />
-                        <field name="IMPDATE" gridfield="true" dateformat="MM/DD/YYYY" useutc="true" alias="Last Updated"/>
-                    </fields>
-                </relate>
-            </relates>
-            <queryattachments>false</queryattachments>
-            <autoopendatagrid>true</autoopendatagrid>
-        </table>
 	</tables>
 	<spatialrelationships>
 		<!-- possible spatial relationships esriSpatialRelIntersects | esriSpatialRelContains 

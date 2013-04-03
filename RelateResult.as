@@ -33,5 +33,9 @@ package widgets.eSearch
 		public var icon:String;
 		
 		public var printtitle: String;
+        
+        public var zoompercent:Number;
+        
+        public var zoomscale:Number;
 	}
 }

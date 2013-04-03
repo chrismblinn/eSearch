@@ -5,6 +5,11 @@
 [![Image of Enhanced Search Widget](https://raw.github.com/rscheitlin/eSearch/master/Preview.jpg "Example Enhanced Search Widget app")](http://gis.calhouncounty.org/FlexViewer3.1/index.html?config=config-eSearch.xml&esearch=2&slayer=3&exprnum=1)
 
 ## Version Updates
+Version 3.2.2 - 4/3/2013
+* Fixed bug where selection layer would sometimes show in the layer list/Map switcher widgets with some generic name.
+* Fixed issue with table to related features relate datagrid row click or other errors.
+* Added support for relates to have a zoomscale or zoompercent just like layers.
+
 Version 3.2.1 - 4/1/2013
 * Added back the wait cursor that is displayed when a search is executing.
 * Added zoom to supports for row clicks in a related table (if the related data has geometry, both feature to table and table to feature supported).
