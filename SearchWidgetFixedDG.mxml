@@ -1440,7 +1440,7 @@
 						_renableExport = therObj.enableExport;
 						_renablePrint = therObj.enablePrint;
 						_relateIcon = therObj.relateIcon;
-						_relateTooltip = therObj.relateToolTip;
+                        relateResultTab = therObj.relateToolTip;
 						_headerBGColor = therObj.headerBGColor;
 						_repeatHeader = therObj.repeatHeader;
 						_headerFontColor = therObj.headerFontColor;

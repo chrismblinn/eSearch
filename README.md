@@ -5,6 +5,15 @@
 [![Image of Enhanced Search Widget](https://raw.github.com/rscheitlin/eSearch/master/Preview.jpg "Example Enhanced Search Widget app")](http://gis.calhouncounty.org/FlexViewer3.1/index.html?config=config-eSearch.xml&esearch=2&slayer=3&exprnum=1)
 
 ## Version Updates
+Version 3.2.3 - 4/30/2013
+* Added enablemultigraphicssearch
+* Added enableincludetextsearch
+* Added enableaddtollerance
+* Added enablegraphicsbuffering
+* Fixed disablelinkifnull issue
+* Relate tab name is set to relate label from xml
+* Fixed issue using uniquevalsfromfield when only having tables configured
+
 Version 3.2.2 - 4/3/2013
 * Fixed bug where selection layer would sometimes show in the layer list/Map switcher widgets with some generic name.
 * Fixed issue with table to related features relate datagrid row click or other errors.

@@ -439,6 +439,10 @@
 	<enabledrawgraphicbutton>true</enabledrawgraphicbutton>
 	<enablebuffergraphicbutton>true</enablebuffergraphicbutton>
     <enablelocategraphicbutton>true</enablelocategraphicbutton>
+    <enablemultigraphicssearch>false</enablemultigraphicssearch>
+    <enableincludetextsearch>true</enableincludetextsearch>
+    <enableaddtollerance>true</enableaddtollerance>
+    <enablegraphicsbuffering>true</enablegraphicsbuffering>
 	<selectedgraphicaltool></selectedgraphicaltool><!-- possible values are extent or polygon or mappoint or polyline or nothing -->
 	<multipartgraphicsearch>false</multipartgraphicsearch>
 	<floatorfixed>fixed</floatorfixed><!-- possible values are fixed and float -->

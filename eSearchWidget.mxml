@@ -251,6 +251,10 @@
 			[Bindable] private var applyTolleranceByDefault:Boolean;
 			[Bindable] private var widgetAndGridIteract:Boolean;
 			[Bindable] private var PopUpsDisabled:Boolean;
+            [Bindable] private var enableMutiGra:Boolean;
+            [Bindable] private var enableIncludeTextSearch:Boolean;
+            [Bindable] private var enableAddTollerance:Boolean;
+            [Bindable] private var enableGraphicsBuffering:Boolean;
 			private var layerDetails:*;
 			private var gridFields:Array = [];
 			private var popCBwithUniqueQue:Array = [];
@@ -352,8 +356,8 @@
 			private var resultSATSymbol:Symbol;
 
 			//Build Constants
-			protected const VERSION:String = "3.2.2";
-			protected const BUILDDATE:String = "4/3/2013";
+			protected const VERSION:String = "3.2.3";
+			protected const BUILDDATE:String = "4/30/2013";
 
 			//Resources
 			[Embed(source="widgets/eSearch/assets/images/i_about.png")]
@@ -447,6 +451,10 @@
 					dgfooterpageofpage = configXML.printdatagrid.footer.pageoftext || "page ## of ##";
 					dgfooterdisclaimer = configXML.printdatagrid.footer.disclaimer || "";
 					PopUpsDisabled = configXML.popupsdisabled && configXML.popupsdisabled == "true";
+                    enableMutiGra = configXML.enablemultigraphicssearch && configXML.enablemultigraphicssearch == "true";
+                    enableIncludeTextSearch = configXML.enableincludetextsearch && configXML.enableincludetextsearch == "true";
+                    enableAddTollerance = configXML.enableaddtollerance && configXML.enableaddtollerance == "true";
+                    enableGraphicsBuffering = configXML.enablegraphicsbuffering && configXML.enablegraphicsbuffering == "true";
 
 					configSpatialSearchRelation = [];
 					var operList:XMLList = configXML..spatialrelationship;
@@ -1115,7 +1123,7 @@
 							var uFld:String = configSearchText[0].expr[0].values[v].uniquevalsfromfield;
 							var uDateFormat:String = configSearchText[0].expr[0].values[v].dateformat;
 							var uUseUTC:Boolean = configSearchText[0].expr[0].values[v].useutc;
-							if(!pagingQueryTask.isQuerying && configSearchText[0].layer.loaded){
+							if(!pagingQueryTask.isQuerying && (configSearchText[0].layer)?configSearchText[0].layer.loaded:configSearchText[0].table.loaded){
 								popCBwithUnique(uFld, sItemVal, uDateFormat, uUseUTC);
 							}else{
 								//add this field to the Que
@@ -1676,7 +1684,7 @@
                     /*If the expression is an IN Statement and the the value is a string then
                     replace the user defines comma seperated values with single quoted values*/
                     if(queryExpr.toLowerCase().indexOf(" in (") > 0 && queryExpr.toLowerCase().indexOf("'[value]'") > -1){
-                        //replace the begining and trailing single qoutes is they exist
+                        //replace the begining and trailing single qoutes if they exist
                         eVal = eVal.replace(/^'|'$/g, "").replace(/,|','/g, "','");
                     }
 					expr = queryExpr.replace(myPattern, eVal);
@@ -1774,7 +1782,8 @@
 									footerDateFormat : dgfooterdateformat,
 									footerPageofPage: dgfooterpageofpage,
 									footerDisclaimer: dgfooterdisclaimer,
-                                    autoOpenDataGrid: openDataGrid
+                                    autoOpenDataGrid: openDataGrid,
+                                    relateToolTip: relateToolTip
 								};
 								var dgconfigArr:ArrayCollection = new ArrayCollection();
 								dgconfigArr.addItem(dgConfig);
@@ -2371,7 +2380,7 @@
                         /*If the expression is an IN Statement and the the value is a string then
                         replace the user defines comma seperated values with single quoted values*/
                         if(queryExpr.toLowerCase().indexOf(" in (") > 0 && queryExpr.toLowerCase().indexOf("'[value]'") > -1){
-                            //replace the begining and trailing single qoutes is they exist
+                            //replace the begining and trailing single qoutes if they exist
                             eVal = eVal.replace(/^'|'$/g, "").replace(/,|','/g, "','");
                         }
 						if (sItemVal.isValueRequired && !sItemVal.hasAValue()){
@@ -2448,6 +2457,11 @@
 							}
 							if(queryLayerRels && queryLayerRels.length > 0){
 								searchResultAC = createSearchResults((adding || removing)?feats:qFeatLayer.selectedFeatures, token, queryLayerRels, "queryFeaturesText", adding, removing);
+                                if(queryLayerRels.length == 1){
+                                    relateToolTip = queryLayerRels[0].label;
+                                }else{
+                                    relateToolTip = configXML.relatetooltip || "Show Relates";
+                                }
 							}else{
 								searchResultAC = createSearchResults((adding || removing)?feats:qFeatLayer.selectedFeatures, token, null, "queryFeaturesText", adding, removing);
 							}
@@ -2723,6 +2737,9 @@
 							}
 							if(queryLayerRels && queryLayerRels.length > 0){
 								searchResultAC = createSearchResults((adding || removing)?feats:qFeatLayer.selectedFeatures, token, queryLayerRels, (initiator == "graphical")?"graphical":"queryFeaturesSpatial", adding, removing);
+                                if(queryLayerRels.length == 1){
+                                    relateToolTip = queryLayerRels[0].label;
+                                }
 							}else{
 								searchResultAC = createSearchResults((adding || removing)?feats:qFeatLayer.selectedFeatures, token, null, (initiator == "graphical")?"graphical":"queryFeaturesSpatial", adding, removing);
 							}
@@ -3368,7 +3385,7 @@
 						var link:String = "";
 						var alias:String = "";
 						var linkicon:String = "";
-						var linkFieldNull:Boolean;
+                        var linkFieldNull:Boolean = false;
 						if(qLinks[a].disablelinksifnull){
 							var lfields:Array = getFieldsFromCDATA(qLinks[a].link);
 							for (var lf:int=0; lf<lfields.length; lf++){
@@ -3567,8 +3584,10 @@
 					searchResult.relates = queryRelates;
 					if(queryRelates && queryRelates.length == 1){
 						searchResult.relateicon = queryRelates[0].icon;
-					}
-					searchResult.relatetooltip = relateToolTip;
+                        searchResult.relatetooltip = queryRelates[0].label;
+					}else{
+					    searchResult.relatetooltip = configXML.relatetooltip || "Show Relates";
+                    }
 
 					graphic.attributes["content__pu__sr"] = searchResult.content;
 					graphic.attributes["title__pu__sr"] = searchResult.title;
@@ -4545,7 +4564,7 @@
 						relatesQuery.relationshipId = relId;
 						relatesQuery.objectIds = [searchResult.oid];
                         map.cursorManager.setBusyCursor();
-						queryLayer.queryRelatedFeatures(relatesQuery, new AsyncResponder(onRelateResult, onFault, searchResult.oid));
+						queryLayer.queryRelatedFeatures(relatesQuery, new AsyncResponder(onRelateResult, onFault, [searchResult.oid, relLbl]));
 					}
 				}else{
 					////relqueryLayer = null;
@@ -4785,7 +4804,7 @@
 						relatesQuery.relationshipId = relId;
 						relatesQuery.objectIds = [relOid];
                         map.cursorManager.setBusyCursor();
-						queryLayer.queryRelatedFeatures(relatesQuery, new AsyncResponder(onRelateResult, onFault, relOid));
+						queryLayer.queryRelatedFeatures(relatesQuery, new AsyncResponder(onRelateResult, onFault, [relOid, relLbl]));
 					}
 				}
 
@@ -4795,7 +4814,7 @@
 				function onRelateResult(relatedRecords:Object, token:Object = null):void
 				{
 					// get related records for the first feature
-					var fset:FeatureSet = (relatedRecords[token]);
+					var fset:FeatureSet = (relatedRecords[token[0]]);
 					if (!fset){
                         map.cursorManager.removeBusyCursor();
 						Alert.show(noRelatesFound + " " + relLbl,noRelatesFoundAlertTitle,4,wTemplate,null,relateClass);
@@ -4889,7 +4908,8 @@
                                 relateId: relId,
                                 relateLayer: relqueryLayer,
                                 zoomPercent: zoomPercent,
-                                zoomScale: zoomScale
+                                zoomScale: zoomScale,
+                                relateToolTip: token[1]
 							};
 							var dgconfigArr:ArrayCollection = new ArrayCollection();
 							dgconfigArr.addItem(dgConfig);
@@ -5612,9 +5632,8 @@
 				 visible="false"
 				 visible.textInput="true">
 			<s:layout>
-				<s:VerticalLayout gap="4" horizontalAlign="center"/>
+				<s:VerticalLayout gap="4" horizontalAlign="center" paddingTop="2" paddingLeft="10"/>
 			</s:layout>
-
 			<s:HGroup id="boxText"
 					  width="100%"
 					  gap="15"
@@ -5678,7 +5697,7 @@
 				 visible="false"
 				 visible.graphicalInput="true">
 			<s:layout>
-				<s:VerticalLayout gap="6" horizontalAlign="center"/>
+				<s:VerticalLayout gap="6" horizontalAlign="center" paddingTop="2" paddingLeft="10"/>
 			</s:layout>
 			<s:HGroup id="boxGraphical"
 					  width="100%"
@@ -5779,31 +5798,39 @@
 						  useHandCursor="true"/>
 			</s:HGroup>
 			<s:HGroup width="100%"
-					  horizontalAlign="center"
 					  verticalAlign="middle"
-					  paddingRight="10"
-					  paddingTop="2" gap="10">
-				<s:CheckBox id="graMultiChk" selected="{multiPartGraphicSearch}" label="{enableMultiPartSearch}" change="graMultiChanged()"/>
-				<s:Button id="graFeatureQueryBtn" click="queryFeaturesGra()" label="{submitLabel}"/>
+                      gap="10">
+                <s:HGroup width="100%"
+                          horizontalAlign="center"
+                          verticalAlign="middle"
+                          paddingRight="10"
+                          paddingTop="2" gap="10">
+				    <s:CheckBox id="graMultiChk" selected="{multiPartGraphicSearch}" label="{enableMultiPartSearch}" change="graMultiChanged()"
+                            includeInLayout="{enableMutiGra}" visible="{enableMutiGra}"/>
+				    <s:Button id="graFeatureQueryBtn" click="queryFeaturesGra()" label="{submitLabel}"/>
+                </s:HGroup>
 				<s:Label buttonMode="true"
+                         textAlign="right"
 						 click="clear()"
 						 fontWeight="bold"
 						 text="{clearLabel}"
 						 textDecoration="underline"/>
 			</s:HGroup>
-			<s:CheckBox id="addTolerance" selected="{applyTolleranceByDefault}" label="{lblTolerance}"/>
-			<s:Group>
+			<s:CheckBox id="addTolerance" selected="{applyTolleranceByDefault}" label="{lblTolerance}"
+                        includeInLayout="{enableAddTollerance}" visible="{enableAddTollerance}"/>
+			<s:Group includeInLayout="{enableIncludeTextSearch}" visible="{enableIncludeTextSearch}">
 				<s:layout>
 					<s:BasicLayout />
 				</s:layout>
-				<s:Image toolTip="{includetextquerywarnTip}" visible="{(cboLayerGraphical.selectedItem != cboLayerText.selectedItem)}"
+				<s:Image toolTip="{includetextquerywarnTip}" 
 						 width="{includeTextQuery.width}" height="{includeTextQuery.height}"
 						 source="{WIDGET_URL + 'blank.png'}" fillMode="repeat"
-						 includeInLayout="{(cboLayerGraphical.selectedItem != cboLayerText.selectedItem)}"/>
+						 includeInLayout="{(cboLayerGraphical.selectedItem != cboLayerText.selectedItem)}"
+                         visible="{(cboLayerGraphical.selectedItem != cboLayerText.selectedItem)}"/>
 				<s:CheckBox id="includeTextQuery" selected="false" label="{lblInclueTextQuery}"
-					 	enabled="{(cboLayerGraphical.selectedItem == cboLayerText.selectedItem)}" />
+					 	enabled="{(cboLayerGraphical.selectedItem == cboLayerText.selectedItem)}"/>
 			</s:Group>
-			<s:HGroup verticalAlign="middle">
+			<s:HGroup verticalAlign="middle" includeInLayout="{enableGraphicsBuffering}" visible="{enableGraphicsBuffering}">
 				<s:CheckBox id="bufferUserGraphic" selected="false" label="{lblbufferUserGraphic}"/>
 				<s:TextInput id="textGraInputBuffer" text="{BuffValue}" width="40" needsSoftKeyboard="true"/>
 				<s:DropDownList id="cboGraBufferUnit" />
@@ -5865,10 +5892,10 @@
 				 visible="false"
 				 visible.spatialInput="true">
 			<s:layout>
-				<s:VerticalLayout gap="6" horizontalAlign="center"/>
+				<s:VerticalLayout gap="6" horizontalAlign="center" paddingLeft="10" paddingTop="2"/>
 			</s:layout>
 			<s:Label id="lblBuffer" text="{bufferLabel}" width="100%"/>
-			<s:HGroup verticalAlign="middle">
+			<s:HGroup verticalAlign="middle" width="100%" horizontalAlign="center">
 				<s:TextInput id="textInputBuffer" text="{BuffValue}" width="40" needsSoftKeyboard="true" />
 				<s:DropDownList id="cboBufferUnit" />
 				<s:Group>
@@ -5933,7 +5960,7 @@
 						  toolTip="{clearLabel}"
 						  useHandCursor="true"/>
 			</s:HGroup>
-			<s:Line xFrom="0" xTo="350" yFrom="0" yTo="0">
+			<s:Line width="100%">
 				<s:stroke>
 					<s:SolidColorStroke color="0xFFFFFF" weight="1"/>
 				</s:stroke>
