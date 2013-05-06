@@ -356,8 +356,8 @@
 			private var resultSATSymbol:Symbol;
 
 			//Build Constants
-			protected const VERSION:String = "3.2.3";
-			protected const BUILDDATE:String = "4/30/2013";
+			protected const VERSION:String = "3.3";
+			protected const BUILDDATE:String = "5/6/2013";
 
 			//Resources
 			[Embed(source="widgets/eSearch/assets/images/i_about.png")]
