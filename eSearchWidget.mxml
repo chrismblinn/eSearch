@@ -356,8 +356,8 @@
 			private var resultSATSymbol:Symbol;
 
 			//Build Constants
-			protected const VERSION:String = "3.3";
-			protected const BUILDDATE:String = "5/6/2013";
+			protected const VERSION:String = "3.3.1";
+			protected const BUILDDATE:String = "5/10/2013";
 
 			//Resources
 			[Embed(source="widgets/eSearch/assets/images/i_about.png")]
@@ -720,12 +720,14 @@
 							var lyrLink:String = XML(lyrLinkList[l]).text() || "";
 							var lyrLinkAlias:String = lyrLinkList[l].@alias || "";
 							var lyrLinkdisableIfNull:Boolean = lyrLinkList[l].@disablelinksifnull && lyrLinkList[l].@disablelinksifnull == "true";
+                            var lyrLinkdisableInPopUp:Boolean = lyrLinkList[l].@disableinpopups && lyrLinkList[l].@disableinpopups == "true";
 							var lyrIcon:String = XML(lyrLinkList[l]).child("icon") || "";
 							var linkObj:Object = {
 								link: lyrLink,
 								alias: lyrLinkAlias,
 								icon: lyrIcon,
-								disablelinksifnull: lyrLinkdisableIfNull
+								disablelinksifnull: lyrLinkdisableIfNull,
+                                disableinpopup: lyrLinkdisableInPopUp
 							};
 							lyrLinks.push(linkObj);
 						}
@@ -3386,6 +3388,10 @@
 						var alias:String = "";
 						var linkicon:String = "";
                         var linkFieldNull:Boolean = false;
+                        var disableInPopUp:Boolean = false;
+                        if(qLinks[a].disableinpopup){
+                            disableInPopUp = true;
+                        }
 						if(qLinks[a].disablelinksifnull){
 							var lfields:Array = getFieldsFromCDATA(qLinks[a].link);
 							for (var lf:int=0; lf<lfields.length; lf++){
@@ -3406,7 +3412,8 @@
 						var lObj:Object ={
 							link: link,
 							icon: linkicon,
-							alias: alias
+							alias: alias,
+                            disableinpopup: disableInPopUp
 						};
 						lyrQLinks.push(lObj);
 					}
@@ -3964,6 +3971,14 @@
 			private function popCBwithDomain(fieldName:String, sItemVal:SearchExpValueItem):void
 			{
 				configDomainVals = [];
+                
+                // add an empty entry if the value is not required
+                if (!sItemVal.isValueRequired){
+                    configDomainVals.push({
+                        value: sItemVal.noValue,
+                        label: sItemVal.noValue
+                    });
+                }
 
 				var tfield:Field;
 
@@ -5260,8 +5275,10 @@
 							popUpMediaInfo.imageSourceURL = links[l].link;
 							pminfos.push(popUpMediaInfo);
 						}else{
-							var lText:String = (links[l].alias != "") ? links[l].alias : links[l].link;
-							popUpInfo.description += "<br /><a href='" + links[l].link + "'>" + lText + "</a>";
+                            if(!links[l].disableinpopup){
+    							var lText:String = (links[l].alias != "") ? links[l].alias : links[l].link;
+    							popUpInfo.description += "<br /><a href='" + links[l].link + "'>" + lText + "</a>";
+                            }
 						}
 					}
 				}

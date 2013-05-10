@@ -1702,6 +1702,9 @@
                         }else{
                             var ext:Extent = GraphicUtil.getGraphicsExtent(fset.features);
                             if(isNaN(_zoomScale)){
+                                if(isNaN(_zoomPercent)){
+                                    _zoomPercent = 1.2;
+                                }
                                 map.zoomTo(ext.expand(_zoomPercent));
                             }else{
                                 if (map.scale > _zoomScale){
