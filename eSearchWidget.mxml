@@ -317,6 +317,7 @@
 			private var relatescsvName:String;
 			private var queryMultiImgField:String;
 			private var csvSep:String;
+            private var textQualifier:String;
 			private var lblSum:String;
 			private var sumField:String;
 			private var disableButtons:String;
@@ -333,6 +334,7 @@
 			[Bindable] private var featLyrLen:int;
 			[Bindable] private var featSethasGeom:Boolean;
 			[Bindable] private var BuffValue:String;
+            private var RemoveSearchLayersMinMaxScale:Boolean;
 
 			//Print DG Properties
 			private var dgheaderbgcolor:uint;
@@ -356,8 +358,9 @@
 			private var resultSATSymbol:Symbol;
 
 			//Build Constants
-			protected const VERSION:String = "3.3.1";
-			protected const BUILDDATE:String = "5/10/2013";
+			protected const VERSION:String = "3.3.2";
+			protected const BUILDDATE:String = "5/15/2013";
+
 
 			//Resources
 			[Embed(source="widgets/eSearch/assets/images/i_about.png")]
@@ -427,7 +430,8 @@
 					expBtnLbl = configXML.labels.exportbtnlabel || "Export...";
 					_csvName = configXML.labels.csvdefaultname || "Selected Records";
 					relatescsvName = configXML.labels.relatescsvdefaultname || "Related Records";
-					csvSep = configXML.csvseparator;
+					csvSep = configXML.csvseparator || ",";
+                    textQualifier = configXML.textqualifier || '"';
 					spatialsearchLabel = configXML.labels.spatialsearchlabel || "Spatial search";
 					searchLayerLabel = configXML.labels.searchlayerlabel || "Search entities of:";
 					bufferLabel = configXML.labels.bufferlabel || "apply a search distance:";
@@ -440,6 +444,7 @@
 					selectedGraphicalTool = configXML.selectedgraphicaltool || "";
 					enableMultiPartSearch = configXML.labels.enablemultipartsearch || "enable multi-part graphics";
 					applyTolleranceByDefault = configXML.tolerancebydefault && configXML.tolerancebydefault == "true";
+                    RemoveSearchLayersMinMaxScale = configXML.removeserchlayersminmaxscale && configXML.removeserchlayersminmaxscale == "true";
 					widgetAndGridIteract = configXML.enabledatagridinteractionwithwidget && configXML.enabledatagridinteractionwithwidget == "true";
 					requiredLbl = configXML.labels.required || "*";
 					requiredTooltip = configXML.labels.requiredtooltip || "This field is required.&#13;Enter a value to enable search button";
@@ -768,6 +773,10 @@
 //
 						layer.name = layer.id = "hiddenLayer_" + lyrLabel;
                         layer.selectionColor = NaN;
+                        if(RemoveSearchLayersMinMaxScale){
+                            layer.minScale = NaN;
+                            layer.maxScale = NaN;
+                        }
 						layer.mode = FeatureLayer.MODE_SELECTION;
 						if (useProxy && configData.proxyUrl){
 							layer.proxyURL = configData.proxyUrl;
@@ -1759,6 +1768,7 @@
 									txtExportOptionLbl: exp2txtOptLbl,
 									ExportButtonLbl: expBtnLbl,
 									csvSeperator: csvSep,
+                                    textQualifier: textQualifier,
 									dgFieldAliases: fldAliases,
 									csvName: _csvName,
 									sumField: sumField,
@@ -2480,6 +2490,7 @@
 									myfloatdg.txtExportOptionLbl = exp2txtOptLbl;
 									myfloatdg.ExportButtonLbl = expBtnLbl;
 									myfloatdg.csvSeperator = csvSep;
+                                    myfloatdg.textQualifier = textQualifier;
 									myfloatdg.dgFieldAliases = fldAliases;
 									myfloatdg.csvName = _csvName;
 									myfloatdg.sumField = sumField;
@@ -2521,6 +2532,7 @@
 									txtExportOptionLbl: exp2txtOptLbl,
 									ExportButtonLbl: expBtnLbl,
 									csvSeperator: csvSep,
+                                    textQualifier: textQualifier,
 									dgFieldAliases: fldAliases,
 									csvName: _csvName,
 									sumField: sumField,
@@ -2757,6 +2769,7 @@
 									myfloatdg.txtExportOptionLbl = exp2txtOptLbl;
 									myfloatdg.ExportButtonLbl = expBtnLbl;
 									myfloatdg.csvSeperator = csvSep;
+                                    myfloatdg.textQualifier =textQualifier;
 									myfloatdg.dgFieldAliases = fldAliases;
 									myfloatdg.csvName = _csvName;
 									myfloatdg.sumField = sumField;
@@ -2805,6 +2818,7 @@
 									txtExportOptionLbl: exp2txtOptLbl,
 									ExportButtonLbl: expBtnLbl,
 									csvSeperator: csvSep,
+                                    textQualifier: textQualifier,
 									dgFieldAliases: fldAliases,
 									csvName: _csvName,
 									sumField: sumField,
@@ -4875,6 +4889,7 @@
 							relfloatdg.txtExportOptionLbl = exp2txtOptLbl;
 							relfloatdg.ExportButtonLbl = expBtnLbl;
 							relfloatdg.csvSeperator = csvSep;
+                            relfloatdg.textQualifier = textQualifier;
 							relfloatdg.dgFieldAliases = relfldAliases;
 							relfloatdg.csvName = relatescsvName;
 							relfloatdg.sumField = sumField;
@@ -5125,6 +5140,7 @@
 						myfloatdg.featLayer = queryLayer;
 						myfloatdg.layerDetails = (queryLayer.layerDetails)?queryLayer.layerDetails:queryLayer.tableDetails;
 						myfloatdg.csvSeperator = csvSep;
+                        myfloatdg.textQualifier = textQualifier;
 						myfloatdg.csvExportOptionLbl = exp2csvOptLbl;
 						myfloatdg.txtExportOptionLbl = exp2txtOptLbl;
 						myfloatdg.ExportButtonLbl = expBtnLbl;

@@ -72,6 +72,7 @@
 			private var _currFormat:String = "";
 			private var _numFormat:String = "";
 			private var _csvSep:String = ",";
+            private var _textQualifier:String = '"';
 			private var _layerDetails:* = null;
             private var _rRid:Number;
             private var _rLayer:FeatureLayer;
@@ -205,6 +206,11 @@
 			{
 				_csvSep = value;
 			}
+            
+            public function set textQualifier(value:String):void
+            {
+                _textQualifier = value;
+            }
 			
 			public function set layerDetails(value:*):void
 			{
@@ -485,21 +491,21 @@
 							}
 							if((dataGridColumn.itemRenderer == HyperLinkColumn)||(dataGridColumn.itemRenderer == HyperLinkIconColumn)){
 								if(object[dataGridColumn.dataField] != null)
-									data += "\"" + object[dataGridColumn.dataField] + "\"";
+									data += _textQualifier + object[dataGridColumn.dataField] + _textQualifier;
 								else
-									data += '\"\"';
+									data += _textQualifier + _textQualifier;
 							}else{
 								if(dataGridColumn.itemToLabel(object) != null)
-									data += "\""+ dataGridColumn.itemToLabel(object)+ "\"";
+									data += _textQualifier + dataGridColumn.itemToLabel(object)+ _textQualifier;
 								else
-									data += '\"\"';
+									data += _textQualifier + _textQualifier;
 							}
 							if(i < (columnCount -1)){
 								data += csvSeparator;
 							}
 							//generate header of CSV, only if it's not genereted yet
 							if (!headerGenerated){
-								header += "\"" + dataGridColumn.headerText + "\"";
+								header += _textQualifier + dataGridColumn.headerText + _textQualifier;
 								if (i < columnCount - 1){
 									header += csvSeparator;
 								}
@@ -564,15 +570,15 @@
 							}
 							if((dataGridColumn.itemRenderer == HyperLinkColumn)||(dataGridColumn.itemRenderer == HyperLinkIconColumn)){
 								if(object[dataGridColumn.dataField] != null){
-									data += "\"" + object[dataGridColumn.dataField] + "\"";
+									data += _textQualifier + object[dataGridColumn.dataField] + _textQualifier;
 								}else{
-									data += '\"\"';
+									data += _textQualifier + _textQualifier;
 								}
 							}else{
 								if(dataGridColumn.itemToLabel(object) != null){
-									data += "\""+ dataGridColumn.itemToLabel(object)+ "\"";
+									data += _textQualifier + dataGridColumn.itemToLabel(object)+ _textQualifier;
 								}else{
-									data += '\"\"';
+									data += _textQualifier + _textQualifier;
 								}
 							}
 							if(i < (columnCount -1))

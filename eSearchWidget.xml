@@ -141,9 +141,9 @@
 			<expressions>
 				<expression alias="Road Name and Zip" textsearchlabel="Search by Road Name and Left Zipcode and Right Zip:">
 					<values>
-						<value prompt="Example: ANDREW" isValueRequired="true">RD_NAME = '[value]'</value>
-						<value prompt="Example: 36201" isValueRequired="true" operator="AND">ZIP_L = [value]</value>
-						<value prompt="Example: 36201" isValueRequired="true" operator="AND">ZIP_R = [value]</value>
+						<value prompt="Example: ANDREW" isvaluerequired="true">RD_NAME = '[value]'</value>
+						<value prompt="Example: 36201" isvaluerequired="true" operator="AND">ZIP_L = [value]</value>
+						<value prompt="Example: 36201" isvaluerequired="true" operator="AND">ZIP_R = [value]</value>
 					</values>
 				</expression>
 				<expression alias="Road Surface" textsearchlabel="Search by Surface Type:">
@@ -425,6 +425,7 @@
 			<disclaimer></disclaimer><!-- be carefull of the length -->
 		</footer>
 	</printdatagrid>
+        <removeserchlayersminmaxscale>false</removeserchlayersminmaxscale>
 	<keepgraphicalsearchenabled>true</keepgraphicalsearchenabled>
 	<autozoomtoresults>true</autozoomtoresults>
 	<popupsdisabled>false</popupsdisabled>
@@ -434,15 +435,16 @@
 	<spatialreference>102100</spatialreference>
 	<zoomscale>2400</zoomscale>
 	<csvseparator>,</csvseparator>
+        <textqualifier>"</textqualifier>
 	<disablebuttons></disablebuttons><!--possible values one or more not all four search types comma separated text,graphic,spatial,result,datagrid -->
 	<defaultselectionoption>textInput</defaultselectionoption><!--possible values only one graphicalInput or textInput or spatialInput -->
 	<enabledrawgraphicbutton>true</enabledrawgraphicbutton>
 	<enablebuffergraphicbutton>true</enablebuffergraphicbutton>
-    <enablelocategraphicbutton>true</enablelocategraphicbutton>
-    <enablemultigraphicssearch>false</enablemultigraphicssearch>
-    <enableincludetextsearch>true</enableincludetextsearch>
-    <enableaddtollerance>true</enableaddtollerance>
-    <enablegraphicsbuffering>true</enablegraphicsbuffering>
+        <enablelocategraphicbutton>true</enablelocategraphicbutton>
+        <enablemultigraphicssearch>false</enablemultigraphicssearch>
+        <enableincludetextsearch>true</enableincludetextsearch>
+        <enableaddtollerance>true</enableaddtollerance>
+        <enablegraphicsbuffering>true</enablegraphicsbuffering>
 	<selectedgraphicaltool></selectedgraphicaltool><!-- possible values are extent or polygon or mappoint or polyline or nothing -->
 	<multipartgraphicsearch>false</multipartgraphicsearch>
 	<floatorfixed>fixed</floatorfixed><!-- possible values are fixed and float -->

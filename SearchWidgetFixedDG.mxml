@@ -89,6 +89,7 @@
 			private var _currFormat:String = "";
 			private var _numFormat:String = "";
 			private var _csvSep:String = ",";
+            private var _textQualifier:String = '"';
 			private var _layerDetails:* = null;
 			private var _rlayerDetails:* = null;
             private var _rRid:Number;
@@ -640,15 +641,15 @@
 							}
 							if((dataGridColumn.itemRenderer == HyperLinkColumn)||(dataGridColumn.itemRenderer == HyperLinkIconColumn)){
 								if(object[dataGridColumn.dataField] != null){
-									data += "\"" + object[dataGridColumn.dataField] + "\"";
+									data += _textQualifier + object[dataGridColumn.dataField] + _textQualifier;
 								}else{
-									data += '\"\"';
+									data += _textQualifier + _textQualifier;
 								}
 							}else{
 								if(dataGridColumn.itemToLabel(object) != null){
-									data += "\""+ dataGridColumn.itemToLabel(object)+ "\"";
+									data += _textQualifier + dataGridColumn.itemToLabel(object)+ _textQualifier;
 								}else{
-									data += '\"\"';
+									data += _textQualifier + _textQualifier;
 								}
 							}
 							if(i < (columnCount -1)){
@@ -656,7 +657,7 @@
 							}
 							//generate header of CSV, only if it's not genereted yet
 							if (!headerGenerated){
-								header += "\"" + dataGridColumn.headerText + "\"";
+								header += _textQualifier + dataGridColumn.headerText + _textQualifier;
 								if (i < columnCount - 1){
 									header += csvSeparator;
 								}
@@ -724,15 +725,15 @@
 							}
 							if((dataGridColumn.itemRenderer == HyperLinkColumn)||(dataGridColumn.itemRenderer == HyperLinkIconColumn)){
 								if(object[dataGridColumn.dataField] != null){
-									data += "\"" + object[dataGridColumn.dataField] + "\"";
+									data += _textQualifier + object[dataGridColumn.dataField] + _textQualifier;
 								}else{
-									data += '\"\"';
+									data += _textQualifier + _textQualifier;
 								}
 							}else{
 								if(dataGridColumn.itemToLabel(object) != null){
-									data += "\""+ dataGridColumn.itemToLabel(object)+ "\"";
+									data += _textQualifier + dataGridColumn.itemToLabel(object)+ _textQualifier;
 								}else{
-									data += '\"\"';
+									data += _textQualifier + _textQualifier;
 								}
 							}
 							if(i < (columnCount -1)){
@@ -740,7 +741,7 @@
 							}
 							//generate header of CSV, only if it's not genereted yet
 							if (!headerGenerated){
-								header += "\"" + dataGridColumn.headerText + "\"";
+								header += _textQualifier + dataGridColumn.headerText + _textQualifier;
 								if (i < columnCount - 1){
 									header += "\t";
 								}
@@ -1393,6 +1394,7 @@
 						_exp2txtBtnLbl = theObj.txtExportOptionLbl;
 						_exportButtonLbl = theObj.ExportButtonLbl;
 						_csvSep = theObj.csvSeperator;
+                        _textQualifier = theObj.textQualifier;
 						_dgFieldAliases = theObj.dgFieldAliases;
 						_csvName = theObj.csvName;
 						sumField(theObj.sumField);

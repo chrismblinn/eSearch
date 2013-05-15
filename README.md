@@ -5,6 +5,12 @@
 [![Image of Enhanced Search Widget](https://raw.github.com/rscheitlin/eSearch/master/Preview.jpg "Example Enhanced Search Widget app")](http://gis.calhouncounty.org/FlexViewer3.1/index.html?config=config-eSearch.xml&esearch=2&slayer=3&exprnum=1)
 
 ## Version Updates
+Version 3.3.2 - 5/15/2013
+* Added textqualifier tag for defining the character that will be used in the export datagrid to signify that the
+field contents are a string to programs like Excel®.
+* Added removeserchlayersminmaxscale tag that specifies whether or not to remove the
+MinScale and MaxScale of the layer that is set on the particular layer from ArcGIS Server.
+
 Version 3.3.1 - 5/10/2013
 * Better error trapping for missing zoomscale on relates
 * Add empty strings choice in dropdown for expression from a domain field that is set to isValueRequired false
