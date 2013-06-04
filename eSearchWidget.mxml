@@ -132,6 +132,8 @@
             import com.esri.ags.geometry.Multipoint;
             import com.esri.ags.geometry.Polygon;
             import com.esri.ags.geometry.Polyline;
+            import com.esri.ags.layers.ArcGISDynamicMapServiceLayer;
+            import com.esri.ags.layers.ArcGISTiledMapServiceLayer;
             import com.esri.ags.layers.FeatureLayer;
             import com.esri.ags.layers.GraphicsLayer;
             import com.esri.ags.layers.Layer;
@@ -217,6 +219,7 @@
 			[Bindable] private var searchLayerLabel:String;
 			[Bindable] private var bufferLabel:String;
 			[Bindable] private var urlSearchErrorMsg:String;
+            [Bindable] private var PagingErrorMsg:String;
 			private var graphicalsearchLabel:String;
 			private var textsearchLabel:String;
 			private var resultsLabel:String;
@@ -335,6 +338,7 @@
 			[Bindable] private var featSethasGeom:Boolean;
 			[Bindable] private var BuffValue:String;
             private var RemoveSearchLayersMinMaxScale:Boolean;
+            private var pagingAttempts:int = 0;
 
 			//Print DG Properties
 			private var dgheaderbgcolor:uint;
@@ -358,9 +362,8 @@
 			private var resultSATSymbol:Symbol;
 
 			//Build Constants
-			protected const VERSION:String = "3.3.2";
-			protected const BUILDDATE:String = "5/15/2013";
-
+			protected const VERSION:String = "3.3.3";
+			protected const BUILDDATE:String = "6/4/2013";
 
 			//Resources
 			[Embed(source="widgets/eSearch/assets/images/i_about.png")]
@@ -409,6 +412,7 @@
                     elocateGraLabel = configXML.labels.existinglocategraphicslabel || "Use Existing Enhanced Locate Widget Graphics";
 					graphicalsearchLabel = configXML.labels.graphicalsearchlabel || "Graphical Search";
 					textsearchLabel = configXML.labels.textsearchlabel || "Text Search";
+                    PagingErrorMsg = configXML.labels.pagingqueryerrormsg || "Four unsucessfull attempts was made to get unique values for ";
 					includetextquerywarnTip = configXML.labels.includetextquerywarn || "Must be the same search layer in both\ngraphical and text search pages.";
 					resultsLabel = configXML.labels.resultslabel || "Results";
 					layerLabel = configXML.labels.layerlabel || "Search Layer:";
@@ -762,15 +766,21 @@
 
 						var lyrSpatialLabel:String = lyrList[i].spatialquerylabel;
 						var lyrSpatialSearchLyr:Boolean = lyrList[i].spatialsearchlayer && lyrList[i].spatialsearchlayer == "true";
-//This is where I need to get a token from the Identity Manager if one is not provided
+
 						if(IdentityManager.instance.enabled){
 							var cred:Credential = IdentityManager.instance.findCredential(lyrURL);
-							if (cred && lyrToken == ""){
+							if (cred && lyrToken == "" && cred.token){
 								lyrToken = cred.token;
 							}
 						}
+                        if(lyrToken == "" || !lyrToken){
+                            var t:String = doesLayerExistinMapandHaveAToken(lyrURL)
+                            if(t){
+                                lyrToken = t;
+                            }
+                        }
 						const layer:FeatureLayer = new FeatureLayer(lyrURL, null, (lyrToken != "")?lyrToken:null);
-//
+
 						layer.name = layer.id = "hiddenLayer_" + lyrLabel;
                         layer.selectionColor = NaN;
                         if(RemoveSearchLayersMinMaxScale){
@@ -951,15 +961,21 @@
 						var tbluseAMF:String = tblList[i].useamf;
 						var tblopenDG:Boolean = tblList[i].autoopendatagrid && tblList[i].autoopendatagrid == "true";
 						var tblQueryAttach:Boolean = tblList[i].@queryattachments && tblList[i].@queryattachments == "true";
-//This is where I need to get the token from the Identity Manger if one is not provided
+                        
 						if(IdentityManager.instance.enabled){
 							var tcred:Credential = IdentityManager.instance.findCredential(tblURL);
-							if (tcred && tblToken == ""){
+							if (tcred && tblToken == "" && tcred.token){
 								tblToken = tcred.token;
 							}
 						}
+                        if(tblToken == "" || !tblToken){
+                            var t2:String = doesLayerExistinMapandHaveAToken(tblURL)
+                            if(t2){
+                                tblToken = t2;
+                            }
+                        }
 						var table:FeatureLayer = new FeatureLayer(tblURL, null, (tblToken != "")?tblToken:null);
-///
+
 						if (useProxy && configData.proxyUrl){
 							table.proxyURL = configData.proxyUrl;
 						}
@@ -1262,9 +1278,48 @@
 					}
 				}
 			}
+            
+            /*
+            * Check if the layer exists in the map already and does it have a token specified
+            * @param searchLayerURL is an string that specifies the layer url
+            */
+            protected function doesLayerExistinMapandHaveAToken(searchLayerURL:String):String
+            {
+                const mapLayers:ArrayCollection = ArrayCollection(map.layers);
+                var token:String = null;
+                
+                // loop through all the map layers
+                for (var n:int = 0; n < mapLayers.length;){
+                    if ((mapLayers.getItemAt(n)).name.indexOf("hiddenLayer_") == -1){
+                        if(mapLayers.getItemAt(n) is FeatureLayer){
+                            if((mapLayers.getItemAt(n) as FeatureLayer).url == searchLayerURL && (mapLayers.getItemAt(n) as FeatureLayer).token){
+                                token = (mapLayers.getItemAt(n) as FeatureLayer).token;
+                                break;
+                            }
+                        }
+                        if(mapLayers.getItemAt(n) is ArcGISDynamicMapServiceLayer){
+                            if((mapLayers.getItemAt(n) as ArcGISDynamicMapServiceLayer).url == searchLayerURL && (mapLayers.getItemAt(n) as ArcGISDynamicMapServiceLayer).token){
+                                token = (mapLayers.getItemAt(n) as ArcGISDynamicMapServiceLayer).token;
+                                break;
+                            }
+                        }
+                        if(mapLayers.getItemAt(n) is ArcGISTiledMapServiceLayer){
+                            if((mapLayers.getItemAt(n) as ArcGISTiledMapServiceLayer).url == searchLayerURL && (mapLayers.getItemAt(n) as ArcGISTiledMapServiceLayer).token){
+                                token = (mapLayers.getItemAt(n) as ArcGISTiledMapServiceLayer).token;
+                                break;
+                            }
+                        }
+                        n++;
+                    }else{
+                        n++;
+                    }
+                }
+                return token;
+            }
 
 			/*
 			* If a layer has specific symbology set in the eSearchWidget.xml then use it instead of the default symbology
+            * @param lyrList is an XML that specifies the layer symbology
 			*/
 			private function getLayerSymbology(lyrList:XML):Symbol
 			{
@@ -3866,19 +3921,35 @@
 				}else{
 					var vNum:Number = (queryLayer.layerDetails)?queryLayer.layerDetails.version:queryLayer.tableDetails.version;
 					var isTenOrGreater:Boolean = (vNum >= 10);
-                    
+                    pagingAttempts = 0;
 					pagingQueryTask = new PagingQueryTask(queryLayer.url, targetField, isTenOrGreater, sItemVal,
 						uniqueCache, sItemVal.isValueRequired, targetDateFormat, uUseUTC, queryLayer.token, queryLayer.proxyURL);
 					pagingQueryTask.addEventListener("pagingComplete",pagingQueryTask_complete);
+                    pagingQueryTask.addEventListener("pagingFault",pagingQueryTask_failed);
 					pagingQueryTask.execute();
 				}
 			}
+            
+            /*
+            * handle the paging task failure by trying again four more times
+            */
+            private function pagingQueryTask_failed(event:Event):void
+            {
+                pagingAttempts++;
+                if(pagingAttempts <= 4){
+                    pagingQueryTask.execute();
+                }else{
+                    showMessage(PagingErrorMsg + pagingQueryTask.fieldName,false);
+                    pagingQueryTask_complete(event);
+                }
+            }
 
 			/*
 			* handle the paging complete task and call popCBwithUnique also adding to unique vals dictionary
 			*/
 			private function pagingQueryTask_complete(event:Event):void
 			{
+                pagingAttempts = 0;
 				cursorManager.removeBusyCursor();
 				pagingQueryTask.sItemVal.setCBDataProvider(pagingQueryTask.uniqueValues);
 				if(!pagingQueryTask.pagingEscaped){
@@ -4850,7 +4921,7 @@
 						return;
 					}
 					relfldAliases = fset.fieldAliases;
-					if(relateFields.length == 0){
+					if(relateFields.length == 0 && relateHyperFields.length == 0){
 						var rfld:Field;
 						for each (rfld in fset.fields){
 							var str0:String = rfld.name + "~";
@@ -5411,6 +5482,9 @@
 					}else{
 						var graphicsExtent:Extent = GraphicUtil.getGraphicsExtent(validateSelectedGeom(qFeatLayer.selectedFeatures));
 						if(graphicsExtent){
+                            if(isNaN(zoomPercent)){
+                                zoomPercent = 1.2;
+                            }
 							map.zoomTo(graphicsExtent.expand(zoomPercent));
 						}else{
 							var mp2:MapPoint = resultsFeatureSet.features[0].geometry as MapPoint;

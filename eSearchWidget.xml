@@ -502,6 +502,7 @@
 		<newselectionmethodtip>Create new selection</newselectionmethodtip>
 		<addselectionmethodtip>Add to current selection</addselectionmethodtip>
 		<removeselectionmethodtip>Remove from current selection</removeselectionmethodtip>
+		<pagingqueryerrormsg>Four unsucessfull attempts was made to get unique values for </pagingqueryerrormsg>
 	</labels>
 	<symbols>
 		<simplefillsymbol color="0x00ffff" alpha="0.5">

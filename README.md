@@ -5,6 +5,12 @@
 [![Image of Enhanced Search Widget](https://raw.github.com/rscheitlin/eSearch/master/Preview.jpg "Example Enhanced Search Widget app")](http://gis.calhouncounty.org/FlexViewer3.1/index.html?config=config-eSearch.xml&esearch=2&slayer=3&exprnum=1)
 
 ## Version Updates
+Version 3.3.3 - 6/4/2013
+* Fixed issue where if relate only has one field and it is a hyperlink field the field is added twice and neither is a hyperlink field.
+* Fixed issue with zoom and relates
+* Better validation of whether the search layer exists in the map and a token is already specified.
+* Make 4 additional attempts to get unique values from a field before failing
+
 Version 3.3.2 - 5/15/2013
 * Added textqualifier tag for defining the character that will be used in the export datagrid to signify that the
 field contents are a string to programs like Excel®.

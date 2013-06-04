@@ -474,7 +474,6 @@ package widgets.eSearch
 			isQuerying = false;
 			FlexGlobals.topLevelApplication.removeEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
 			esc = false;
-			dispatchEvent(new FlexEvent("pagingComplete"));
 			dispatchEvent(new FlexEvent("pagingFault"));
 		}
 		
