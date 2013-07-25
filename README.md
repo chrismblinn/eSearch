@@ -5,6 +5,13 @@
 [![Image of Enhanced Search Widget](https://raw.github.com/rscheitlin/eSearch/master/Preview.jpg "Example Enhanced Search Widget app")](http://gis.calhouncounty.org/FlexViewer3.1/index.html?config=config-eSearch.xml&esearch=2&slayer=3&exprnum=1)
 
 ## Version Updates
+Version 3.4 - 7/25/2013
+* memory leak fix
+* Link alias added to photo caption
+* Issue with type and coded domains fixed
+* Issue with field used as hyperlinkaliastext and not being defined in the field list fixed
+* Datagrid autosizing will use the hyperlinkaliastext fields value if larger than the alias text
+
 Version 3.3.3 - 6/4/2013
 * Fixed issue where if relate only has one field and it is a hyperlink field the field is added twice and neither is a hyperlink field.
 * Fixed issue with zoom and relates

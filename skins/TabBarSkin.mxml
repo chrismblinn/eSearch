@@ -59,7 +59,7 @@ created by the TabBarSkin use the TabBarButtonSkin class.
                 var elt:UIComponent = dataGroup.getElementAt(i) as UIComponent;
                 if (elt){
                     elt.setStyle("cornerRadius", cornerRadius);
-				}
+                }
             }
 
             super.updateDisplayList(unscaledWidth, unscaledHeight);

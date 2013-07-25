@@ -22,21 +22,21 @@
 -->
 <s:SparkSkin xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark" 
     xmlns:fb="http://ns.adobe.com/flashbuilder/2009" minWidth="21" minHeight="26" alpha.disabledStates="0.5">
-	<fx:Metadata>[HostComponent("spark.components.ButtonBarButton")]</fx:Metadata>
+    <fx:Metadata>[HostComponent("spark.components.ButtonBarButton")]</fx:Metadata>
 
     <!-- host component -->
     <fx:Script fb:purpose="styling">
         /* Define the skin elements that should not be colorized. 
            For toggle button, the graphics are colorized but the label is not. */
         static private const exclusions:Array = ["labelDisplay","icon"];
-		
-		[Bindable]
-		[Embed(source="widgets/eSearch/assets/images/i_search16.png")]
-		private var SearchIcon:Class;
-		
-		[Bindable]
-		[Embed(source="widgets/eSearch/assets/images/i_relate16.png")]
-		private var RelateIcon:Class;
+        
+        [Bindable]
+        [Embed(source="widgets/eSearch/assets/images/i_search16.png")]
+        private var SearchIcon:Class;
+        
+        [Bindable]
+        [Embed(source="widgets/eSearch/assets/images/i_relate16.png")]
+        private var RelateIcon:Class;
 
         /**
          * @private
@@ -71,12 +71,12 @@
             if (highlightStroke){ highlightStroke.topRightRadiusX = highlightStroke.topLeftRadiusX = cornerRadius;}
             if (hldownstroke1){ hldownstroke1.topRightRadiusX = hldownstroke1.topLeftRadiusX = cornerRadius;}
             if (hldownstroke2){ hldownstroke2.topRightRadiusX = hldownstroke2.topLeftRadiusX = cornerRadius;}
-			
-			if(labelDisplay.text == "Search Results"){
-				icon.source = SearchIcon;
-			}else{
-				icon.source = RelateIcon;
-			}
+            
+            if(labelDisplay.text == "Search Results"){
+                icon.source = SearchIcon;
+            }else{
+                icon.source = RelateIcon;
+            }
             super.updateDisplayList(unscaledWidth, unscaledHeight);
         }
         
@@ -223,9 +223,9 @@
         </s:stroke>
     </s:Rect>
     
-	<!-- layer 7.5: icon -->
-	<s:BitmapImage id="icon" left="5" verticalCenter="0" height="16" width="16"/>
-	
+    <!-- layer 7.5: icon -->
+    <s:BitmapImage id="icon" left="5" verticalCenter="0" height="16" width="16"/>
+    
     <!-- layer 8: text -->
     <!--- @copy spark.components.supportClasses.ButtonBase#labelDisplay -->
     <s:Label id="labelDisplay"

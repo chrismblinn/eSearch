@@ -12,19 +12,19 @@
 package widgets.eSearch
 {
 
-	import mx.core.ClassFactory;
-	
-	import spark.components.DataGroup;
-	
-	// these events bubble up from the SearchResultItemRenderer
-	[Event(name="relateClick", type="flash.events.Event")]
-	
-	public class RelateResultDataGroup extends DataGroup
-	{
-	    public function RelateResultDataGroup()
-	    {
-	        super();
-	        this.itemRenderer = new ClassFactory(RelateResultItemRenderer);
-	    }
-	}
+    import mx.core.ClassFactory;
+    
+    import spark.components.DataGroup;
+    
+    // these events bubble up from the SearchResultItemRenderer
+    [Event(name="relateClick", type="flash.events.Event")]
+    
+    public class RelateResultDataGroup extends DataGroup
+    {
+        public function RelateResultDataGroup()
+        {
+            super();
+            this.itemRenderer = new ClassFactory(RelateResultItemRenderer);
+        }
+    }
 }

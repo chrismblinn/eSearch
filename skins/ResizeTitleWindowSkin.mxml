@@ -88,8 +88,8 @@
                 setPartCornerRadii(border, withControls); 
                 setPartCornerRadii(background, withControls);
             }
-			
-			if(iconDisplay.source) titleDisplay.left = 40;
+            
+            if(iconDisplay.source) titleDisplay.left = 40;
             
             if (bottomMaskRect) setPartCornerRadii(bottomMaskRect, withControls); 
             
@@ -278,16 +278,16 @@
                         <s:HorizontalLayout paddingLeft="10" paddingRight="10" paddingTop="7" paddingBottom="7" gap="10" />
                     </s:layout>
                 </s:Group>
-				
-				<s:Image id="resizeHandle" right="0" bottom="0" 
-						  source="@Embed('widgets/eSearch/assets/images/w_resize.png')"/>
+                
+                <s:Image id="resizeHandle" right="0" bottom="0" 
+                          source="@Embed('widgets/eSearch/assets/images/w_resize.png')"/>
             </s:Group>
         </s:Group>
     </s:Group>
-	<s:BitmapImage id="iconDisplay" x="-5" y="-8" 
-			 width="40" height="40">
-		<s:filters>
-			<s:DropShadowFilter blurX="10" blurY="10"/>
-		</s:filters>
-	</s:BitmapImage>
+    <s:BitmapImage id="iconDisplay" x="-5" y="-8" 
+             width="40" height="40">
+        <s:filters>
+            <s:DropShadowFilter blurX="10" blurY="10"/>
+        </s:filters>
+    </s:BitmapImage>
 </s:SparkSkin>

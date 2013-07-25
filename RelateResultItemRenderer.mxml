@@ -29,23 +29,23 @@
 
             [Bindable]
             private var relateResult:RelateResult;
-			
-			[Bindable]
-			private var relateicon:String;
-			
-			[Bindable]
-			private var relatetooltip:String;
+            
+            [Bindable]
+            private var relateicon:String;
+            
+            [Bindable]
+            private var relatetooltip:String;
 
             private function itemrenderer_dataChangeHandler(event:FlexEvent):void
             {
-				relateResult = data as RelateResult;
+                relateResult = data as RelateResult;
 
                 if (relateResult){
-					if(relateResult.icon != ""){
-						relateicon = relateResult.icon;
-					}else{
-						relateicon = "widgets/eSearch/assets/images/i_relate.png";
-					}
+                    if(relateResult.icon != ""){
+                        relateicon = relateResult.icon;
+                    }else{
+                        relateicon = "widgets/eSearch/assets/images/i_relate.png";
+                    }
                 }
             }
 
@@ -84,11 +84,11 @@
               paddingRight="3"
               paddingTop="3"
               verticalAlign="middle">
-		<mx:Image width="20" height="20"
-				  source="{relateicon}"/>
-		<s:Label width="100%"
-				 fontWeight="bold"
-				 maxDisplayedLines="1"
-				 text="{relateResult.name}"/>
+        <mx:Image width="20" height="20"
+                  source="{relateicon}"/>
+        <s:Label width="100%"
+                 fontWeight="bold"
+                 maxDisplayedLines="1"
+                 text="{relateResult.name}"/>
     </s:HGroup>
 </s:ItemRenderer>

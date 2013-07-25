@@ -11,31 +11,31 @@
 ////////////////////////////////////////////////////////////////////////////////
 package widgets.eSearch
 {
-	import flash.events.EventDispatcher;
-	
-	[Bindable]
-	[RemoteClass(alias="widgets.eSearch.RelateResult")]
-	
-	public class RelateResult extends EventDispatcher
-	{
-		public var name:String;
-		
-		public var id:Number;
-		
-		public var fields:XMLList;
-		
-		public var enableexport:Boolean;
-		
-		public var enableprint:Boolean;
-		
-		public var oid:Number;
-		
-		public var icon:String;
-		
-		public var printtitle: String;
+    import flash.events.EventDispatcher;
+    
+    [Bindable]
+    [RemoteClass(alias="widgets.eSearch.RelateResult")]
+    
+    public class RelateResult extends EventDispatcher
+    {
+        public var name:String;
+        
+        public var id:Number;
+        
+        public var fields:XMLList;
+        
+        public var enableexport:Boolean;
+        
+        public var enableprint:Boolean;
+        
+        public var oid:Number;
+        
+        public var icon:String;
+        
+        public var printtitle: String;
         
         public var zoompercent:Number;
         
         public var zoomscale:Number;
-	}
+    }
 }
