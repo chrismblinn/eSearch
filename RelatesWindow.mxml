@@ -4,13 +4,16 @@
                xmlns:mx="library://ns.adobe.com/flex/mx" 
                xmlns:Search="widgets.eSearch.*"
                width="400" height="200"
-               title="Choose the Relate" >
+               title="Choose the Relate"
+               close="closeHandler(event)">
     <s:layout>
         <s:HorizontalLayout/>
     </s:layout>
     <fx:Script>
         <![CDATA[
             import mx.collections.ArrayCollection;
+            import mx.events.CloseEvent;
+            import mx.managers.PopUpManager;
             
             import spark.components.supportClasses.ItemRenderer;
             
@@ -27,6 +30,12 @@
                 var relRslt:RelateResult = ItemRenderer(event.target).data as RelateResult;
                 dispatchEvent(new RelateChosenEvent("relateClicked", false, true, relRslt));
             }
+            
+            protected function closeHandler(event:CloseEvent):void
+            {
+                PopUpManager.removePopUp(this);
+            }
+            
         ]]>
     </fx:Script>
     <s:Scroller id="recVbox" width="100%" height="100%">

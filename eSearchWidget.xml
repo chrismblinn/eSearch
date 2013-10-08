@@ -193,7 +193,7 @@
             <relates>
                 <relate id="0" label="ABIMS Bridge" enableexport="true" icon="assets/images/i_hydro.png">
                     <fields all="true" />
-                                        <zoomscale usegeometry="true" zoompercent="1.6" />
+                    <zoomscale usegeometry="true" zoompercent="1.6" />
                 </relate>
                 <relate id="1" label="Average Daily Traffic" enableexport="true" enableprintgrid="true"
                     icon="assets/images/i_flag.png" printtitle="Related Average Daily Traffic">
@@ -205,7 +205,7 @@
                         <field name="ADT" sum="true" sumlabel="ADT Total Count: " sort="asc|2|numeric"/>
                         <field name="Percent_Tr" />
                     </fields>
-                                        <zoomscale usegeometry="true" zoompercent="1.6" />
+                    <zoomscale usegeometry="true" zoompercent="1.6" />
                 </relate>
                 <relate id="2" label="Railroad Crossings" enableexport="true" icon="assets/images/i_folder.png">
                     <fields all="false">
@@ -216,7 +216,7 @@
                         <field name="Clearance" />
                         <field name="Control_Mark" />
                     </fields>
-                                        <zoomscale usegeometry="true" zoompercent="1.6" />
+                    <zoomscale usegeometry="true" zoompercent="1.6" />
                 </relate>
                 <relate id="3" label="Signs" enableexport="false" enableprintgrid="true" icon="assets/images/i_lego.png">
                     <fields all="false">
@@ -228,7 +228,7 @@
                             hyperlinkaliastext="Get Sign Image" linkprefix="" linksuffix="" />
                         <field name="post" />
                     </fields>
-                                        <zoomscale usegeometry="true" zoompercent="1.6" />
+                    <zoomscale usegeometry="true" zoompercent="1.6" />
                 </relate>
                 <relate id="4" label="Guardrails" enableexport="true" icon="assets/images/i_clock.png">
                     <fields all="false">
@@ -240,7 +240,7 @@
                         <field name="Type_start_a" />
                         <field name="Comments" />
                     </fields>
-                                        <zoomscale usegeometry="true" zoompercent="1.6" />
+                    <zoomscale usegeometry="true" zoompercent="1.6" />
                 </relate>
             </relates>
             <queryattachments>false</queryattachments>
@@ -425,7 +425,7 @@
             <disclaimer></disclaimer><!-- be carefull of the length -->
         </footer>
     </printdatagrid>
-        <removeserchlayersminmaxscale>false</removeserchlayersminmaxscale>
+    <removeserchlayersminmaxscale>false</removeserchlayersminmaxscale>
     <keepgraphicalsearchenabled>true</keepgraphicalsearchenabled>
     <autozoomtoresults>true</autozoomtoresults>
     <popupsdisabled>false</popupsdisabled>
@@ -435,21 +435,22 @@
     <spatialreference>102100</spatialreference>
     <zoomscale>2400</zoomscale>
     <csvseparator>,</csvseparator>
-        <textqualifier>"</textqualifier>
+    <textqualifier>"</textqualifier>
     <disablebuttons></disablebuttons><!--possible values one or more not all four search types comma separated text,graphic,spatial,result,datagrid -->
     <defaultselectionoption>textInput</defaultselectionoption><!--possible values only one graphicalInput or textInput or spatialInput -->
     <enabledrawgraphicbutton>true</enabledrawgraphicbutton>
     <enablebuffergraphicbutton>true</enablebuffergraphicbutton>
-        <enablelocategraphicbutton>true</enablelocategraphicbutton>
-        <enablemultigraphicssearch>false</enablemultigraphicssearch>
-        <enableincludetextsearch>true</enableincludetextsearch>
-        <enableaddtollerance>true</enableaddtollerance>
-        <enablegraphicsbuffering>true</enablegraphicsbuffering>
+    <enablelocategraphicbutton>true</enablelocategraphicbutton>
+    <enablemultigraphicssearch>false</enablemultigraphicssearch>
+    <enableincludetextsearch>true</enableincludetextsearch>
+    <enableaddtollerance>true</enableaddtollerance>
+    <enablegraphicsbuffering>true</enablegraphicsbuffering>
     <selectedgraphicaltool></selectedgraphicaltool><!-- possible values are extent or polygon or mappoint or polyline or nothing -->
     <multipartgraphicsearch>false</multipartgraphicsearch>
     <floatorfixed>fixed</floatorfixed><!-- possible values are fixed and float -->
     <relatetooltip>Show Relates</relatetooltip>
     <relateicon>widgets/eSearch/assets/images/i_relate.png</relateicon>
+	<subselection color="0xfbfe0a" linewidth="4" alpha="0.8" />
     <labels>
         <urlsearcherrormessage>URL search parameters are incorrect</urlsearcherrormessage>
         <includetextquery>include text query in selection criteria</includetextquery>

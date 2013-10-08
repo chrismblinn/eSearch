@@ -30,7 +30,8 @@
         ]]>
     </fx:Script>
     
-    <s:Label id="lblData" top="9" left="7" useHandCursor="true" buttonMode="true"
+    <s:Label id="lblData" top="9" left="7"
+             useHandCursor="true" buttonMode="true"
              click="lblData_clickHandler(event)"
              textDecoration="underline"/>
 </s:GridItemRenderer>

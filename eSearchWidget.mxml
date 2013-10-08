@@ -16,16 +16,16 @@
 <!--
     See ReadMe.txt for Version updates and bug fixes
 -->
-<viewer:BaseWidget xmlns:esri            ="http://www.esri.com/2008/ags"
-                   xmlns:fx                ="http://ns.adobe.com/mxml/2009"
-                   xmlns:s                ="library://ns.adobe.com/flex/spark"
-                   xmlns:mx                ="library://ns.adobe.com/flex/mx"
-                   xmlns:mxeffects         ="com.adobe.ac.mxeffects.*"
-                   xmlns:viewer            ="com.esri.viewer.*"
-                   xmlns:Search           ="widgets.eSearch.*"
+<viewer:BaseWidget xmlns:esri ="http://www.esri.com/2008/ags"
+                   xmlns:fx ="http://ns.adobe.com/mxml/2009"
+                   xmlns:s ="library://ns.adobe.com/flex/spark"
+                   xmlns:mx ="library://ns.adobe.com/flex/mx"
+                   xmlns:mxeffects ="com.adobe.ac.mxeffects.*"
+                   xmlns:viewer ="com.esri.viewer.*"
+                   xmlns:Search ="widgets.eSearch.*"
                    xmlns:supportClasses ="com.esri.ags.tasks.supportClasses.*"
-                   currentState            ="textInput"
-                   widgetConfigLoaded    ="init()">
+                   currentState ="textInput"
+                   widgetConfigLoaded ="init()">
 
     <viewer:states>
         <s:State name="graphicalInput"/>
@@ -360,10 +360,13 @@
             private var resultLineSymbol:Symbol;
             private var resultFillSymbol:Symbol;
             private var resultSATSymbol:Symbol;
+            private var subSelColor:uint;
+            private var subSelWidth:Number;
+            private var subSelAlpha:Number;
 
             //Build Constants
-            protected const VERSION:String = "3.4";
-            protected const BUILDDATE:String = "7/22/2013";
+            protected const VERSION:String = "3.5";
+            protected const BUILDDATE:String = "10/4/2013";
 
             //Resources
             [Embed(source="widgets/eSearch/assets/images/i_about.png")]
@@ -378,7 +381,6 @@
             private function init():void
             {
                 var fLayer:FeatureLayer = new FeatureLayer;
-                
                 sWidget = this;
                 WIDGET_URL = config.substring(0,config.lastIndexOf("/")) + "/assets/images/";
                 if (configXML){
@@ -580,6 +582,10 @@
                     cboGraBufferUnit.selectedIndex = ddSelIndx;
                     BuffValue = configXML.buffervalue || "50";
 
+                    subSelColor = (configXML.subselection.@color[0] != null) ? configXML.subselection.@color[0] : 0xfbfe0a;
+                    subSelWidth = (configXML.subselection.@linewidth[0] != null) ? configXML.subselection.@linewidth[0] : 4;
+                    subSelAlpha = (configXML.subselection.@alpha[0] != null) ? configXML.subselection.@alpha[0] : 0.8;
+                    
                     //marker symbol
                     if(configXML.symbols.picturemarkersymbol.@url[0] != null){
                         const resultMarkerSymbolURL:String = configXML.symbols.picturemarkersymbol.@url || widgetIcon;
@@ -612,7 +618,7 @@
                     const resultLineSymbolAlpha:Number = (configXML.symbols.simplelinesymbol.@alpha[0] != null) ? configXML.symbols.simplelinesymbol.@alpha : 0.8;
                     const resultLineSymbolWidth:Number = (configXML.symbols.simplelinesymbol.@width[0] != null) ? configXML.symbols.simplelinesymbol.@width : 2;
                     resultLineSymbol = new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, resultLineSymbolColor, resultLineSymbolAlpha, resultLineSymbolWidth);
-
+                    
                     // fill symbol
                     const resultFillSymbolColor:uint = (configXML.symbols.simplefillsymbol.@color[0] != null) ? configXML.symbols.simplefillsymbol.@color : 0xFF0000;
                     const resultFillSymbolAlpha:Number = (configXML.symbols.simplefillsymbol.@alpha[0] != null) ? configXML.symbols.simplefillsymbol.@alpha : 0.5;
@@ -620,7 +626,7 @@
                     const resultFillSymbolOutlineAlpha:Number = (configXML.symbols.simplefillsymbol.outline.@alpha[0] != null) ? configXML.symbols.simplefillsymbol.outline.@alpha : 0.8;
                     const resultFillSymbolOutlineWidth:Number = (configXML.symbols.simplefillsymbol.outline.@width[0] != null) ? configXML.symbols.simplefillsymbol.outline.@width : 2;
                     resultFillSymbol = new SimpleFillSymbol(SimpleFillSymbol.STYLE_SOLID, resultFillSymbolColor, resultFillSymbolAlpha, new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, resultFillSymbolOutlineColor, resultFillSymbolOutlineAlpha, resultFillSymbolOutlineWidth));
-
+                    
                     configSearchGraphical = [];
                     configSearchText = [];
                     configSpatialSearchLayers = [];
@@ -764,7 +770,6 @@
                             }
                         }
 
-                        var lyrSpatialLabel:String = lyrList[i].spatialquerylabel;
                         var lyrSpatialSearchLyr:Boolean = lyrList[i].spatialsearchlayer && lyrList[i].spatialsearchlayer == "true";
 
                         if(IdentityManager.instance.enabled){
@@ -818,7 +823,6 @@
                             layer: layer,
                             label: lyrLabel,
                             titlefield: lyrTitleField,
-                            spatialsearchlabel: lyrSpatialLabel,
                             spatialsearchlayer: lyrSpatialSearchLyr,
                             graphicallabel: lyrGraphicalLabel,
                             expr: configLayerExprs,
@@ -1028,7 +1032,7 @@
                     graGraphicsLayer = new GraphicsLayer();
                     graGraphicsLayer.name = "Graphical Search Layer";
                     map.addLayer(graGraphicsLayer);
-
+                    
                     var userTolerance:Number = Number(configXML.toleranceforpointgraphicalselection);
                     if (userTolerance > 0){
                         pointSearchTolerance = userTolerance;
@@ -1635,7 +1639,7 @@
                     if(typeQ == "layer"){
                         qFeatLayer.renderer = new SimpleRenderer(getFeatLyrSymbol(qFeatLayer, "queryFromURL"));
                     }
-                    qFeatLayer.name = qFeatLayer.id = "hiddenLayer_eSearchhSelectionLayer";
+                    qFeatLayer.name = qFeatLayer.id = "hiddenLayer_eSearchSelectionLayer";
                     qFeatLayer.addEventListener(FlexEvent.HIDE, featLayer_hideHandler);
                     featLyrLen = qFeatLayer.selectedFeatures.length;
                     map.addLayer(qFeatLayer);
@@ -1888,7 +1892,8 @@
                                     footerPageofPage: dgfooterpageofpage,
                                     footerDisclaimer: dgfooterdisclaimer,
                                     autoOpenDataGrid: openDataGrid,
-                                    relateToolTip: relateToolTip
+                                    relateToolTip: relateToolTip,
+                                    subselectioncolor: subSelColor
                                 };
                                 var dgconfigArr:ArrayCollection = new ArrayCollection();
                                 dgconfigArr.addItem(dgConfig);
@@ -2502,8 +2507,8 @@
                     for(var sg:Number = 0; sg < searchGroup.numElements; sg++){
                         sItemVal = searchGroup.getElementAt(sg) as SearchExpValueItem;
                         queryExpr = configSearchText[i].expr[j].values[sg].expression;
-                        
-                        if(queryExpr == "[value]" || queryExpr.toLowerCase().indexOf(" in (") > 0){
+
+                        if (queryExpr == "[value]" || queryExpr.toLowerCase().indexOf(" in (") > 0){
                             //meaning an open SQL expression or an SQL with an IN Statement
                             eVal = sItemVal.textValue;
                         }else{
@@ -2644,6 +2649,7 @@
                                     myfloatdg.footerDisclaimer = dgfooterdisclaimer;
                                     myfloatdg.footerPageofPage = dgfooterpageofpage;
                                     myfloatdg.dgtitle = queryPrintTitle;
+                                    myfloatdg.subselectioncolor = subSelColor;
                                 }
                                 map.cursorManager.removeBusyCursor();
                             }else if(floatorfixed == "fixed"){
@@ -2685,7 +2691,8 @@
                                     footerDateFormat : dgfooterdateformat,
                                     footerPageofPage: dgfooterpageofpage,
                                     footerDisclaimer: dgfooterdisclaimer,
-                                    autoOpenDataGrid: openDataGrid
+                                    autoOpenDataGrid: openDataGrid,
+                                    subselectioncolor: subSelColor
                                 };
                                 var dgconfigArr:ArrayCollection = new ArrayCollection();
                                 dgconfigArr.addItem(dgConfig);
@@ -2847,6 +2854,10 @@
                         queryLayer.definitionExpression = queryDefExpr;
                     }
                     map.cursorManager.setBusyCursor();
+                    //todo add ability to select from current selection
+                    //generateOIDArray();
+                    //queryLayer.selectFeatures(
+                    //Should I use a remove from selection for all the features that are not equal or just do the SQL logic clientside based on the SQL Statement?
                     queryLayer.selectFeatures(query, (initiator == "graphical")?selectionMethodGraphical.selectedItem.selectionName:selectionMethodSpatial.selectedItem.selectionName, new AsyncResponder(onResult, onFault, queryFields));
                     showMessage(loadingLabel, true);
                     showStateResults();
@@ -2925,6 +2936,7 @@
                                     myfloatdg.footerDisclaimer = dgfooterdisclaimer;
                                     myfloatdg.footerPageofPage = dgfooterpageofpage;
                                     myfloatdg.dgtitle = queryPrintTitle;
+                                    myfloatdg.subselectioncolor = subSelColor;
                                 }
                                 if (openDataGrid && floatorfixed != "fixed"){
                                     showGridResults();
@@ -2975,7 +2987,8 @@
                                     footerDateFormat : dgfooterdateformat,
                                     footerPageofPage: dgfooterpageofpage,
                                     footerDisclaimer: dgfooterdisclaimer,
-                                    autoOpenDataGrid: openDataGrid
+                                    autoOpenDataGrid: openDataGrid,
+                                    subselectioncolor: subSelColor
                                 };
                                 var dgconfigArr:ArrayCollection = new ArrayCollection();
                                 dgconfigArr.addItem(dgConfig);
@@ -2991,6 +3004,7 @@
                                     }
                                 }
                             }
+                            graphicsLayerBuffer.clear();
                             map.cursorManager.removeBusyCursor();
                         }
                         catch (error:Error){
@@ -3400,7 +3414,7 @@
 
             /*
             * Get the FeatureLayer symbol from the config file if a symbol is specified for this indivual layer or just
-            * return the deault symbol for this geometry type.
+            * return the default symbol for this geometry type.
             * @param FeatureLayer FeatLyr the FeatureLayer that a symbol should be returned for.
             * @param String initiator the specific view that initiated this function.
             * @return Symbol the Symbol of the input graphic
@@ -3513,7 +3527,7 @@
                 }
                 fldAliases = qFeatSet.fieldAliases;
                 var gSym:Symbol;
-                if(feats.length > 0){
+                if(feats.length > 0 && getGraphicSymbol(feats[0], initiator)){
                     gSym = getGraphicSymbol(feats[0], initiator);
                 }
 
@@ -3702,8 +3716,9 @@
                         }
                     }
                     graphic.checkForMouseListeners = false;
-                    graphic.symbol = gSym;
                     var searchResult:SearchResult = new SearchResult();
+                    searchResult.symbol = graphic.symbol = gSym;
+                    searchResult.initiator = initiator;
                     searchResult.title = title;
                     searchResult.content = content.substr(0,content.length - 4);
                     if(graphic.geometry){
@@ -4609,7 +4624,7 @@
                         relatesQuery.relationshipId = relId;
                         relatesQuery.objectIds = [searchResult.oid];
                         map.cursorManager.setBusyCursor();
-                        queryLayer.queryRelatedFeatures(relatesQuery, new AsyncResponder(onRelateResult, onFault, searchResult.oid));
+                        queryLayer.queryRelatedFeatures(relatesQuery, new AsyncResponder(onRelateResult, onFault, [searchResult.oid, relLbl]));
                     }else{
                         rFields = relFields.field;
                         for each (var fieldXML:XML in rFields){
@@ -4849,7 +4864,7 @@
                         relatesQuery.relationshipId = relId;
                         relatesQuery.objectIds = [relOid];
                         map.cursorManager.setBusyCursor();
-                        queryLayer.queryRelatedFeatures(relatesQuery, new AsyncResponder(onRelateResult, onFault, relOid));
+                        queryLayer.queryRelatedFeatures(relatesQuery, new AsyncResponder(onRelateResult, onFault, [relOid, relLbl]));
                     }else{
                         rFields = relFields.field;
                         for each (var fieldXML:XML in rFields){
@@ -5308,6 +5323,7 @@
                         myfloatdg.footerDisclaimer = dgfooterdisclaimer;
                         myfloatdg.footerPageofPage = dgfooterpageofpage;
                         myfloatdg.dgtitle = queryPrintTitle;
+                        myfloatdg.subselectioncolor = subSelColor;
 
                         if(lState == "graphicalInput"){
                             var i2:Number = (cboLayerGraphical.selectedIndex<0)?0:cboLayerGraphical.selectedIndex;
@@ -5798,7 +5814,105 @@
                 mouseOutGear.stop();
                 mouseOverGear.play([event.target]);
             }
-
+            
+            private function modifySymboltoSubSelectDefaults(sym:Symbol):Symbol
+            {
+                var retSym:Symbol;
+                var sls:SimpleLineSymbol;
+                var sfs:SimpleFillSymbol;
+                if (sym is SimpleFillSymbol){
+                    sfs = sym.clone() as SimpleFillSymbol;
+                    sfs.color = subSelColor;
+                    sfs.alpha = subSelAlpha;
+                    if (sfs.outline){
+                        sls = sfs.outline.clone() as SimpleLineSymbol;
+                        sls.color = subSelColor;
+                        sls.alpha = subSelAlpha;
+                        sls.width = subSelWidth;
+                        sfs.outline = sls;
+                    }
+                    retSym = sfs;
+                }
+                if (sym is SimpleLineSymbol){
+                    sls = sym.clone() as SimpleLineSymbol;
+                    sls.color = subSelColor;
+                    sls.alpha = subSelAlpha;
+                    sls.width = subSelWidth;
+                    retSym = sls;
+                }
+                return retSym;
+            }
+            
+            /*
+            * subselect results using the subselection color
+            * param = vector of objects
+            */
+            public function subSelectItemByOID(selItems:Vector.<Object>):void
+            {
+                var sr:SearchResult;
+                var s:int;
+                
+                var gSym:Symbol;
+                if(searchResultAC.length > 0){
+                    gSym = getGraphicSymbol(searchResultAC[0].graphic, searchResultAC[0].initiator);
+                }
+                
+                //reset selected records symbols
+                for (s = 0; s < searchResultAC.length; s++){
+                    sr = searchResultAC[s];
+                    sr.graphic.symbol = gSym;
+                    sr.symbol = gSym;
+                    sr.graphic.filters = [];
+                }
+                
+                if (!selItems){
+                    return;
+                }
+                
+                var len:Number = selItems.length;
+                for (s = 0; s < len; s++)
+                {
+                    var searchResult:SearchResult = findSearchResultByOID(selItems[s].oid);
+                    searchResult.selected = true;
+                    
+                    var gra:Graphic = searchResult.graphic;
+                    
+                    if (!gra.geometry){
+                        return;
+                    }
+                    
+                    switch(gra.geometry.type){
+                        case "esriGeometryPoint":
+                        case "esriGeometryMultipoint":{
+                            gra.filters = [new GlowFilter(subSelColor, 0.8, 4, 4, subSelWidth)]
+                            break;
+                        }
+                        case "esriGeometryEnvelope":
+                        case "esriGeometryPolygon":{
+                            gra.symbol = searchResult.symbol = modifySymboltoSubSelectDefaults(gra.symbol);
+                            break;
+                        }
+                        case "esriGeometryPolyline":{
+                            gra.symbol = searchResult.symbol = modifySymboltoSubSelectDefaults(gra.symbol);
+                            break;
+                        }
+                    }
+                }
+                
+                function findSearchResultByOID(oid:Number):SearchResult
+                {
+                    var retSR:SearchResult;
+                    var sr1:SearchResult;
+                    for (var i:Number = 0; i < searchResultAC.length; i++){
+                        sr1 = searchResultAC[i];
+                        if(sr1.oid == oid){
+                            retSR = sr1;
+                            break;
+                        }
+                    }
+                    return retSR;
+                }
+            }
         ]]>
     </fx:Script>
 

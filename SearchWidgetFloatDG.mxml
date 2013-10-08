@@ -21,6 +21,7 @@
         <![CDATA[
             import com.esri.ags.Graphic;
             import com.esri.ags.Map;
+            import com.esri.ags.geometry.Extent;
             import com.esri.ags.geometry.Geometry;
             import com.esri.ags.geometry.MapPoint;
             import com.esri.ags.layers.FeatureLayer;
@@ -30,6 +31,7 @@
             import com.esri.ags.portal.PopUpRenderer;
             import com.esri.ags.portal.supportClasses.PopUpInfo;
             import com.esri.ags.portal.supportClasses.PopUpMediaInfo;
+            import com.esri.ags.utils.GraphicUtil;
             import com.esri.ags.utils.StringUtil;
             import com.esri.viewer.BaseWidget;
             import com.esri.viewer.ViewerContainer;
@@ -47,10 +49,12 @@
             import spark.components.DataGrid;
             import spark.components.gridClasses.GridColumn;
             import spark.events.GridEvent;
+            import spark.events.GridSelectionEvent;
             import spark.formatters.CurrencyFormatter;
             import spark.formatters.DateTimeFormatter;
             import spark.formatters.NumberFormatter;
             
+            import widgets.eSearch.skins.DataGridSkin;
             import widgets.eSearch.utils.PrintProperties;
             import widgets.eSearch.utils.PrintUtil;
         
@@ -109,6 +113,18 @@
             private var _footerPageofPage:String;
             private var _footerDisclaimer:String;
             private var gFieldsAc:ArrayCollection;
+            [Bindable] private var _subselectioncolor:uint;
+            [Bindable] private var _subselectiontextcolor:uint;
+            
+            public function set subselectioncolor(value:uint):void
+            {
+                _subselectioncolor = value;
+            }
+            
+            public function set subselectiontextcolor(value:uint):void
+            {
+                _subselectiontextcolor = value;
+            }
             
             public function set featlayer(value:FeatureLayer):void
             {
@@ -118,7 +134,6 @@
             public function set dgtitle(value:String):void
             {
                 _title = title = value;
-                //title = "Selected " + _title + " Features" ;
             }
             
             public function set labelSum(value:String):void
@@ -270,6 +285,16 @@
                 var jdgCol:joinDataGridColumn;
                 var dgColArr:ArrayList = new ArrayList();
                 var fldObj:Object;
+                
+                dgCol = new GridColumn("caret");
+                dgCol.width = 10;
+                dgCol.headerText = "";
+                dgColArr.addItem(dgCol);
+                fldObj = new Object();
+                fldObj.order = 0;
+                fldObj.field = dgCol.dataField;
+                gFieldsAc.addItem(fldObj);
+                
                 if(_hasRelates){
                     dgCol = new GridColumn();
                     dgCol.dataField = "icon";
@@ -281,7 +306,7 @@
                     dgCol.itemRenderer = new ClassFactory(widgets.eSearch.HyperLinkIconColumn);
                     dgColArr.addItem(dgCol);
                     fldObj = new Object();
-                    fldObj.order = 0;
+                    fldObj.order = 1;
                     fldObj.field = dgCol.dataField;
                     gFieldsAc.addItem(fldObj);
                 }
@@ -290,7 +315,7 @@
                 {
                     var cArr:Array = _dgColumns[i].split("~");
                     fldObj = new Object();
-                    fldObj.order = cArr[7];
+                    fldObj.order = cArr[7] + 1;
                     if(cArr[0].indexOf( "." ) != -1){
                         jdgCol= new joinDataGridColumn(cArr[0]);
                         jdgCol.labelFunction = getLabel;
@@ -391,7 +416,6 @@
                 fldObj.field = dgCol.dataField;
                 gFieldsAc.addItem(fldObj);
                 resultsGrid.columns = dgColArr;
-                (resultsGrid.columns.getItemAt(resultsGrid.columnsLength - 1) as GridColumn).width = NaN;
                 sortGridFldCols();
             }
             
@@ -466,7 +490,6 @@
                     dataProvider.sort = dpSort;
                     dataProvider.refresh();
                     
-                    //trace(ObjectUtil.toString(dataProvider));
                     var rowCount:int = dataProvider.length;
                     var dp:Object = null;
                     var cursor:IViewCursor = dataProvider.createCursor();
@@ -483,7 +506,7 @@
                             if(!dataGridColumn.visible){
                                 continue;
                             }
-                            if(dataGridColumn.dataField == "icon"){
+                            if(dataGridColumn.dataField == "icon" || dataGridColumn.dataField == "caret"){
                                 continue;
                             }
                             if((dataGridColumn.itemRenderer == HyperLinkColumn)||(dataGridColumn.itemRenderer == HyperLinkIconColumn)){
@@ -568,7 +591,7 @@
                             if(!dataGridColumn.visible){
                                 continue;
                             }
-                            if(dataGridColumn.dataField == "icon"){
+                            if(dataGridColumn.dataField == "icon" || dataGridColumn.dataField == "caret"){
                                 continue;
                             }
                             if((dataGridColumn.itemRenderer == HyperLinkColumn)||(dataGridColumn.itemRenderer == HyperLinkIconColumn)){
@@ -619,6 +642,7 @@
             // this is going to be executed when ever the data provider changes:
             [Bindable("dataChange")]
             private function calcMaxLengths(input:Array):Array {
+                var sumofWidths:Number = 0;
                 // if there are items in the DP:
                 if ( input.length > 0 ) {
                     var maxLengths:Object = {};
@@ -662,7 +686,10 @@
                                     (resultsGrid.columns.getItemAt(i) as GridColumn).width = cellMetrics2.width + 18;
                                 } else {
                                     (resultsGrid.columns.getItemAt(i) as GridColumn).width = Number(maxLengths[key]) + 12;
-                                }                            
+                                }
+                                if (GridColumn(resultsGrid.columns.getItemAt(i)).visible){
+                                    sumofWidths += GridColumn(resultsGrid.columns.getItemAt(i)).width;
+                                }
                             }
                         }
                     }
@@ -682,11 +709,20 @@
                                             (resultsGrid.columns.getItemAt(i) as GridColumn).width = cellMetrics3.width + 18;
                                         }
                                     }
+                                    if (GridColumn(resultsGrid.columns.getItemAt(i)).visible){
+                                        sumofWidths += GridColumn(resultsGrid.columns.getItemAt(i)).width;
+                                    }
                                 }
                             }
                         }
                     } 
                 }
+                
+                //If data does not fill the datagrid then make the last visible column consume the remaining width of the datagrid
+                if (resultsGrid.width >  sumofWidths) {
+                    (resultsGrid.columns.getItemAt(resultsGrid.columnsLength - 2) as GridColumn).width = NaN;
+                }
+                
                 // return an input:
                 return input;
             }
@@ -828,6 +864,8 @@
             
             public function set dgHyperColumns(value:Array):void
             {
+                var dgColItemRend:ClassFactory = new ClassFactory(HyperLinkColumn);
+                dgColItemRend.properties = { textcolor: _subselectiontextcolor};
                 var fldObj:Object;
                 _dgHyperColumns = value;
                 var dgCol:GridColumn;
@@ -839,6 +877,7 @@
                     fldObj.order = cArr[6];
                     hypercols.addItem({field: cArr[0], name: cArr[1], alias: cArr[2], pre: cArr[3], suf: cArr[4], icon: cArr[5]});
                     dgCol= new GridColumn(cArr[0]);
+                    dgCol.itemRenderer = dgColItemRend;
                     dgCol.labelFunction = labelFunc2;
                     if (cArr[2] != "NA"){
                         dgCol.labelFunction = labelFunc;
@@ -852,9 +891,9 @@
                     if (cArr[5] != "NA"){
                         dgCol.dataTipField = cArr[5];
                         dgCol.showDataTips = false;
-                        dgCol.itemRenderer = new ClassFactory(widgets.eSearch.HyperLinkIconColumn);
+                        dgCol.itemRenderer = new ClassFactory(HyperLinkIconColumn);
                     }else{
-                        dgCol.itemRenderer = new ClassFactory(widgets.eSearch.HyperLinkColumn);
+                        dgCol.itemRenderer = dgColItemRend;
                     }
                     dgColArr.addItem(dgCol);
                     fldObj.field = dgCol.dataField;
@@ -1160,6 +1199,11 @@
                     }
                     return;
                 }
+                if(resultsGrid.selectedItems && resultsGrid.selectedItems.length > 1)
+                {
+                    zoom2allSelected();
+                    return;
+                }
                 var pt:MapPoint = searchResult.point;
                 var map:Map = ViewerContainer.getInstance().mapManager.map;
                 if (searchResult.graphic.geometry){
@@ -1189,6 +1233,48 @@
                 }
             }
             
+            private function zoom2allSelected():void
+            {
+                var graArr:Array = [];
+                var s:int;   
+                var len:Number = resultsGrid.selectedItems.length;
+                for (s = 0; s < len; s++)
+                {
+                    var searchResult:* = findSearchResultByOID(resultsGrid.selectedItems[s].oid);
+                    var gra:Graphic = searchResult.graphic;
+                    if (gra.geometry){
+                        graArr.push(gra);
+                    }
+                }
+                if (graArr.length < 1){
+                    return;
+                }
+                var graphicsExtent:Extent = GraphicUtil.getGraphicsExtent(validateSelectedGeom(graArr));
+                if(graphicsExtent){
+                    if(isNaN(_zoomPercent)){
+                        _zoomPercent = 1.2;
+                    }
+                    map.zoomTo(graphicsExtent.expand(_zoomPercent));
+                }else{
+                    var mp2:MapPoint = graArr[0].geometry as MapPoint;
+                    map.zoom(1 / 16, mp2);
+                    map.centerAt(mp2);
+                }
+            }
+            
+            private function validateSelectedGeom(FeatsArr:Array):Array
+            {
+                var gra:Graphic;
+                var retFeatArr:Array = [];
+                for(var i:int=0; i<FeatsArr.length; i++){
+                    gra = FeatsArr[i];
+                    if(gra.geometry){
+                        retFeatArr.push(gra);
+                    }
+                }
+                return retFeatArr;
+            }
+            
             private function getFileName(o:Object, c:GridColumn):String
             {
                 return _relateTooltip;
@@ -1197,7 +1283,7 @@
             protected function dataGridResizeHandler(event:Event):void
             {
                 if(resultsGrid.columnsLength > 0){
-                    (resultsGrid.columns.getItemAt(resultsGrid.columnsLength - 1) as GridColumn).width = NaN;
+                    (resultsGrid.columns.getItemAt(resultsGrid.columnsLength - 2) as GridColumn).width = NaN;
                 }
             }
             
@@ -1253,19 +1339,33 @@
                 }
                 return browser;
             }
+            
+            protected function resultsGrid_selectionChangeHandler(event:GridSelectionEvent):void
+            {
+                var selItems:Vector.<Object> = resultsGrid.selectedItems;
+                _bWidget.subSelectItemByOID(selItems);
+                resultsGrid.invalidateDisplayList();
+            }
         ]]>
     </fx:Script>
     <fx:Declarations>
         <s:RadioButtonGroup id="optiongroup"/>
     </fx:Declarations>
-    <s:DataGrid id="resultsGrid" height="100%" width="100%" contentBackgroundAlpha="1"
-                horizontalScrollPolicy="auto" resize="dataGridResizeHandler(event)"
+    <s:DataGrid id="resultsGrid"
+                height="100%" width="100%" 
+                caretColor="{this.getStyle('focusColor')}"
+                resize="dataGridResizeHandler(event)"
+                updateComplete="dataGridResizeHandler(event)"
                 gridClick="clickRow(event)"
-                 gridRollOver="onItemRollOver(event)"
+                gridRollOver="onItemRollOver(event)"
                 gridRollOut="onItemRollOut(event)"
-                 rollOut="highLightSel(event)"
-                rollOver="unhighLightSel(event)" 
-                updateComplete="dataGridResizeHandler(event)"/>
+                rollOut="highLightSel(event)"
+                rollOver="unhighLightSel(event)"
+                horizontalScrollPolicy="auto"
+                contentBackgroundAlpha="1"
+                selectionMode="multipleRows"
+                selectionChange="resultsGrid_selectionChangeHandler(event)"
+                skinClass="widgets.eSearch.skins.DataGridSkin"/>
     <Search:controlBarContent>
         <s:HGroup verticalAlign="middle" paddingLeft="4" >
             <s:Label id="lblSum" text="{_labelSum}" visible="{sumVisible}" includeInLayout="{sumVisible}"/>

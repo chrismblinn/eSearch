@@ -13,6 +13,7 @@ package widgets.eSearch
 {
     import com.esri.ags.Graphic;
     import com.esri.ags.geometry.MapPoint;
+    import com.esri.ags.symbols.Symbol;
     
     import flash.events.EventDispatcher;
     
@@ -48,5 +49,9 @@ package widgets.eSearch
         public var relates:Array;
         
         public var relatetooltip:String;
+        
+        public var initiator:String;
+        
+        public var symbol:Symbol;
     }
 }

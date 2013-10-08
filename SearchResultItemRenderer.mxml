@@ -24,12 +24,13 @@
 
     <fx:Script>
         <![CDATA[
+            import com.esri.ags.geometry.Geometry;
             import com.esri.ags.symbols.Symbol;
-            
-            import flashx.textLayout.conversion.TextConverter;
             
             import mx.controls.Image;
             import mx.events.FlexEvent;
+            
+            import flashx.textLayout.conversion.TextConverter;
 
             private const SEARCH_RESULT_CLICK:String = "searchResultClick";
             
@@ -90,20 +91,24 @@
                 
                 searchResult = data as SearchResult;
                 
-                if (searchResult){
-                    if (lastResultSymbol !== searchResult.graphic.symbol){
+                if (searchResult && searchResult.symbol){
+                    if (lastResultSymbol !== searchResult.symbol){
                         if (resultIcon.numChildren > 0){
                             resultIcon.removeChildAt(0);
                         }
-                        lastResultSymbol = searchResult.graphic.symbol;
+                        lastResultSymbol = searchResult.symbol;
                         lastResultSwatch = lastResultSymbol.createSwatch(20, 20);
                     }
                     lContent.textFlow = TextConverter.importToFlow(searchResult.content, TextConverter.TEXT_FIELD_HTML_FORMAT);
                     linkGroup.includeInLayout = linkGroup.visible = false;
                     linkGroup.removeAllElements();
-                    resultIcon.addChild(lastResultSwatch);
                     selected = searchResult.selected;
-                    
+                    if (searchResult.graphic.geometry.type == Geometry.MAPPOINT && searchResult.graphic.filters.length){
+                        lastResultSwatch.filters = searchResult.graphic.filters;
+                    }else{
+                        lastResultSwatch.filters = [new GlowFilter(0x00000, 0.5, 10, 10)];
+                    }
+                    resultIcon.addChild(lastResultSwatch);
                     for(var l:int = 0; l < searchResult.links.length; l++){
                         if(searchResult.links[l].link){
                             var lImg:Image = new Image();
@@ -113,8 +118,9 @@
                             lImg.addEventListener(MouseEvent.CLICK, showLink);
                             lImg.source = (searchResult.links[l].icon && searchResult.links[l].icon != "")?searchResult.links[l].icon:"assets/images/w_link.png";     
                             lImg.name = searchResult.links[l].link;
-                            if(searchResult.links[l].alias)
+                            if(searchResult.links[l].alias){
                                 lImg.toolTip = searchResult.links[l].alias;
+                            }
                             lImg.includeInLayout = lImg.visible = true;
                             linkGroup.addElement(lImg);
                         }

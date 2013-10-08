@@ -5,6 +5,12 @@
 [![Image of Enhanced Search Widget](https://raw.github.com/rscheitlin/eSearch/master/Preview.jpg "Example Enhanced Search Widget app")](http://gis.calhouncounty.org/FlexViewer3.1/index.html?config=config-eSearch.xml&esearch=2&slayer=3&exprnum=1)
 
 ## Version Updates
+Version 3.5 - 10/7/2013
+* Added sub selection color for subselecting results from he datagrid.
+* Fixed Relate error when using fields all="true"
+* Fixed issue with choose relate dialog not closing using the X in the upper right corner.
+* When buffering during a graphical search, the buffer graphic is now removed after the search is complete.
+
 Version 3.4 - 7/25/2013
 * memory leak fix
 * Link alias added to photo caption

@@ -55,6 +55,7 @@
             import spark.formatters.DateTimeFormatter;
             import spark.formatters.NumberFormatter;
             
+            import widgets.eSearch.skins.DataGridSkin;
             import widgets.eSearch.utils.PrintProperties;
             import widgets.eSearch.utils.PrintUtil;
         
@@ -245,6 +246,16 @@
                 var jdgCol:joinDataGridColumn;
                 var dgColArr:ArrayList = new ArrayList();
                 var fldObj:Object;
+                
+                dgCol = new GridColumn("caret");
+                dgCol.width = 10;
+                dgCol.headerText = "";
+                dgColArr.addItem(dgCol);
+                fldObj = new Object();
+                fldObj.order = 0;
+                fldObj.field = dgCol.dataField;
+                gFieldsAc.addItem(fldObj);
+                
                 for(var i:int=0; i < _dgColumns.length; i++){
                     var cArr:Array = _dgColumns[i].split("~");
                     fldObj = new Object();
@@ -352,7 +363,6 @@
                 fldObj.field = dgCol.dataField;
                 gFieldsAc.addItem(fldObj);
                 resultsGrid.columns = dgColArr;
-                (resultsGrid.columns.getItemAt(resultsGrid.columnsLength - 1) as GridColumn).width = NaN;
                 sortGridFldCols();
             }
             
@@ -489,6 +499,9 @@
                             if(!dataGridColumn.visible){
                                 continue;
                             }
+                            if(dataGridColumn.dataField == "icon" || dataGridColumn.dataField == "caret"){
+                                continue;
+                            }
                             if((dataGridColumn.itemRenderer == HyperLinkColumn)||(dataGridColumn.itemRenderer == HyperLinkIconColumn)){
                                 if(object[dataGridColumn.dataField] != null)
                                     data += _textQualifier + object[dataGridColumn.dataField] + _textQualifier;
@@ -568,6 +581,9 @@
                             if(!dataGridColumn.visible){
                                 continue;
                             }
+                            if(dataGridColumn.dataField == "icon" || dataGridColumn.dataField == "caret"){
+                                continue;
+                            }
                             if((dataGridColumn.itemRenderer == HyperLinkColumn)||(dataGridColumn.itemRenderer == HyperLinkIconColumn)){
                                 if(object[dataGridColumn.dataField] != null){
                                     data += _textQualifier + object[dataGridColumn.dataField] + _textQualifier;
@@ -616,6 +632,7 @@
             // this is going to be executed whenever the data provider changes:
             [Bindable("dataChange")]
             private function calcMaxLengths(input:Array):Array {
+                var sumofWidths:Number = 0;
                 // if there are items in the DP:
                 if ( input.length > 0 ) {
                     var maxLengths:Object = {};
@@ -647,8 +664,8 @@
                     }
                     
                     // apply column sizes:
-                    for ( key in maxLengths ) {
-                        for ( i=0; i<resultsGrid.columnsLength; i++ ) {
+                    for ( key in maxLengths ){
+                        for ( i=0; i<resultsGrid.columnsLength; i++ ){
                             // if the column actually exists:
                             if ((resultsGrid.columns.getItemAt(i) as GridColumn).dataField == key ) {
                                 var cellMetrics2:TextLineMetrics = FlexGlobals.topLevelApplication.measureText((resultsGrid.columns.getItemAt(i) as GridColumn).headerText + "W");
@@ -656,7 +673,10 @@
                                     (resultsGrid.columns.getItemAt(i) as GridColumn).width = cellMetrics2.width + 18;
                                 } else {
                                     (resultsGrid.columns.getItemAt(i) as GridColumn).width = Number(maxLengths[key]) + 12;
-                                }                            
+                                }
+                                if (GridColumn(resultsGrid.columns.getItemAt(i)).visible){
+                                    sumofWidths += GridColumn(resultsGrid.columns.getItemAt(i)).width;
+                                }
                             }
                         }
                     }
@@ -672,11 +692,20 @@
                                     }else{
                                         (resultsGrid.columns.getItemAt(i) as GridColumn).width = cellMetrics3.width + 18;
                                     }
+                                    if (GridColumn(resultsGrid.columns.getItemAt(i)).visible){
+                                        sumofWidths += GridColumn(resultsGrid.columns.getItemAt(i)).width;
+                                    }
                                 }
                             }
                         }
                     }
                 }
+                
+                //If data does not fill the datagrid then make the last visible column consume the remaining width of the datagrid
+                if (resultsGrid.width >  sumofWidths) {
+                    (resultsGrid.columns.getItemAt(resultsGrid.columnsLength - 2) as GridColumn).width = NaN;
+                }
+                
                 // return an input:
                 return input;
             }
@@ -1106,8 +1135,12 @@
     <fx:Declarations>
         <s:RadioButtonGroup id="optiongroup"/>
     </fx:Declarations>
-    <s:DataGrid id="resultsGrid" height="100%" width="100%" contentBackgroundAlpha="1"
-                horizontalScrollPolicy="auto" resize="dataGridResizeHandler(event)"
+    <s:DataGrid id="resultsGrid" height="100%" width="100%"
+                skinClass="widgets.eSearch.skins.DataGridSkin"
+                caretColor="{this.getStyle('focusColor')}"
+                contentBackgroundAlpha="1"
+                horizontalScrollPolicy="auto"
+                resize="dataGridResizeHandler(event)"
                 gridClick="rclickRow(event)"
                 updateComplete="dataGridResizeHandler(event)"/>
     <Search:controlBarContent>

@@ -33,7 +33,6 @@
             import com.esri.ags.utils.GraphicUtil;
             import com.esri.ags.utils.StringUtil;
             import com.esri.viewer.AppEvent;
-            import com.esri.viewer.ViewerContainer;
             
             import mx.collections.ArrayCollection;
             import mx.collections.ArrayList;
@@ -52,6 +51,7 @@
             import spark.components.DataGrid;
             import spark.components.gridClasses.GridColumn;
             import spark.events.GridEvent;
+            import spark.events.GridSelectionEvent;
             import spark.formatters.CurrencyFormatter;
             import spark.formatters.DateTimeFormatter;
             import spark.formatters.NumberFormatter;
@@ -163,6 +163,9 @@
             private var _footerPageofPage:String;
             private var _footerDisclaimer:String;
             
+            [Bindable] private var _subselcolor:uint;
+            [Bindable] private var _subselectiontextcolor:uint;
+            
             private function init():void
             {
                 var fl:FeatureLayer = new FeatureLayer();
@@ -254,12 +257,23 @@
                 sortDetails = "";
                 sortAC = new ArrayCollection();
                 _dgColumns = value;
+
                 var args:Array;
                 var sortFld:SortField;
                 var dgCol:GridColumn;
                 var jdgCol:joinDataGridColumn;
                 var dgColArr:ArrayList = new ArrayList();
                 var fldObj:Object;
+                
+                dgCol = new GridColumn("caret");
+                dgCol.width = 10;
+                dgCol.headerText = "";
+                dgColArr.addItem(dgCol);
+                fldObj = new Object();
+                fldObj.order = 0;
+                fldObj.field = dgCol.dataField;
+                gFieldsAc.addItem(fldObj);
+                
                 if(_hasRelates){
                     dgCol = new GridColumn();
                     dgCol.dataField = "icon";
@@ -271,7 +285,7 @@
                     dgCol.itemRenderer = new ClassFactory(widgets.eSearch.HyperLinkIconColumn);
                     dgColArr.addItem(dgCol);
                     fldObj = new Object();
-                    fldObj.order = 0;
+                    fldObj.order = 1;
                     fldObj.field = dgCol.dataField;
                     gFieldsAc.addItem(fldObj);
                 }
@@ -279,7 +293,7 @@
                     var cArr:Array = _dgColumns[i].split("~");                        
                     dgCol= new GridColumn(cArr[0]);
                     fldObj = new Object();
-                    fldObj.order = cArr[7];
+                    fldObj.order = cArr[7] + 1;
                     if(cArr[0].indexOf( "." ) != -1){
                         jdgCol= new joinDataGridColumn(cArr[0]);
                         jdgCol.labelFunction = getLabel;
@@ -382,7 +396,6 @@
                 fldObj.field = dgCol.dataField;
                 gFieldsAc.addItem(fldObj);
                 resultsGrid.columns = dgColArr;
-                (resultsGrid.columns.getItemAt(resultsGrid.columnsLength - 1) as GridColumn).width = NaN;
                 sortGridFldCols();
             }
             
@@ -407,6 +420,16 @@
                 var jdgCol:joinDataGridColumn;
                 var dgColArr:ArrayList = new ArrayList();
                 var fldObj:Object;
+                
+                dgCol = new GridColumn("caret");
+                dgCol.width = 10;
+                dgCol.headerText = "";
+                dgColArr.addItem(dgCol);
+                fldObj = new Object();
+                fldObj.order = 0;
+                fldObj.field = dgCol.dataField;
+                rgFieldsAc.addItem(fldObj);
+                
                 for(var i:int=0; i < _rdgColumns.length; i++){
                     var cArr:Array = _rdgColumns[i].split("~");                        
                     dgCol= new GridColumn(cArr[0]);
@@ -514,7 +537,6 @@
                 fldObj.field = dgCol.dataField;
                 rgFieldsAc.addItem(fldObj);
                 relatesGrid.columns = dgColArr;
-                (relatesGrid.columns.getItemAt(relatesGrid.columnsLength - 1) as GridColumn).width = NaN;
                 sortRelateGridFldCols();
             }
         
@@ -619,7 +641,6 @@
                     dataProvider.sort = dpSort;
                     dataProvider.refresh();
                     
-                    //trace(ObjectUtil.toString(dataProvider));
                     var rowCount:int = dataProvider.length;
                     var dp:Object = null;
                     var cursor:IViewCursor = dataProvider.createCursor();
@@ -636,7 +657,7 @@
                             if(!dataGridColumn.visible){
                                 continue;
                             }
-                            if(dataGridColumn.dataField == "icon"){
+                            if(dataGridColumn.dataField == "icon" || dataGridColumn.dataField == "caret"){
                                 continue;
                             }
                             if((dataGridColumn.itemRenderer == HyperLinkColumn)||(dataGridColumn.itemRenderer == HyperLinkIconColumn)){
@@ -720,7 +741,7 @@
                             if(!dataGridColumn.visible){
                                 continue;
                             }
-                            if(dataGridColumn.dataField == "icon"){
+                            if(dataGridColumn.dataField == "icon" || dataGridColumn.dataField == "caret"){
                                 continue;
                             }
                             if((dataGridColumn.itemRenderer == HyperLinkColumn)||(dataGridColumn.itemRenderer == HyperLinkIconColumn)){
@@ -770,6 +791,7 @@
             // this is going to be executed when ever the data provider changes:
             [Bindable("dataChange")]
             private function calcMaxLengths(input:Array):Array {
+                var sumofWidths:Number = 0;
                 // if there are items in the DP:
                 if ( input.length > 0 ) {
                     var maxLengths:Object = {};
@@ -813,7 +835,10 @@
                                     GridColumn(resultsGrid.columns.getItemAt(i)).width = cellMetrics2.width + 18;
                                 } else {
                                     GridColumn(resultsGrid.columns.getItemAt(i)).width = Number(maxLengths[key]) + 12;
-                                }                            
+                                }
+                                if (GridColumn(resultsGrid.columns.getItemAt(i)).visible){
+                                    sumofWidths += GridColumn(resultsGrid.columns.getItemAt(i)).width;
+                                }
                             }
                         }
                     }
@@ -833,11 +858,20 @@
                                             GridColumn(resultsGrid.columns.getItemAt(i)).width = cellMetrics3.width + 18;
                                         }
                                     }
+                                    if (GridColumn(resultsGrid.columns.getItemAt(i)).visible){
+                                        sumofWidths += GridColumn(resultsGrid.columns.getItemAt(i)).width;
+                                    }
                                 }
                             }
                         }
                     }
                 }
+                
+                //If data does not fill the datagrid then make the last visible column consume the remaining width of the datagrid
+                if (resultsGrid.width >  sumofWidths) {
+                    (resultsGrid.columns.getItemAt(resultsGrid.columnsLength - 2) as GridColumn).width = NaN;
+                }
+                
                 // return an input:
                 return input;
             }
@@ -855,6 +889,7 @@
             // this is going to be executed when ever the data provider changes:
             [Bindable("dataChange")]
             private function rcalcMaxLengths(input:Array):Array {
+                var sumofWidths:Number = 0;
                 // if there are items in the DP:
                 if ( input.length > 0 ) {
                     var maxLengths:Object = {};
@@ -898,7 +933,10 @@
                                     GridColumn(relatesGrid.columns.getItemAt(i)).width = cellMetrics2.width + 18;
                                 } else {
                                     GridColumn(relatesGrid.columns.getItemAt(i)).width = Number(maxLengths[key]) + 12;
-                                }                            
+                                }
+                                if (GridColumn(relatesGrid.columns.getItemAt(i)).visible){
+                                    sumofWidths += GridColumn(relatesGrid.columns.getItemAt(i)).width;
+                                }
                             }
                         }
                     }
@@ -918,11 +956,20 @@
                                             GridColumn(relatesGrid.columns.getItemAt(i)).width = cellMetrics3.width + 18;
                                         }
                                     }
+                                    if (GridColumn(relatesGrid.columns.getItemAt(i)).visible){
+                                        sumofWidths += GridColumn(relatesGrid.columns.getItemAt(i)).width;
+                                    }
                                 }
                             }
                         }
                     }
                 }
+                
+                //If data does not fill the datagrid then make the last visible column consume the remaining width of the datagrid
+                if (resultsGrid.width >  sumofWidths) {
+                    (resultsGrid.columns.getItemAt(resultsGrid.columnsLength - 2) as GridColumn).width = NaN;
+                }
+                
                 // return an input:
                 return input;
             }
@@ -1059,6 +1106,8 @@
             
             private function dgHyperColumns(value:Array):void
             {
+                var dgColItemRend:ClassFactory = new ClassFactory(HyperLinkColumn);
+                dgColItemRend.properties = { textcolor: _subselectiontextcolor};
                 var fldObj:Object;
                 _dgHyperColumns = value;
                 var dgCol:GridColumn;
@@ -1083,9 +1132,9 @@
                     if (cArr[5] != "NA"){
                         dgCol.dataTipField = cArr[5];
                         dgCol.showDataTips = false;
-                        dgCol.itemRenderer = new ClassFactory(widgets.eSearch.HyperLinkIconColumn);
+                        dgCol.itemRenderer = new ClassFactory(HyperLinkIconColumn);
                     }else{
-                        dgCol.itemRenderer = new ClassFactory(widgets.eSearch.HyperLinkColumn);
+                        dgCol.itemRenderer = dgColItemRend;
                     }
                     dgColArr.addItem(dgCol);
                     fldObj.field = dgCol.dataField;
@@ -1450,6 +1499,8 @@
                         if(theObj.autoOpenDataGrid){
                             panel_rollOverHandler(null);
                         }
+                        _subselcolor = theObj.subselectioncolor;
+                        _subselectiontextcolor = theObj.subselectiontextcolor;
                     }
                 }
                 if (data.key == "configRelateFixedDatagrid"){
@@ -1750,6 +1801,50 @@
                 }
             }
             
+            private function zoom2allSelected():void
+            {
+                var graArr:Array = [];
+                var s:int;
+                var len:Number = resultsGrid.selectedItems.length;
+                for (s = 0; s < len; s++)
+                {
+                    var searchResult:* = findSearchResultByOID(resultsGrid.selectedItems[s].oid);
+                    var gra:Graphic = searchResult.graphic;
+                    if (gra.geometry){
+                        graArr.push(gra);
+                    }
+                }
+                
+                if (graArr.length < 1){
+                    return;
+                }
+                    
+                var graphicsExtent:Extent = GraphicUtil.getGraphicsExtent(validateSelectedGeom(graArr));
+                if(graphicsExtent){
+                    if(isNaN(_zoomPercent)){
+                        _zoomPercent = 1.2;
+                    }
+                    map.zoomTo(graphicsExtent.expand(_zoomPercent));
+                }else{
+                    var mp2:MapPoint = graArr[0].geometry as MapPoint;
+                    map.zoom(1 / 16, mp2);
+                    map.centerAt(mp2);
+                }
+            }
+            
+            private function validateSelectedGeom(FeatsArr:Array):Array
+            {
+                var gra:Graphic;
+                var retFeatArr:Array = [];
+                for(var i:int=0; i<FeatsArr.length; i++){
+                    gra = FeatsArr[i];
+                    if(gra.geometry){
+                        retFeatArr.push(gra);
+                    }
+                }
+                return retFeatArr;
+            }
+            
             private function clickRow(event:GridEvent):void
             {
                 if(!event.itemRenderer || !event.itemRenderer.data){
@@ -1769,8 +1864,11 @@
                     }
                     return;
                 }
-                var pt:MapPoint = searchResult.point;
-                var map:Map = ViewerContainer.getInstance().mapManager.map;
+                if(resultsGrid.selectedItems && resultsGrid.selectedItems.length > 1)
+                {
+                    zoom2allSelected();
+                    return;
+                }
                 if (searchResult.graphic.geometry){
                     if (searchResult.graphic.geometry.type == Geometry.MAPPOINT){
                         if(isNaN(_zoomScale)){
@@ -1806,7 +1904,7 @@
             protected function dataGridResizeHandler(event:Event):void
             {
                 if(event.target.columnsLength > 0){
-                    (event.target.columns.getItemAt(event.target.columnsLength - 1) as GridColumn).width = NaN;
+                    (event.target.columns.getItemAt(event.target.columnsLength - 2) as GridColumn).width = NaN;
                 }
             }
             
@@ -1891,6 +1989,13 @@
                 return browser;
             }
             
+            protected function resultsGrid_selectionChangeHandler(event:GridSelectionEvent):void
+            {
+                var selItems:Vector.<Object> = resultsGrid.selectedItems;
+                _bWidget.subSelectItemByOID(selItems);
+                resultsGrid.invalidateDisplayList();
+            }
+            
         ]]>
     </fx:Script>
     <fx:Declarations>
@@ -1908,6 +2013,8 @@
                 <s:SkinnableContainer height="100%" width="100%" backgroundAlpha="{getStyle('backgroundAlpha')}" backgroundColor="{getStyle('chromeColor')}">
                     <s:VGroup gap="0" width="100%" height="100%" horizontalAlign="center" verticalAlign="middle" >
                         <s:DataGrid id="resultsGrid" height="100%" width="100%"
+                                     skinClass="widgets.eSearch.skins.DataGridSkin"
+                                     caretColor="{this.getStyle('focusColor')}"
                                      resize="dataGridResizeHandler(event)"
                                      updateComplete="dataGridResizeHandler(event)"
                                      gridClick="clickRow(event)"
@@ -1918,7 +2025,9 @@
                                      horizontalScrollPolicy="auto"
                                      contentBackgroundAlpha="{getStyle('styleAlpha')}"
                                      contentBackgroundColor="{getStyle('chromeColor')}"
-                                     alternatingRowColors="{[getStyle('chromeColor'),getStyle('chromeColor')]}"/>
+                                     alternatingRowColors="{[getStyle('chromeColor'),getStyle('chromeColor')]}"
+                                     selectionMode="multipleRows"
+                                     selectionChange="resultsGrid_selectionChangeHandler(event)"/>
                         <s:HGroup verticalAlign="middle" paddingLeft="4" width="100%" paddingBottom="2" paddingTop="2">
                             <s:CheckBox selected="{autoHide}" change="toggleAutoHide()" label="{autoHideLabel}"/>
                             <s:HGroup verticalAlign="middle" paddingLeft="4" paddingTop="3" paddingBottom="3" paddingRight="30" horizontalAlign="right" height="34" width="100%" visible="{_enableExport || sumVisible || _enablePrint}" includeInLayout="{_enableExport || sumVisible || _enablePrint}">
@@ -1938,6 +2047,8 @@
                 <s:SkinnableContainer height="100%" width="100%" backgroundAlpha="{getStyle('backgroundAlpha')}" backgroundColor="{getStyle('chromeColor')}" maxWidth="{appWidth}">
                     <s:VGroup gap="0" height="100%" width="100%" horizontalAlign="center" verticalAlign="middle" maxWidth="{appWidth}">
                         <s:DataGrid id="relatesGrid" height="100%" width="100%"
+                                    skinClass="widgets.eSearch.skins.DataGridSkin"
+                                    caretColor="{this.getStyle('focusColor')}"
                                     horizontalScrollPolicy="auto"
                                     gridClick="rclickRow(event)"
                                     rollOut="highLightSel(event)"
@@ -1946,7 +2057,8 @@
                                     contentBackgroundColor="{getStyle('chromeColor')}"
                                     alternatingRowColors="{[getStyle('chromeColor'),getStyle('chromeColor')]}"
                                     updateComplete="dataGridResizeHandler(event)"
-                                    resize="dataGridResizeHandler(event)"/>
+                                    resize="dataGridResizeHandler(event)"
+                                    selectionMode="multipleRows"/>
                         <s:HGroup verticalAlign="middle" paddingLeft="4" paddingTop="3" paddingBottom="3" paddingRight="30" horizontalAlign="right" height="34" width="100%"
                                   visible="{_renableExport || rsumVisible || _renablePrint}" includeInLayout="{_renableExport || rsumVisible || _renablePrint}">
                             <s:Label id="rlblSum" text="{_rlabelSum}" visible="{rsumVisible}" includeInLayout="{rsumVisible}"/>
