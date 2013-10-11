@@ -365,8 +365,8 @@
             private var subSelAlpha:Number;
 
             //Build Constants
-            protected const VERSION:String = "3.5";
-            protected const BUILDDATE:String = "10/4/2013";
+            protected const VERSION:String = "3.5.1";
+            protected const BUILDDATE:String = "10/11/2013";
 
             //Resources
             [Embed(source="widgets/eSearch/assets/images/i_about.png")]

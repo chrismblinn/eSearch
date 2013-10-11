@@ -103,7 +103,7 @@
                     linkGroup.includeInLayout = linkGroup.visible = false;
                     linkGroup.removeAllElements();
                     selected = searchResult.selected;
-                    if (searchResult.graphic.geometry.type == Geometry.MAPPOINT && searchResult.graphic.filters.length){
+                    if (searchResult.graphic.geometry && searchResult.graphic.geometry.type == Geometry.MAPPOINT && searchResult.graphic.filters.length){
                         lastResultSwatch.filters = searchResult.graphic.filters;
                     }else{
                         lastResultSwatch.filters = [new GlowFilter(0x00000, 0.5, 10, 10)];
