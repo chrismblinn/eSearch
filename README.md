@@ -5,6 +5,10 @@
 [![Image of Enhanced Search Widget](https://raw.github.com/rscheitlin/eSearch/master/Preview.jpg "Example Enhanced Search Widget app")](http://gis.calhouncounty.org/FlexViewer3.1/index.html?config=config-eSearch.xml&esearch=2&slayer=3&exprnum=1)
 
 ## Version Updates
+Version 3.5.2 - 10/11/2013
+* Fixed issue hyper link grid fields and version 3.5.1.
+* Added ability to text qualify userlists that contain comma in their values.
+
 Version 3.5.1 - 10/11/2013
 * Fixed issue with tables and version 3.5.
 

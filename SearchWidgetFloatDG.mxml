@@ -865,7 +865,6 @@
             public function set dgHyperColumns(value:Array):void
             {
                 var dgColItemRend:ClassFactory = new ClassFactory(HyperLinkColumn);
-                dgColItemRend.properties = { textcolor: _subselectiontextcolor};
                 var fldObj:Object;
                 _dgHyperColumns = value;
                 var dgCol:GridColumn;
