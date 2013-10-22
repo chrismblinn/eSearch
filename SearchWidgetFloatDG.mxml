@@ -28,6 +28,8 @@
             import com.esri.ags.layers.supportClasses.CodedValue;
             import com.esri.ags.layers.supportClasses.CodedValueDomain;
             import com.esri.ags.layers.supportClasses.FeatureType;
+            import com.esri.ags.layers.supportClasses.LayerDetails;
+            import com.esri.ags.layers.supportClasses.TableDetails;
             import com.esri.ags.portal.PopUpRenderer;
             import com.esri.ags.portal.supportClasses.PopUpInfo;
             import com.esri.ags.portal.supportClasses.PopUpMediaInfo;
@@ -937,18 +939,26 @@
                         var fld:Object;
                         var cVal:CodedValue;
                         var cDomain:CodedValueDomain;
+                        var typeID:String = null;
+                        if (_layerDetails.typeIdField){
+                            typeID = _layerDetails.typeIdField ? attributes[_layerDetails.typeIdField] : null;
+                        }
                         for each (fld in _layerDetails.fields){                            
-                            var typeID:String = _layerDetails.typeIdField ? attributes[fld.name] : null;
                             if (_layerDetails.typeIdField && fld.name.toUpperCase() == _layerDetails.typeIdField.toUpperCase()){
                                 // replace value with feature type name
-                                var featureType:FeatureType = getFeatureType(typeID);
+                                var featureType:FeatureType = getFeatureType(typeID, _layerDetails);
                                 if (featureType && featureType.name){
                                     attributes[fld.name] = featureType.name;
                                 }
                             }else{
                                 // replace value with coded value name if one exists
                                 if (typeID){
-                                    var fType:FeatureType = getFeatureType(typeID);
+                                    //revert to the actual field value and not the subtype name
+                                    var ntypeID:String = getIdfromTypeName(typeID, _layerDetails);
+                                    if (ntypeID){
+                                        typeID = ntypeID;
+                                    }
+                                    var fType:FeatureType = getFeatureType(typeID, _layerDetails);
                                     if (fType){
                                         cDomain = fType.domains[fld.name] as CodedValueDomain;
                                     }
@@ -1044,14 +1054,51 @@
                 return ObjectUtil.dateCompare(dateA, dateB);
             }
             
-            private function getFeatureType(typeID:String):FeatureType
+            private function getIdfromTypeName(typeName:String, vDtls:*):String
+            {
+                var result:String = null;
+                var featureType:FeatureType;
+                if (vDtls is LayerDetails){
+                    for each (featureType in vDtls.types){
+                        if (typeName == featureType.name){
+                            result = featureType.id;
+                            break;
+                        }
+                    }
+                }
+                
+                if (vDtls is TableDetails){
+                    for each (featureType in vDtls.types){
+                        if (typeName == featureType.name){
+                            result = featureType.id;
+                            break;
+                        }
+                    }
+                }
+                
+                return result;
+            }
+            
+            private function getFeatureType(typeID:String, vDtls:*):FeatureType
             {
                 var result:FeatureType;
+                var featureType:FeatureType;
                 
-                for each (var featureType:FeatureType in _layerDetails.types){
-                    if (typeID == featureType.id){
-                        result = featureType;
-                        break;
+                if (vDtls is LayerDetails){
+                    for each (featureType in vDtls.types){
+                        if (typeID == featureType.id){
+                            result = featureType;
+                            break;
+                        }
+                    }
+                }
+                
+                if (vDtls is TableDetails){
+                    for each (featureType in vDtls.types){
+                        if (typeID == featureType.id){
+                            result = featureType;
+                            break;
+                        }
                     }
                 }
                 

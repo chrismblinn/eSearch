@@ -365,8 +365,8 @@
             private var subSelAlpha:Number;
 
             //Build Constants
-            protected const VERSION:String = "3.5.2";
-            protected const BUILDDATE:String = "10/15/2013";
+            protected const VERSION:String = "3.5.3";
+            protected const BUILDDATE:String = "10/22/2013";
 
             //Resources
             [Embed(source="widgets/eSearch/assets/images/i_about.png")]
@@ -576,8 +576,8 @@
                     }
                     cboGraBufferUnit.dataProvider = new ArrayCollection(configBufferUnits);
                     cboGraBufferUnit.width = determineDropDownWidth(configBufferUnits);
-                    if((cboGraBufferUnit.width + 102 + bufferUserGraphic.measureText(lblbufferUserGraphic).width + 37) > wTemplate.width){
-                        cboGraBufferUnit.width = (wTemplate.width - (102 + bufferUserGraphic.measureText(lblbufferUserGraphic).width + 37));
+                    if((cboGraBufferUnit.width + 102 + bufferUserGraphic.measureText(lblbufferUserGraphic).width + 37) > initialWidth){
+                        cboGraBufferUnit.width = (initialWidth - (102 + bufferUserGraphic.measureText(lblbufferUserGraphic).width + 37));
                     }
                     cboGraBufferUnit.selectedIndex = ddSelIndx;
                     BuffValue = configXML.buffervalue || "50";
@@ -1104,8 +1104,8 @@
                 if (configSearchText.length){
                     cboLayerText.dataProvider = new ArrayCollection(configSearchText);
                     cboLayerText.width = determineDropDownWidth(configSearchText);
-                    if((cboLayerText.width + lblLayerText.measureText(layerLabel).width + 122) > wTemplate.width){
-                        cboLayerText.width = (wTemplate.width - (lblLayerText.measureText(layerLabel).width + 122));
+                    if((cboLayerText.width + lblLayerText.measureText(layerLabel).width + 122) > initialWidth){
+                        cboLayerText.width = (initialWidth - (lblLayerText.measureText(layerLabel).width + 122));
                     }
                     cboLayerText.selectedIndex = 0;
                     txtLabelText.text = configSearchText[0].expr[0].textlabel;
@@ -1179,8 +1179,8 @@
                     }
                     cboLayerExpr.dataProvider = new ArrayCollection(configSearchText[0].expr);
                     cboLayerExpr.width = determineDropDownWidth(configSearchText[0].expr);
-                    if((cboLayerExpr.width + lblExprText.measureText(layerExprLabel).width + 57) > wTemplate.width){
-                        cboLayerExpr.width = (wTemplate.width - (lblExprText.measureText(layerExprLabel).width + 57));
+                    if((cboLayerExpr.width + lblExprText.measureText(layerExprLabel).width + 57) > initialWidth){
+                        cboLayerExpr.width = (initialWidth - (lblExprText.measureText(layerExprLabel).width + 57));
                     }
                     cboLayerExpr.selectedIndex = 0;
                     if (configSearchText[0].expr.length == 1){
@@ -1196,8 +1196,8 @@
                 if (configSearchGraphical.length){
                     cboLayerGraphical.dataProvider = new ArrayCollection(configSearchGraphical);
                     cboLayerGraphical.width = determineDropDownWidth(configSearchGraphical);
-                    if((cboLayerGraphical.width + lblLayerGraphical.measureText(layerLabel).width + 57) > wTemplate.width){
-                        cboLayerGraphical.width = wTemplate.width - (lblLayerGraphical.measureText(layerLabel).width + 57);
+                    if((cboLayerGraphical.width + lblLayerGraphical.measureText(layerLabel).width + 57) > initialWidth){
+                        cboLayerGraphical.width = initialWidth - (lblLayerGraphical.measureText(layerLabel).width + 57);
                     }
                     cboLayerGraphical.selectedIndex = 0;
                     txtLabelGraphical.text = configSearchGraphical[0].graphicallabel;
@@ -1214,14 +1214,14 @@
                 if (configSpatialSearchLayers.length){
                     cboSearchLayerSpatial.dataProvider = new ArrayCollection(configSpatialSearchLayers);
                     cboSearchLayerSpatial.width = determineDropDownWidth(configSpatialSearchLayers);
-                    if(cboSearchLayerSpatial.width > (wTemplate.width - 57)){
-                        cboSearchLayerSpatial.width = (wTemplate.width - 57);
+                    if(cboSearchLayerSpatial.width > (initialWidth - 57)){
+                        cboSearchLayerSpatial.width = (initialWidth - 57);
                     }
                     cboSearchLayerSpatial.selectedIndex = 0;
                     cboBufferUnit.dataProvider = new ArrayCollection(configBufferUnits);
                     cboBufferUnit.width = determineDropDownWidth(configBufferUnits);
-                    if((cboBufferUnit.width + 117) > wTemplate.width){
-                        cboBufferUnit.width = (wTemplate.width - 117);
+                    if((cboBufferUnit.width + 117) > initialWidth){
+                        cboBufferUnit.width = (initialWidth - 117);
                     }
                     cboBufferUnit.selectedIndex = cboGraBufferUnit.selectedIndex;
                 }
@@ -2052,8 +2052,8 @@
                 txtLabelText.text = configSearchText[i].expr[0].textlabel;
                 cboLayerExpr.dataProvider = new ArrayCollection(configSearchText[i].expr);
                 cboLayerExpr.width = determineDropDownWidth(configSearchText[i].expr);
-                if((cboLayerExpr.width + lblExprText.measureText(layerExprLabel).width + 57) > wTemplate.width){
-                    cboLayerExpr.width = (wTemplate.width - (lblExprText.measureText(layerExprLabel).width + 57));
+                if((cboLayerExpr.width + lblExprText.measureText(layerExprLabel).width + 57) > initialWidth){
+                    cboLayerExpr.width = (initialWidth - (lblExprText.measureText(layerExprLabel).width + 57));
                 }
                 cboLayerExpr.selectedIndex = 0;
                 if (configSearchText[i].expr.length == 1){
@@ -2528,9 +2528,28 @@
                         if(sItemVal.textValue.toLowerCase() == "all" && !sItemVal.isTextBox()){
                             var mExpr:String = queryExpr.replace("=", "IN(") + ")";
                             var uList:String = configSearchText[i].expr[j].values[sg].userlist;
-                            var myPat:RegExp = /,all/gi;
-                            uList = uList.replace(myPat, "");
-                            var uaList:Array = uList.split(",");
+                            var myPat:RegExp;
+                            var uaList:Array;
+                            if (uList.indexOf("','") > -1)
+                            {
+                                myPat = /,'all'/gi;
+                                uList = uList.replace(myPat, "");
+                                uaList = mx.utils.StringUtil.trimArrayElements(uList,"','").split("','");
+                                if (String(uaList[0]).substring(0,1) == "'"){
+                                    uaList[0] = String(uaList[0]).substring(1);
+                                }
+                                var lVal:String = String(uaList[uaList.length - 1]);
+                                if (lVal.substring(lVal.length - 1) == "'"){
+                                    uaList[uaList.length - 1] = lVal.substring(0,lVal.length - 1);
+                                }
+                            }
+                            else
+                            {
+                                myPat = /,all/gi;
+                                uList = uList.replace(myPat, "");
+                                uaList = mx.utils.StringUtil.trimArrayElements(uList,",").split(",");
+                            }
+                            
                             if(mExpr.indexOf("'[value]'") > -1){
                                 uList = uaList.join("','");
                             }
@@ -3664,14 +3683,18 @@
                             }
                             if(layerDetails && field){
                                 var typeID:String = null;
+                                if (layerDetails.typeIdField){
+                                    typeID = layerDetails.typeIdField ? graphic.attributes[layerDetails.typeIdField] : null;
+                                }
                                 if (layerDetails.typeIdField && fieldName.toUpperCase() == layerDetails.typeIdField.toUpperCase()){
-                                    typeID = layerDetails.typeIdField ? graphic.attributes[fieldName] : null;
+                                    //typeID = layerDetails.typeIdField ? graphic.attributes[fieldName] : null;
                                     // replace value with feature type name
                                     var featureType:FeatureType = getFeatureType(typeID);
                                     if (featureType && featureType.name){
                                         value = featureType.name;
                                     }
                                 }else{
+                                    //typeID = layerDetails.typeIdField ? graphic.attributes[fieldName] : null;
                                     // replace value with coded value name if one exists
                                     var codedValue:CodedValue = getCodedValue(fieldName, value, typeID);
                                     if (codedValue){
