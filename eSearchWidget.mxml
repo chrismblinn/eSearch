@@ -365,8 +365,9 @@
             private var subSelAlpha:Number;
 
             //Build Constants
-            protected const VERSION:String = "3.5.3";
-            protected const BUILDDATE:String = "10/22/2013";
+            protected const VERSION:String = "3.5.4";
+            protected const BUILDDATE:String = "11/5/2013";
+            //Aded default initalWidth
 
             //Resources
             [Embed(source="widgets/eSearch/assets/images/i_about.png")]
@@ -576,6 +577,9 @@
                     }
                     cboGraBufferUnit.dataProvider = new ArrayCollection(configBufferUnits);
                     cboGraBufferUnit.width = determineDropDownWidth(configBufferUnits);
+                    if (initialWidth == 0){
+                        initialWidth = 400;
+                    }
                     if((cboGraBufferUnit.width + 102 + bufferUserGraphic.measureText(lblbufferUserGraphic).width + 37) > initialWidth){
                         cboGraBufferUnit.width = (initialWidth - (102 + bufferUserGraphic.measureText(lblbufferUserGraphic).width + 37));
                     }
@@ -2582,7 +2586,7 @@
                     // on result
                     function onResult(feats:Array, token:XMLList = null):void
                     {
-                        try{
+                        //try{
                             createFeatureSet(feats);
                             qFeatLayer.selectionColor = Number.NaN;
                             var gid:Number = 0;
@@ -2735,11 +2739,11 @@
                                     }
                                 }
                             }
-                        }
+                        /*}
                         catch (error:Error){
                             map.cursorManager.removeBusyCursor();
                             showMessage(error.message, false);
-                        }
+                        }*/
                     }
 
                     //on fault
