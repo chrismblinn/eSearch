@@ -53,6 +53,7 @@ package widgets.eSearch
         private var blankStringExists:Boolean;
         private var _token:String;
         private var _proxy:String;
+        private var _defExpr:String;
         
         private var query:Query = new Query;
         private var queryTask:QueryTask = new QueryTask();
@@ -69,7 +70,8 @@ package widgets.eSearch
         public function PagingQueryTask(url:String="", fieldName:String="", useAMF:Boolean=false, 
                                         sItemVal:SearchExpValueItem=null, uniqueCache:Object=null, 
                                         isRequired:Boolean=false, dateFormat:String="",
-                                        useUTC:Boolean=false, token:String=null, proxy:String=null)
+                                        useUTC:Boolean=false, token:String=null, proxy:String=null,
+                                        defExpr:String="")
         {
             _url = url;
             _fieldName = fieldName;
@@ -81,6 +83,7 @@ package widgets.eSearch
             _useUTC = useUTC;
             _token = token;
             _proxy = proxy;
+            _defExpr = defExpr;
         }
 
         /**
@@ -283,7 +286,11 @@ package widgets.eSearch
             query.returnGeometry = false;
             query.outFields = [_fieldName]
             query.objectIds = null;
-            query.text = "%";
+            if(_defExpr && _defExpr != ""){
+                query.where = _defExpr;
+            }else{
+                query.text = "%";
+            }
             queryTask.url = _url;
             queryTask.useAMF = _useAMF;
             queryTask.token = _token;
@@ -302,7 +309,6 @@ package widgets.eSearch
             allValues = [];
             objectIdsArray = objectIds;
             featuresTotal = objectIdsArray.length;
-            
             query.where = "";
             query.text = null;            
             query.objectIds = objectIdsArray;

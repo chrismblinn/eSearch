@@ -365,8 +365,8 @@
             private var subSelAlpha:Number;
 
             //Build Constants
-            protected const VERSION:String = "3.6";
-            protected const BUILDDATE:String = "12/18/2013";
+            protected const VERSION:String = "3.6.1";
+            protected const BUILDDATE:String = "12/19/2013";
 
             //Resources
             [Embed(source="widgets/eSearch/assets/images/i_about.png")]
@@ -821,6 +821,7 @@
                         if(lyrSymbol){
                             layer.renderer = new SimpleRenderer(lyrSymbol);
                         }
+                        layer.definitionExpression = lyrDefExpr;
 
                         var searchLayer:Object = {
                             layer: layer,
@@ -1640,7 +1641,7 @@
                     map.removeLayer(qFeatLayer);
                     qFeatLayer = queryLayer;
                     if(typeQ == "layer"){
-                        qFeatLayer.renderer = new SimpleRenderer(getFeatLyrSymbol(qFeatLayer, "queryFromURL"));
+                        qFeatLayer.renderer = new SimpleRenderer(getFeatLyrSymbol(qFeatLayer, "queryFromURL", slayerId));
                     }
                     qFeatLayer.name = qFeatLayer.id = "hiddenLayer_eSearchSelectionLayer";
                     qFeatLayer.addEventListener(FlexEvent.HIDE, featLayer_hideHandler);
@@ -3441,19 +3442,23 @@
             * @param String initiator the specific view that initiated this function.
             * @return Symbol the Symbol of the input graphic
             */
-            private function getFeatLyrSymbol(FeatLyr:FeatureLayer, initiator:String):Symbol
+            private function getFeatLyrSymbol(FeatLyr:FeatureLayer, initiator:String, qLyrId:int = -1):Symbol
             {
                 var i:int;
                 var sym:Symbol;
                 var retClr:uint
-                if(initiator == "queryFeaturesText" || initiator == "queryFromURL"){
-                    i = (cboLayerText.selectedIndex < 0) ? 0 : cboLayerText.selectedIndex;
-                }else if(initiator == "graphical"){
-                    i = (cboLayerGraphical.selectedIndex < 0) ? 0 : cboLayerGraphical.selectedIndex;
-                }else{
-                    i = (cboSearchLayerSpatial.selectedIndex < 0) ? 0 : cboSearchLayerSpatial.selectedIndex;
+                if(qLyrId >= 0){
+                    i = qLyrId;
+                } else {
+                    if(initiator == "queryFeaturesText" || initiator == "queryFromURL"){
+                        i = (cboLayerText.selectedIndex < 0) ? 0 : cboLayerText.selectedIndex;
+                    }else if(initiator == "graphical"){
+                        i = (cboLayerGraphical.selectedIndex < 0) ? 0 : cboLayerGraphical.selectedIndex;
+                    }else{
+                        i = (cboSearchLayerSpatial.selectedIndex < 0) ? 0 : cboSearchLayerSpatial.selectedIndex;
+                    }
                 }
-
+                
                 switch (FeatLyr.layerDetails.geometryType){
                     case Geometry.MAPPOINT:{
                         if(initiator == "queryFeaturesText" || initiator == "queryFromURL"){
@@ -4020,7 +4025,7 @@
                     return;
                 }
 
-                this.cursorManager.setBusyCursor();
+                cursorManager.setBusyCursor();
                 var uniqueCache:Object = layerUniqueCache[queryLayer];
                 if (!uniqueCache){
                     uniqueCache = {};
@@ -4039,7 +4044,8 @@
                     var isTenOrGreater:Boolean = (vNum >= 10);
                     pagingAttempts = 0;
                     pagingQueryTask = new PagingQueryTask(queryLayer.url, targetField, isTenOrGreater, sItemVal,
-                        uniqueCache, sItemVal.isValueRequired, targetDateFormat, uUseUTC, queryLayer.token, queryLayer.proxyURL);
+                        uniqueCache, sItemVal.isValueRequired, targetDateFormat, uUseUTC, queryLayer.token, 
+                        queryLayer.proxyURL, queryLayer.definitionExpression);
                     pagingQueryTask.addEventListener("pagingComplete",pagingQueryTask_complete);
                     pagingQueryTask.addEventListener("pagingFault",pagingQueryTask_failed);
                     pagingQueryTask.execute();

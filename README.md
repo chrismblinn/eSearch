@@ -5,6 +5,10 @@
 [![Image of Enhanced Search Widget](https://raw.github.com/rscheitlin/eSearch/master/Preview.jpg "Example Enhanced Search Widget app")](http://gis.calhouncounty.org/FlexViewer3.1/index.html?config=config-eSearch.xml&esearch=2&slayer=3&exprnum=1)
 
 ## Version Updates
+Version 3.6.1 - 12/19/2013
+* Fixed issue With search layer symbology not showing when using a URL search until a selection was made in the datagrid.
+* Unique values from field now honors the layers definition expression.
+
 Version 3.6 - 12/19/2013
 * Recompile for ArcGIS Viewer for Flex Version 3.6
 
