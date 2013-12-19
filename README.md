@@ -7,7 +7,6 @@
 ## Version Updates
 Version 3.6 - 12/19/2013
 * Recompile for ArcGIS Viewer for Flex Version 3.6
-* Fixed issue With search layer symbology not showing occasionally until a selection was made in the datagrid.
 
 Version 3.5.4 - 11/5/2013
 * Fixed issue With dropdownlists sizes that was introduce in 3.5.3.
