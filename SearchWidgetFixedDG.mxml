@@ -2055,8 +2055,12 @@
             protected function resultsGrid_selectionChangeHandler(event:GridSelectionEvent):void
             {
                 var selItems:Vector.<Object> = resultsGrid.selectedItems;
+                if(!selItems){
+                    resultsGrid.grid.caretRowIndex = -1;
+                }
                 _bWidget.subSelectItemByOID(selItems);
                 resultsGrid.invalidateDisplayList();
+                resultsGrid.grid.validateNow();
             }
             
         ]]>

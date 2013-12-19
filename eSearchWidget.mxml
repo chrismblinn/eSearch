@@ -365,9 +365,8 @@
             private var subSelAlpha:Number;
 
             //Build Constants
-            protected const VERSION:String = "3.5.4";
-            protected const BUILDDATE:String = "11/5/2013";
-            //Aded default initalWidth
+            protected const VERSION:String = "3.6";
+            protected const BUILDDATE:String = "12/18/2013";
 
             //Resources
             [Embed(source="widgets/eSearch/assets/images/i_about.png")]
@@ -3743,8 +3742,9 @@
                         }
                     }
                     graphic.checkForMouseListeners = false;
+                    graphic.symbol = gSym;
                     var searchResult:SearchResult = new SearchResult();
-                    searchResult.symbol = graphic.symbol = gSym;
+                    searchResult.symbol = gSym;
                     searchResult.initiator = initiator;
                     searchResult.title = title;
                     searchResult.content = content.substr(0,content.length - 4);
