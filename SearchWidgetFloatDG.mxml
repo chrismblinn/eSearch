@@ -1188,9 +1188,18 @@
                             popUpMediaInfo.imageLinkURL = links[l].link;
                             popUpMediaInfo.imageSourceURL = links[l].link;
                             pminfos.push(popUpMediaInfo);
+                        }else if(links[l].icon != ""){
+                            var popUpMediaInfo2:PopUpMediaInfo = new PopUpMediaInfo;
+                            popUpMediaInfo2.type = PopUpMediaInfo.IMAGE;
+                            popUpMediaInfo2.imageLinkURL = links[l].link;
+                            popUpMediaInfo2.imageSourceURL = links[l].icon;
+                            popUpMediaInfo2.caption = links[l].alias;
+                            pminfos.push(popUpMediaInfo2);
                         }else{
-                            var lText:String = (links[l].alias != "") ? links[l].alias : links[l].link;
-                            popUpInfo.description += "<br /><a href='" + links[l].link + "'>" + lText + "</a>"
+                            if(!links[l].disableinpopup){
+                                var lText:String = (links[l].alias != "") ? links[l].alias : links[l].link;
+                                popUpInfo.description += "<br /><a href='" + links[l].link + "'>" + lText + "</a>";
+                            }
                         }
                     }
                 }

@@ -52,6 +52,7 @@ package widgets.eSearch
         private var _useUTC:Boolean;
         private var blankStringExists:Boolean;
         private var _token:String;
+        private var _allString:String;
         private var _proxy:String;
         private var _defExpr:String;
         
@@ -71,7 +72,7 @@ package widgets.eSearch
                                         sItemVal:SearchExpValueItem=null, uniqueCache:Object=null, 
                                         isRequired:Boolean=false, dateFormat:String="",
                                         useUTC:Boolean=false, token:String=null, proxy:String=null,
-                                        defExpr:String="")
+                                        defExpr:String="", allString:String="all")
         {
             _url = url;
             _fieldName = fieldName;
@@ -84,6 +85,7 @@ package widgets.eSearch
             _token = token;
             _proxy = proxy;
             _defExpr = defExpr;
+            _allString = allString;
         }
 
         /**
@@ -106,6 +108,14 @@ package widgets.eSearch
         public function set token(value:String):void
         {
             _token = value;
+        }
+        
+        /**
+         * String with the label for internationalizing the all string
+         */
+        public function set allString(value:String):void
+        {
+            _allString = value;
         }
         
         /**
@@ -353,7 +363,7 @@ package widgets.eSearch
                 uniqueValues.splice(0, 0, uVal);
             }
             uVal = new SearchDDItem;
-            uVal.label = "all";
+            uVal.label = _allString;
             uVal.value = "allu";
             uniqueValues.push(uVal);
             dispatchEvent(new FlexEvent("pagingComplete"));
@@ -425,7 +435,7 @@ package widgets.eSearch
                         uniqueValues.splice(0, 0, uVal);
                     }
                     uVal = new SearchDDItem;
-                    uVal.label = "all";
+                    uVal.label = _allString;
                     uVal.value = "allu";
                     uniqueValues.push(uVal);
                     dispatchEvent(new FlexEvent("pagingComplete"));

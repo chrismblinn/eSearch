@@ -5,6 +5,14 @@
 [![Image of Enhanced Search Widget](https://raw.github.com/rscheitlin/eSearch/master/Preview.jpg "Example Enhanced Search Widget app")](http://gis.calhouncounty.org/FlexViewer3.1/index.html?config=config-eSearch.xml&esearch=2&slayer=3&exprnum=1)
 
 ## Version Updates
+Version 3.6.2 - 2/20/2014
+* Fix issue with disableinpopup in datagrids.
+* Fix issue with UNC links that have icons specified not working in my popups.
+* Fix issue with union geoms function and some multi ring polygons. 
+  Special thanks to Leonardo Araújo for the code contribution.
+* Added more configurable messages for widget internationalization.
+* You can now configure the buffer graphic to remain visible after the search.
+
 Version 3.6.1 - 12/19/2013
 * Fixed issue With search layer symbology not showing when using a URL search until a selection was made in the datagrid.
 * Unique values from field now honors the layers definition expression.

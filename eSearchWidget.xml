@@ -450,7 +450,8 @@
     <floatorfixed>fixed</floatorfixed><!-- possible values are fixed and float -->
     <relatetooltip>Show Relates</relatetooltip>
     <relateicon>widgets/eSearch/assets/images/i_relate.png</relateicon>
-	<subselection color="0xfbfe0a" linewidth="4" alpha="0.8" />
+    <subselection color="0xfbfe0a" linewidth="4" alpha="0.8" />
+    <keepbufferaftersearch>false</keepbufferaftersearch>
     <labels>
         <urlsearcherrormessage>URL search parameters are incorrect</urlsearcherrormessage>
         <includetextquery>include text query in selection criteria</includetextquery>
@@ -503,7 +504,17 @@
         <newselectionmethodtip>Create new selection</newselectionmethodtip>
         <addselectionmethodtip>Add to current selection</addselectionmethodtip>
         <removeselectionmethodtip>Remove from current selection</removeselectionmethodtip>
-        <pagingqueryerrormsg>Four unsucessfull attempts was made to get unique values for </pagingqueryerrormsg>
+        <pagingqueryerrormsg>Four unsuccessfully attempts was made to get unique values for </pagingqueryerrormsg>
+        <intersectmessage>There is no result to intersect, please make a graphical or text search first.</intersectmessage>
+        <edrawgraphicsmessage>There are no graphics available</edrawgraphicsmessage>
+        <nodatagridmessage>No Datagrid configured for this layer</nodatagridmessage>
+        <buffermessage>There is no result to buffer, please make a graphical or text search first.</buffermessage>
+        <clearbufferlabel>Clear Buffer</clearbufferlabel>
+        <alloptiontext>all</alloptiontext>
+        <spatialchoicemsg>Do you want to use the Buffer Graphics or the Selection Graphics?</spatialchoicemsg>
+        <spatialchoicetitle>Choose</spatialchoicetitle>
+        <buffergraphicstext>Buffer Graphics</buffergraphicstext>
+        <selectiongraphicstext>Selection Graphics</selectiongraphicstext>
     </labels>
     <symbols>
         <simplefillsymbol color="0x00ffff" alpha="0.5">
