@@ -3090,7 +3090,7 @@
                                     }
                                 }
                             }
-                            if(!keepBufferAfterSearch || initiator == "spatial"){
+                            if(!keepBufferAfterSearch){
                                 graphicsLayerBuffer.clear();
                                 bufferLyrLen = 0;
                                 map.infoWindow.hide();
