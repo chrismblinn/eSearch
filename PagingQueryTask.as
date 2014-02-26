@@ -299,7 +299,7 @@ package widgets.eSearch
             if(_defExpr && _defExpr != ""){
                 query.where = _defExpr;
             }else{
-                query.text = "%";
+                query.where = "1=1";
             }
             queryTask.url = _url;
             queryTask.useAMF = _useAMF;

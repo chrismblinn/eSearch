@@ -5,6 +5,9 @@
 [![Image of Enhanced Search Widget](https://raw.github.com/rscheitlin/eSearch/master/Preview.jpg "Example Enhanced Search Widget app")](http://gis.calhouncounty.org/FlexViewer3.1/index.html?config=config-eSearch.xml&esearch=2&slayer=3&exprnum=1)
 
 ## Version Updates
+Version 3.6.3 - 2/26/2014
+* Fix major bug with uniquevalsfromfield not returning all records in some cases.
+
 Version 3.6.2 - 2/20/2014
 * Fix issue with disableinpopup in datagrids.
 * Fix issue with UNC links that have icons specified not working in my popups.
