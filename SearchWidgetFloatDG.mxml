@@ -77,9 +77,6 @@
             private var dateFormatter:DateTimeFormatter = new DateTimeFormatter();
             private var numFormatter:NumberFormatter = new NumberFormatter();
             private var currFormatter:CurrencyFormatter = new CurrencyFormatter();
-            private var _dateFormat:String = "";
-            private var _currFormat:String = "";
-            private var _numFormat:String = "";
             private var _csvSep:String = ",";
             private var _textQualifier:String = '"';
             private var _layerDetails:* = null;
@@ -88,6 +85,7 @@
             [Bindable] private var _exp2txtBtnLbl:String;
             [Bindable] private var _exportButtonLbl:String;
             [Bindable] private var _enableExport:Boolean;
+            [Bindable] private var _exportNumAsString:Boolean;
             [Bindable] private var _enablePrint:Boolean;
             [Bindable] private var _widgetInteract:Boolean;
             [Bindable] private var _popupsdiabled:Boolean;
@@ -99,7 +97,6 @@
             private var _sumField:String = "";
             private var sumFormat:String;
             private var sortDetails:String = "";
-            private var useUTC:Boolean;
             [Bindable] private var _title:String;
             private var sortAC:ArrayCollection;
             private var dgSort:Sort = new Sort();
@@ -117,6 +114,7 @@
             private var gFieldsAc:ArrayCollection;
             [Bindable] private var _subselectioncolor:uint;
             [Bindable] private var _subselectiontextcolor:uint;
+            private var sumColumn:GridColumn;
             
             public function set subselectioncolor(value:uint):void
             {
@@ -172,6 +170,11 @@
                     _labelSum = "";
                     sumVisible = false;
                 }
+            }
+            
+            public function set exportNumAsString(value:Boolean):void
+            {
+                _exportNumAsString = value;
             }
             
             public function set enableExport(value:Boolean):void
@@ -283,12 +286,11 @@
                 sortDetails = "";
                 _dgColumns = value;
                 var args:Array;
-                var dgCol:GridColumn;
-                var jdgCol:joinDataGridColumn;
+                var dgCol:eGridColumn;
                 var dgColArr:ArrayList = new ArrayList();
                 var fldObj:Object;
                 
-                dgCol = new GridColumn("caret");
+                dgCol = new eGridColumn("caret");
                 dgCol.width = 10;
                 dgCol.headerText = "";
                 dgColArr.addItem(dgCol);
@@ -298,7 +300,7 @@
                 gFieldsAc.addItem(fldObj);
                 
                 if(_hasRelates){
-                    dgCol = new GridColumn();
+                    dgCol = new eGridColumn();
                     dgCol.dataField = "icon";
                     dgCol.width = 65;
                     dgCol.dataTipField = _relateIcon;
@@ -319,77 +321,74 @@
                     fldObj = new Object();
                     fldObj.order = cArr[7] + 1;
                     if(cArr[0].indexOf( "." ) != -1){
-                        jdgCol= new joinDataGridColumn(cArr[0]);
-                        jdgCol.labelFunction = getLabel;
-                        if (cArr[2] != "NA"){
-                            jdgCol.labelFunction = getDateLbl;
-                            _dateFormat = cArr[2];
-                        }
-                        if (cArr[3] != "NA"){
-                            jdgCol.labelFunction = getCurrLbl;
-                            _currFormat = cArr[3];
-                            if(cArr[0] == _sumField){
-                                sumFormat = "cur";
-                            }
-                        }
-                        if (cArr[4] != "NA"){
-                            jdgCol.labelFunction = getNumLbl;
-                            _numFormat = cArr[4];
-                            if(cArr[0] == _sumField){
-                                sumFormat = "num";
-                            }
-                        }
-                        if (cArr[5] != "NA"){
-                            if(cArr[5] =="true"){
-                                useUTC = true;
-                            }else{
-                                useUTC = false;
-                            }
-                        }
-                        if (cArr[6] != "NA"){
-                            sortDetails = cArr[6];
-                            args = sortDetails.split("|");
-                            jdgCol.sortDescending = (args[0] == "asc")?false:true;
-                            if(args[2] == "date"){jdgCol.sortCompareFunction = date_sortCompareFunc};
-                            sortAC.addItem({data: jdgCol,index: parseInt(args[1])});
-                        }
-                        if (_dgFieldAliases){
-                            jdgCol.headerText = _dgFieldAliases[cArr[0]];
-                        }
-                        if (cArr[1] != "NA" && cArr[6] != null){
-                            jdgCol.headerText = cArr[1];
-                        }
-                        HeaderText[cArr[0]] = jdgCol.headerText;
-                        dgColArr.addItem(jdgCol);
-                        fldObj.field = jdgCol.dataField;
-                        gFieldsAc.addItem(fldObj);
-                    }else{
-                        dgCol= new GridColumn(cArr[0]);
+                        dgCol= new eGridColumn(cArr[0]);
+                        dgCol.joinedDataColumn = true;
                         dgCol.labelFunction = getLabel;
                         if (cArr[2] != "NA"){
                             dgCol.labelFunction = getDateLbl;
-                            _dateFormat = cArr[2];
+                            dgCol.DateFormat = cArr[2];
                         }
                         if (cArr[3] != "NA"){
                             dgCol.labelFunction = getCurrLbl;
-                            _currFormat = cArr[3];
+                            dgCol.CurrencyFormat = cArr[3];
                             if(cArr[0] == _sumField){
                                 sumFormat = "cur";
+                                sumColumn = dgCol;
                             }
                         }
                         if (cArr[4] != "NA"){
                             dgCol.labelFunction = getNumLbl;
-                            _numFormat = cArr[4];
+                            dgCol.NumberFormat = cArr[4];
                             if(cArr[0] == _sumField){
                                 sumFormat = "num";
+                                sumColumn = dgCol;
                             }
                         }
                         if (cArr[5] != "NA"){
-                            if(cArr[5] =="true"){
-                                useUTC = true;
-                            }else{
-                                useUTC = false;
+                            dgCol.useUTC = (cArr[5] =="true");
+                        }
+                        if (cArr[6] != "NA"){
+                            sortDetails = cArr[6];
+                            args = sortDetails.split("|");
+                            dgCol.sortDescending = (args[0] == "asc")?false:true;
+                            if(args[2] == "date"){dgCol.sortCompareFunction = date_sortCompareFunc};
+                            sortAC.addItem({data: dgCol,index: parseInt(args[1])});
+                        }
+                        if (_dgFieldAliases){
+                            dgCol.headerText = _dgFieldAliases[cArr[0]];
+                        }
+                        if (cArr[1] != "NA" && cArr[6] != null){
+                            dgCol.headerText = cArr[1];
+                        }
+                        HeaderText[cArr[0]] = dgCol.headerText;
+                        dgColArr.addItem(dgCol);
+                        fldObj.field = dgCol.dataField;
+                        gFieldsAc.addItem(fldObj);
+                    }else{
+                        dgCol= new eGridColumn(cArr[0]);
+                        dgCol.labelFunction = getLabel;
+                        if (cArr[2] != "NA"){
+                            dgCol.labelFunction = getDateLbl;
+                            dgCol.DateFormat = cArr[2];
+                        }
+                        if (cArr[3] != "NA"){
+                            dgCol.labelFunction = getCurrLbl;
+                            dgCol.CurrencyFormat = cArr[3];
+                            if(cArr[0] == _sumField){
+                                sumFormat = "cur";
+                                sumColumn = dgCol;
                             }
+                        }
+                        if (cArr[4] != "NA"){
+                            dgCol.labelFunction = getNumLbl;
+                            dgCol.NumberFormat = cArr[4];
+                            if(cArr[0] == _sumField){
+                                sumFormat = "num";
+                                sumColumn = dgCol;
+                            }
+                        }
+                        if (cArr[5] != "NA"){
+                            dgCol.useUTC = (cArr[5] =="true");
                         }
                         if (cArr[6] != "NA" && cArr[6] != null){
                             sortDetails = cArr[6];
@@ -412,7 +411,7 @@
                 }
                 fldObj = new Object();
                 fldObj.order = 9999;
-                dgCol = new GridColumn("oid");
+                dgCol = new eGridColumn("oid");
                 dgCol.visible = false;
                 dgColArr.addItem(dgCol);
                 fldObj.field = dgCol.dataField;
@@ -431,11 +430,20 @@
                 try{
                     var data:String;
                     var defaultFileName:String;
+                    var os:String = flash.system.Capabilities.os.substr(0, 3);
                     if(optiongroup.selectedValue == _exp2csvBtnLbl){
-                        data = exportCSV(resultsGrid,_csvSep,"\n",columnIndexes);
+                        if (os == "Win") {
+                            data = exportCSV(resultsGrid,_csvSep,"\r\n",columnIndexes);
+                        }else{
+                            data = exportCSV(resultsGrid,_csvSep,"\n",columnIndexes);
+                        }
                         defaultFileName = _csvName + ".csv";
                     }else{
-                        data = exportTXT(resultsGrid,"\n",columnIndexes);
+                        if (os == "Win") {
+                            data = exportTXT(resultsGrid,"\r\n",columnIndexes);
+                        }else{
+                            data = exportTXT(resultsGrid,"\n",columnIndexes);
+                        }
                         defaultFileName = _csvName + ".txt";
                     }
                     
@@ -519,9 +527,17 @@
                                 }
                             }else{
                                 if(dataGridColumn.itemToLabel(object) != null){
-                                    data += _textQualifier + dataGridColumn.itemToLabel(object)+ _textQualifier;
+                                    if((dataGridColumn.labelFunction == getNumLbl || dataGridColumn.labelFunction == getCurrLbl) && _exportNumAsString == false){
+                                        data += object[dataGridColumn.dataField];
+                                    }else{
+                                        data += _textQualifier + dataGridColumn.itemToLabel(object)+ _textQualifier;
+                                    }
                                 }else{
-                                    data += _textQualifier + _textQualifier;
+                                    if((dataGridColumn.labelFunction == getNumLbl || dataGridColumn.labelFunction == getCurrLbl) && _exportNumAsString == false){
+                                        //do nothing
+                                    }else{
+                                        data += _textQualifier + _textQualifier;
+                                    }
                                 }
                             }
                             if(i < (columnCount -1)){
@@ -604,9 +620,17 @@
                                 }
                             }else{
                                 if(dataGridColumn.itemToLabel(object) != null){
-                                    data += _textQualifier + dataGridColumn.itemToLabel(object)+ _textQualifier;
+                                    if((dataGridColumn.labelFunction == getNumLbl || dataGridColumn.labelFunction == getCurrLbl) && _exportNumAsString == false){
+                                        data += object[dataGridColumn.dataField];
+                                    }else{
+                                        data += _textQualifier + dataGridColumn.itemToLabel(object)+ _textQualifier;
+                                    }
                                 }else{
-                                    data += _textQualifier + _textQualifier;
+                                    if((dataGridColumn.labelFunction == getNumLbl || dataGridColumn.labelFunction == getCurrLbl) && _exportNumAsString == false){
+                                        //do nothing
+                                    }else{
+                                        data += _textQualifier + _textQualifier;
+                                    }
                                 }
                             }
                             if(i < (columnCount -1)){
@@ -739,20 +763,6 @@
                 return -1;
             }
             
-            private function getGridColumn(key:String):GridColumn
-            {
-                var i:int;
-                var retCol:GridColumn;
-                for ( i=0; i<resultsGrid.columnsLength; i++ ) {
-                    // if the column actually exists:
-                    if ( GridColumn(resultsGrid.columns.getItemAt(i)).dataField == key ) {
-                        retCol = GridColumn(resultsGrid.columns.getItemAt(i));
-                        break;
-                    }
-                }
-                return retCol;
-            }
-            
             private function getLabel(item:Object,column:GridColumn):String
             {
                 return item[column.dataField];
@@ -763,13 +773,19 @@
                 var dateMS:Number = Number(item[column.dataField]);
                 var retVal:String = "";
                 var rVal:String = item[column.dataField];
+                var dateFormatStr:String;
+                var cuseUTC:Boolean;
                 if(rVal == null){
                     //do nothing
                 }else{
                     if (!isNaN(dateMS)){
                         //Fix the date format to use the Spark format
-                        _dateFormat = _dateFormat.replace(/D/g, "d").replace(/Y/g, "y");
-                        retVal = msToDate(dateMS, _dateFormat, useUTC);
+                        if(column is eGridColumn){
+                            dateFormatStr = (column as eGridColumn).DateFormat;
+                            cuseUTC = (column as eGridColumn).useUTC;
+                        }
+                        dateFormatStr = dateFormatStr.replace(/D/g, "d").replace(/Y/g, "y");
+                        retVal = msToDate(dateMS, dateFormatStr, cuseUTC);
                     }
                 }
                 return retVal;
@@ -777,7 +793,11 @@
             
             private function getNumLbl(item:Object,column:GridColumn):String
             {
-                var args:Array = _numFormat.split("|");
+                var numFormatStr:String;
+                if(column is eGridColumn){
+                    numFormatStr = (column as eGridColumn).NumberFormat;
+                }
+                var args:Array = numFormatStr.split("|");
                 if(args[0]){
                     numFormatter.fractionalDigits = args[0];
                 }
@@ -795,7 +815,11 @@
             
             private function getCurrLbl(item:Object,column:GridColumn):String
             {
-                var args:Array = _currFormat.split("|");
+                var currFormatStr:String;
+                if(column is eGridColumn){
+                    currFormatStr = (column as eGridColumn).CurrencyFormat;
+                }
+                var args:Array = currFormatStr.split("|");
                 if(args[0]){
                     currFormatter.currencySymbol = args[0];
                     currFormatter.useCurrencySymbol = true;
@@ -991,7 +1015,11 @@
                             total += Number(row[_sumField]);
                         }
                         if(sumFormat == "num"){
-                            var args:Array = _numFormat.split("|");
+                            var numFormatStr:String;
+                            if(sumColumn && sumColumn is eGridColumn){
+                                numFormatStr = (sumColumn as eGridColumn).NumberFormat;
+                            }
+                            var args:Array = numFormatStr.split("|");
                             if(args[0]){
                                 numFormatter.fractionalDigits = args[0];
                             }
@@ -1006,7 +1034,11 @@
                             }
                             taSum.text = numFormatter.format(total);
                         }else if(sumFormat == "cur"){
-                            var args2:Array = _currFormat.split("|");
+                            var currFormatStr:String;
+                            if(sumColumn && sumColumn is eGridColumn){
+                                currFormatStr = (sumColumn as eGridColumn).CurrencyFormat;
+                            }
+                            var args2:Array = currFormatStr.split("|");
                             if(args[0]){
                                 currFormatter.currencySymbol = args[0];
                                 currFormatter.useCurrencySymbol = true;
@@ -1182,13 +1214,13 @@
                     if (links[l].link){
                         var pos:Number = links[l].link.length - 4;
                         var sfx:String = String(links[l].link).substr(pos, 4).toLowerCase();
-                        if ((sfx == ".jpg") || (sfx == ".png") || (sfx == ".gif")){ // use PopUpMediaInfo if it is an image
+                        if (((sfx == ".jpg") || (sfx == ".png") || (sfx == ".gif")) && links[l].popuptype != "text"){ // use PopUpMediaInfo if it is an image
                             var popUpMediaInfo:PopUpMediaInfo = new PopUpMediaInfo;
                             popUpMediaInfo.type = PopUpMediaInfo.IMAGE;
                             popUpMediaInfo.imageLinkURL = links[l].link;
                             popUpMediaInfo.imageSourceURL = links[l].link;
                             pminfos.push(popUpMediaInfo);
-                        }else if(links[l].icon != ""){
+                        }else if(links[l].icon != "" && links[l].popuptype != "text"){
                             var popUpMediaInfo2:PopUpMediaInfo = new PopUpMediaInfo;
                             popUpMediaInfo2.type = PopUpMediaInfo.IMAGE;
                             popUpMediaInfo2.imageLinkURL = links[l].link;

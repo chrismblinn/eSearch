@@ -297,6 +297,8 @@
             private var keepGraSearchEnabled:Boolean;
             private var autoZoom:Boolean;
             private var queryEnableExport:Boolean;
+            private var queryExportNumbersAsFormattedStrings:Boolean;
+
             private var queryEnablePrint:Boolean;
             private var queryPrintTitle:String;
             private var queryExprForSpatRel:Boolean;
@@ -378,8 +380,8 @@
             private var subSelAlpha:Number;
 
             //Build Constants
-            protected const VERSION:String = "3.6.3";
-            protected const BUILDDATE:String = "2/26/2014";
+            protected const VERSION:String = "3.6.4";
+            protected const BUILDDATE:String = "3/3/2014";
 
             //Resources
             [Embed(source="widgets/eSearch/assets/images/i_about.png")]
@@ -766,11 +768,13 @@
                             var lyrLinkAlias:String = lyrLinkList[l].@alias || "";
                             var lyrLinkdisableIfNull:Boolean = lyrLinkList[l].@disablelinksifnull && lyrLinkList[l].@disablelinksifnull == "true";
                             var lyrLinkdisableInPopUp:Boolean = lyrLinkList[l].@disableinpopups && lyrLinkList[l].@disableinpopups == "true";
+                            var lyrPopupType:String = lyrLinkList[l].@popuplinktype || "image";
                             var lyrIcon:String = XML(lyrLinkList[l]).child("icon") || "";
                             var linkObj:Object = {
                                 link: lyrLink,
                                 alias: lyrLinkAlias,
                                 icon: lyrIcon,
+                                popuptype: lyrPopupType,
                                 disablelinksifnull: lyrLinkdisableIfNull,
                                 disableinpopup: lyrLinkdisableInPopUp
                             };
@@ -778,6 +782,7 @@
                         }
                         var lyrQueryAttach:Boolean = lyrList[i].queryattachments && lyrList[i].queryattachments == "true";
                         var lyrEnableExport:Boolean = lyrList[i].enableexport && lyrList[i].enableexport == "true";
+                        var lyrExportNumbersAsFormattedStrings:Boolean = lyrList[i].enableexport.@exportnumbersasformattedstrings && lyrList[i].enableexport.@exportnumbersasformattedstrings == "true";
                         var lyrEnablePrint:Boolean = lyrList[i].enableprintgrid && lyrList[i].enableprintgrid == "true";
                         var lyrPrintTitle:String = "";
                         if(lyrEnablePrint){
@@ -863,6 +868,7 @@
                             zoomscale: zoomScale,
                             zoompercent: zoomPercent,
                             enableexport: lyrEnableExport,
+                            exportnumbersasformattedstrings: lyrExportNumbersAsFormattedStrings,
                             enableprint: lyrEnablePrint,
                             printtitle: lyrPrintTitle,
                             defexpr: lyrDefExpr,
@@ -980,15 +986,18 @@
                             var tblLinkAlias:String = tblLinkList[l].@alias || "";
                             var tblLinkdisableIfNull:Boolean = tblLinkList[l].@disablelinksifnull && tblLinkList[l].@disablelinksifnull == "true";
                             var tblIcon:String = XML(tblLinkList[l]).child("icon") || "";
+                            var tblPopupType:String = tblLinkList[l].@popuplinktype || "image";
                             var tbllinkObj:Object = {
                                 link: tblLink,
                                 alias: tblLinkAlias,
                                 icon: tblIcon,
+                                popuptype: tblPopupType,
                                 disablelinksifnull: tblLinkdisableIfNull
                             };
                             tblLinks.push(tbllinkObj);
                         }
                         var tblEnableExport:Boolean = tblList[i].enableexport && tblList[i].enableexport == "true";
+                        var tblExportNumbersAsFormattedStrings:Boolean = tblList[i].enableexport.@exportnumbersasformattedstrings && tblList[i].enableexport.@exportnumbersasformattedstrings == "true";
                         var tblEnablePrint:Boolean = tblList[i].enableprintgrid && tblList[i].enableprintgrid == "true";
                         var tblPrintTitle:String ="";
                         if(tblEnablePrint){
@@ -1041,6 +1050,7 @@
                             links: tblLinks,
                             multi: tblMultiImgField,
                             enableexport: tblEnableExport,
+                            exportnumbersasformattedstrings: tblExportNumbersAsFormattedStrings,
                             enableprint: tblEnablePrint,
                             printtitle: tblPrintTitle,
                             zoomscale: zoomScale,
@@ -1794,6 +1804,7 @@
                 queryMultiImgField = configSearchText[slayerId].multi;
                 queryAttachments = configSearchText[slayerId].attachments;
                 queryEnableExport = configSearchText[slayerId].enableexport;
+                queryExportNumbersAsFormattedStrings = configSearchText[slayerId].exportnumbersasformattedstrings;
                 queryEnablePrint = configSearchText[slayerId].enableprint;
                 queryPrintTitle = (configSearchText[slayerId].printtitle != "")?configSearchText[slayerId].printtitle:configSearchText[slayerId].label;
                 openDataGrid = configSearchText[slayerId].opendg;
@@ -1911,6 +1922,7 @@
                                     ownerWidget: sWidget,
                                     layerDetails: (queryLayer.layerDetails)?queryLayer.layerDetails:queryLayer.tableDetails,
                                     enableExport: queryEnableExport,
+                                    exportNumAsString: queryExportNumbersAsFormattedStrings,
                                     enablePrint: queryEnablePrint,
                                     widgetInteract: widgetAndGridIteract,
                                     popupsdisabled: PopUpsDisabled,
@@ -2563,6 +2575,7 @@
                 queryMultiImgField = configSearchText[i].multi;
                 queryAttachments = configSearchText[i].attachments;
                 queryEnableExport = configSearchText[i].enableexport;
+                queryExportNumbersAsFormattedStrings = configSearchText[i].exportnumbersasformattedstrings;
                 queryEnablePrint = configSearchText[i].enableprint;
                 queryPrintTitle = (configSearchText[i].printtitle != "")?configSearchText[i].printtitle:configSearchText[i].label;
                 openDataGrid = configSearchText[i].opendg;
@@ -2727,6 +2740,7 @@
                                     myfloatdg.featLayer = queryLayer;
                                     myfloatdg.layerDetails = (queryLayer.layerDetails)?queryLayer.layerDetails:queryLayer.tableDetails;
                                     myfloatdg.enableExport = queryEnableExport;
+                                    myfloatdg.exportNumAsString = queryExportNumbersAsFormattedStrings;
                                     myfloatdg.printLabel = getDefaultString('printSubmitLabel');
                                     myfloatdg.enablePrint = queryEnablePrint;
                                     myfloatdg.widgetInteract = widgetAndGridIteract;
@@ -2768,6 +2782,7 @@
                                     featLayer: queryLayer,
                                     layerDetails: (queryLayer.layerDetails)?queryLayer.layerDetails:queryLayer.tableDetails,
                                     enableExport: queryEnableExport,
+                                    exportNumAsString: queryExportNumbersAsFormattedStrings,
                                     enablePrint: queryEnablePrint,
                                     widgetInteract: widgetAndGridIteract,
                                     popupsdisabled: PopUpsDisabled,
@@ -2884,6 +2899,7 @@
                 queryAttachments = layerConfig.attachments;
                 queryExprForSpatRel = layerConfig.useforspatial;
                 queryEnableExport = layerConfig.enableexport;
+                queryExportNumbersAsFormattedStrings = layerConfig.exportnumbersasformattedstrings;
                 queryEnablePrint = layerConfig.enableprint;
                 queryPrintTitle = queryPrintTitle = (layerConfig.printtitle != "")?layerConfig.printtitle:layerConfig.label;
                 queryDefExpr = layerConfig.defexpr;
@@ -3010,6 +3026,7 @@
                                     myfloatdg.layerDetails = queryLayer.layerDetails;
                                     myfloatdg.featLayer = queryLayer;
                                     myfloatdg.enableExport = queryEnableExport;
+                                    myfloatdg.exportNumAsString = queryExportNumbersAsFormattedStrings;
                                     myfloatdg.printLabel = getDefaultString('printSubmitLabel');
                                     myfloatdg.enablePrint = queryEnablePrint;
                                     myfloatdg.widgetInteract = widgetAndGridIteract;
@@ -3060,6 +3077,7 @@
                                     featLayer: queryLayer,
                                     layerDetails: (queryLayer.layerDetails)?queryLayer.layerDetails:queryLayer.tableDetails,
                                     enableExport: queryEnableExport,
+                                    exportNumAsString: queryExportNumbersAsFormattedStrings,
                                     enablePrint: queryEnablePrint,
                                     widgetInteract: widgetAndGridIteract,
                                     popupsdisabled: PopUpsDisabled,
@@ -3724,6 +3742,7 @@
                         var linkicon:String = "";
                         var linkFieldNull:Boolean = false;
                         var disableInPopUp:Boolean = false;
+                        var popupType:String;
                         if(qLinks[a].disableinpopup){
                             disableInPopUp = true;
                         }
@@ -3744,11 +3763,13 @@
                         var sub:String = com.esri.ags.utils.StringUtil.substitute(qLinks[a].alias, graphic.attributes);
                         alias = (sub) ? sub : qLinks[a].alias;
                         linkicon = com.esri.ags.utils.StringUtil.substitute(qLinks[a].icon, graphic.attributes);
+                        popupType = qLinks[a].popuptype;
                         var lObj:Object ={
                             link: link,
                             icon: linkicon,
                             alias: alias,
-                            disableinpopup: disableInPopUp
+                            disableinpopup: disableInPopUp,
+                            popuptype: popupType
                         };
                         lyrQLinks.push(lObj);
                     }
@@ -3847,14 +3868,12 @@
                                     typeID = layerDetails.typeIdField ? graphic.attributes[layerDetails.typeIdField] : null;
                                 }
                                 if (layerDetails.typeIdField && fieldName.toUpperCase() == layerDetails.typeIdField.toUpperCase()){
-                                    //typeID = layerDetails.typeIdField ? graphic.attributes[fieldName] : null;
                                     // replace value with feature type name
                                     var featureType:FeatureType = getFeatureType(typeID);
                                     if (featureType && featureType.name){
                                         value = featureType.name;
                                     }
                                 }else{
-                                    //typeID = layerDetails.typeIdField ? graphic.attributes[fieldName] : null;
                                     // replace value with coded value name if one exists
                                     var codedValue:CodedValue = getCodedValue(fieldName, value, typeID);
                                     if (codedValue){
@@ -5500,6 +5519,7 @@
                         myfloatdg.RelateIcon = relateIcon;
                         myfloatdg.RelateToolTip = relateToolTip;
                         myfloatdg.enableExport = queryEnableExport;
+                        myfloatdg.exportNumAsString = queryExportNumbersAsFormattedStrings;
                         myfloatdg.printLabel = getDefaultString('printSubmitLabel');
                         myfloatdg.enablePrint = queryEnablePrint;
                         myfloatdg.featLayer = queryLayer;
@@ -5650,14 +5670,14 @@
                     if (links[l].link){
                         var pos:Number = links[l].link.length - 4;
                         var sfx:String = String(links[l].link).substr(pos, 4).toLowerCase();
-                        if ((sfx == ".jpg") || (sfx == ".png") || (sfx == ".gif")){ // use PopUpMediaInfo if it is an image
+                        if (((sfx == ".jpg") || (sfx == ".png") || (sfx == ".gif")) && links[l].popuptype != "text"){ // use PopUpMediaInfo if it is an image
                             var popUpMediaInfo:PopUpMediaInfo = new PopUpMediaInfo;
                             popUpMediaInfo.type = PopUpMediaInfo.IMAGE;
                             popUpMediaInfo.imageLinkURL = links[l].link;
                             popUpMediaInfo.imageSourceURL = links[l].link;
                             popUpMediaInfo.caption = links[l].alias;
                             pminfos.push(popUpMediaInfo);
-                        }else if(links[l].icon != ""){
+                        }else if(links[l].icon != "" && links[l].popuptype != "text"){
                             var popUpMediaInfo2:PopUpMediaInfo = new PopUpMediaInfo;
                             popUpMediaInfo2.type = PopUpMediaInfo.IMAGE;
                             popUpMediaInfo2.imageLinkURL = links[l].link;
