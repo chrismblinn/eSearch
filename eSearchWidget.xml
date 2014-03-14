@@ -26,9 +26,34 @@
                     </values>
                 </expression>
             </expressions>
-            <graphicalsearchlabel>Use one of the graphical search tools to select Zoning</graphicalsearchlabel>
+            <graphicalsearchlabel>Use one of the graphical search tools to select Crimes</graphicalsearchlabel>
             <spatialsearchlayer>false</spatialsearchlayer>
             <titlefield>Map_Crime</titlefield>
+            <fields all="true" />
+            <links/>
+            <zoomscale usegeometry="true" zoompercent="2"></zoomscale>
+            <autoopendatagrid>false</autoopendatagrid>
+            <queryattachments>false</queryattachments>
+            <relates/>
+            <symbology>
+            </symbology>
+        </layer>
+        <layer>
+            <token/>
+            <definitionexpression></definitionexpression>
+            <enableexport>true</enableexport>
+            <name>Property</name>
+            <url>http://maps.evansvillegis.com/ArcGIS_Server/rest/services/Property/PARCELS_WGS84/MapServer/0</url>
+            <expressions>
+            	<expression alias="Value" textsearchlabel="Search by Value:" isvaluerequired="false">
+                    <values>
+                        <value prompt="ex. 250000 (NOT $250,000)" type="value" isvaluerequired="false" field="tot_assess">tot_assess [quant] [value]</value>
+                    </values>
+                </expression>
+            </expressions>
+            <graphicalsearchlabel>Use one of the graphical search tools to select Property</graphicalsearchlabel>
+            <spatialsearchlayer>false</spatialsearchlayer>
+            <titlefield>StatePIN</titlefield>
             <fields all="true" />
             <links/>
             <zoomscale usegeometry="true" zoompercent="2"></zoomscale>
