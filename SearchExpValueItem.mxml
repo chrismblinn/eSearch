@@ -79,6 +79,8 @@
             // the text that represents "no value"
             // defaults to ""
             public var noValue:String = "";
+			
+			public var noDate:Date = null;
             
             public function set wTemplateWidth(value:Number):void
             {
@@ -286,7 +288,7 @@
             */
             public function hasAValue():Boolean
             {
-                return (textValue != noValue && textValue);
+				return (textValue != noValue && textValue);
             }
             
             /*
@@ -347,14 +349,12 @@
                      visible="{_isValueRequired}"
                      toolTip="{_RequiredTooltip}"/>
         </s:HGroup>
-        <!--MY ADD-->
 		<s:HGroup visible="false" includeInLayout="false" id="dateSearch" horizontalAlign="center" width="99%" verticalAlign="contentJustify">
 			<s:Label text="Start:"/>
 			<mx:DateField id="startDate"/>
 			<s:Label text="End:"/>
 			<mx:DateField id="endDate"/>	
 		</s:HGroup>
-	<!--END-->
         <s:TextInput id="txtSearch" width="99%" needsSoftKeyboard="true" visible="false" includeInLayout="false" />
         <s:DropDownList id="cbSearch" creationComplete="{cbSearch.width = _wTemplateWidth - 62;}"
                         visible="false" includeInLayout="false"
