@@ -11,12 +11,18 @@
             <expressions>
             	<expression alias="Date Reported" textsearchlabel="Search by Date Reported:" isvaluerequired="false">
                     <values>
-                        <value prompt="" type="date" field="date_rept">DATE_REPT BETWEEN date [start_date] AND date [end_date]</value>
+                        <value prompt="" type="date" isvaluerequired="false" field="date_rept">DATE_REPT BETWEEN date [start_date] AND date [end_date]</value>
                     </values>
                 </expression>
                 <expression alias="Crime Type" textsearchlabel="Search by Crime Type:" isvaluerequired="false">
                     <values>
-                        <value prompt="Example: Arson" type="list" userlist="Arson,Murder,Theft" operator="AND">upper(Map_Crime) LIKE upper('%[value]%')</value>
+                        <value prompt="Example: Arson" type="list" isvaluerequired="false" userlist="Arson,Murder,Theft" operator="AND">upper(Map_Crime) LIKE upper('%[value]%')</value>
+                    </values>
+                </expression>
+                <expression alias="Both" textsearchlabel="Search both:" isvaluerequired="false">
+                    <values>
+                    	<value prompt="" type="date" isvaluerequired="false" field="date_rept">DATE_REPT BETWEEN date [start_date] AND date [end_date]</value>
+                        <value prompt="Example: Arson" type="list" isvaluerequired="false" userlist="Arson,Murder,Theft" operator="AND">upper(Map_Crime) LIKE upper('%[value]%')</value>
                     </values>
                 </expression>
             </expressions>
