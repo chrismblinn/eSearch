@@ -1283,6 +1283,45 @@
 								break;
 							}
 								
+							case "value":
+							{
+								if(v == 0){
+									sItemVal = searchGroup.getElementAt(0) as SearchExpValueItem;
+									sItemVal.changeToValue();
+									sItemVal.setPrompt = cfg.prompt;
+									sItemVal.isAutoSubmitdisabled = cfg.disableautosubmit;
+									sItemVal.isValueRequired = cfg.isvaluerequired;// set the required property from the config
+									sItemVal.setRequiredText = requiredLbl;
+									sItemVal.setRequiredTooltip = requiredTooltip;
+									if (cfg.operator){
+										sItemVal.operator = cfg.operator;
+									};
+									sItemVal.addEventListener("valueChanged", onValueChanged);
+									sItemVal.addEventListener("submitSearch", onSearchSubmitted);
+									sItemVal.addEventListener(FocusEvent.FOCUS_IN, searchGroupItem_focusInHandler);
+								}else{
+									sItemVal = new SearchExpValueItem;
+									sItemVal.wTemplateWidth = wTemplate.width;
+									sItemVal.percentWidth = 100;
+									sItemVal.setPrompt = cfg.prompt;
+									sItemVal.isAutoSubmitdisabled = cfg.disableautosubmit;
+									sItemVal.isValueRequired = cfg.isvaluerequired;// set the required property from the config
+									sItemVal.setRequiredText = requiredLbl;
+									sItemVal.setRequiredTooltip = requiredTooltip;
+									if (cfg.operator){
+										sItemVal.operator = cfg.operator;
+									};
+									sItemVal.addEventListener("valueChanged", onValueChanged);
+									sItemVal.addEventListener("submitSearch", onSearchSubmitted);
+									sItemVal.addEventListener(FocusEvent.FOCUS_IN, searchGroupItem_focusInHandler);
+									if ((v%2) == 1) {
+										sItemVal.setBGcolor = getStyle('rolloverColor');
+									}
+									searchGroup.addElement(sItemVal);
+								}
+								break;
+							}
+								
 							default:
 							{
 								if(v == 0){
@@ -1958,6 +1997,45 @@
 							break;
 						}
 							
+						case "value":
+						{
+							if(v == 0){
+								sItemVal = searchGroup.getElementAt(0) as SearchExpValueItem;
+								sItemVal.changeToValue();
+								sItemVal.setPrompt = cfg.prompt;
+								sItemVal.isAutoSubmitdisabled = cfg.disableautosubmit;
+								sItemVal.isValueRequired = cfg.isvaluerequired;// set the required property from the config
+								sItemVal.setRequiredText = requiredLbl;
+								sItemVal.setRequiredTooltip = requiredTooltip;
+								if (cfg.operator){
+									sItemVal.operator = cfg.operator;
+								};
+								sItemVal.addEventListener("valueChanged", onValueChanged);
+								sItemVal.addEventListener("submitSearch", onSearchSubmitted);
+								sItemVal.addEventListener(FocusEvent.FOCUS_IN, searchGroupItem_focusInHandler);
+							}else{
+								sItemVal = new SearchExpValueItem;
+								sItemVal.wTemplateWidth = wTemplate.width;
+								sItemVal.percentWidth = 100;
+								sItemVal.setPrompt = cfg.prompt;
+								sItemVal.isAutoSubmitdisabled = cfg.disableautosubmit;
+								sItemVal.isValueRequired = cfg.isvaluerequired;// set the required property from the config
+								sItemVal.setRequiredText = requiredLbl;
+								sItemVal.setRequiredTooltip = requiredTooltip;
+								if (cfg.operator){
+									sItemVal.operator = cfg.operator;
+								};
+								sItemVal.addEventListener("valueChanged", onValueChanged);
+								sItemVal.addEventListener("submitSearch", onSearchSubmitted);
+								sItemVal.addEventListener(FocusEvent.FOCUS_IN, searchGroupItem_focusInHandler);
+								if ((v%2) == 1) {
+									sItemVal.setBGcolor = getStyle('rolloverColor');
+								}
+								searchGroup.addElement(sItemVal);
+							}
+							break;
+						}
+							
 						default:
 						{
 							if(v == 0){
@@ -2419,6 +2497,45 @@
 							break;
 						}
 							
+						case "value":
+						{
+							if(v == 0){
+								sItemVal = searchGroup.getElementAt(0) as SearchExpValueItem;
+								sItemVal.changeToValue();
+								sItemVal.setPrompt = cfg.prompt;
+								sItemVal.isAutoSubmitdisabled = cfg.disableautosubmit;
+								sItemVal.isValueRequired = cfg.isvaluerequired;// set the required property from the config
+								sItemVal.setRequiredText = requiredLbl;
+								sItemVal.setRequiredTooltip = requiredTooltip;
+								if (cfg.operator){
+									sItemVal.operator = cfg.operator;
+								};
+								sItemVal.addEventListener("valueChanged", onValueChanged);
+								sItemVal.addEventListener("submitSearch", onSearchSubmitted);
+								sItemVal.addEventListener(FocusEvent.FOCUS_IN, searchGroupItem_focusInHandler);
+							}else{
+								sItemVal = new SearchExpValueItem;
+								sItemVal.wTemplateWidth = wTemplate.width;
+								sItemVal.percentWidth = 100;
+								sItemVal.setPrompt = cfg.prompt;
+								sItemVal.isAutoSubmitdisabled = cfg.disableautosubmit;
+								sItemVal.isValueRequired = cfg.isvaluerequired;// set the required property from the config
+								sItemVal.setRequiredText = requiredLbl;
+								sItemVal.setRequiredTooltip = requiredTooltip;
+								if (cfg.operator){
+									sItemVal.operator = cfg.operator;
+								};
+								sItemVal.addEventListener("valueChanged", onValueChanged);
+								sItemVal.addEventListener("submitSearch", onSearchSubmitted);
+								sItemVal.addEventListener(FocusEvent.FOCUS_IN, searchGroupItem_focusInHandler);
+								if ((v%2) == 1) {
+									sItemVal.setBGcolor = getStyle('rolloverColor');
+								}
+								searchGroup.addElement(sItemVal);
+							}
+							break;
+						}
+							
 						default:
 						{
 							if(v == 0){
@@ -2610,6 +2727,45 @@
 							if(v == 0){
 								sItemVal = searchGroup.getElementAt(0) as SearchExpValueItem;
 								sItemVal.changeToDate();
+								sItemVal.setPrompt = cfg.prompt;
+								sItemVal.isAutoSubmitdisabled = cfg.disableautosubmit;
+								sItemVal.isValueRequired = cfg.isvaluerequired;// set the required property from the config
+								sItemVal.setRequiredText = requiredLbl;
+								sItemVal.setRequiredTooltip = requiredTooltip;
+								if (cfg.operator){
+									sItemVal.operator = cfg.operator;
+								};
+								sItemVal.addEventListener("valueChanged", onValueChanged);
+								sItemVal.addEventListener("submitSearch", onSearchSubmitted);
+								sItemVal.addEventListener(FocusEvent.FOCUS_IN, searchGroupItem_focusInHandler);
+							}else{
+								sItemVal = new SearchExpValueItem;
+								sItemVal.wTemplateWidth = wTemplate.width;
+								sItemVal.percentWidth = 100;
+								sItemVal.setPrompt = cfg.prompt;
+								sItemVal.isAutoSubmitdisabled = cfg.disableautosubmit;
+								sItemVal.isValueRequired = cfg.isvaluerequired;// set the required property from the config
+								sItemVal.setRequiredText = requiredLbl;
+								sItemVal.setRequiredTooltip = requiredTooltip;
+								if (cfg.operator){
+									sItemVal.operator = cfg.operator;
+								};
+								sItemVal.addEventListener("valueChanged", onValueChanged);
+								sItemVal.addEventListener("submitSearch", onSearchSubmitted);
+								sItemVal.addEventListener(FocusEvent.FOCUS_IN, searchGroupItem_focusInHandler);
+								if ((v%2) == 1) {
+									sItemVal.setBGcolor = getStyle('rolloverColor');
+								}
+								searchGroup.addElement(sItemVal);
+							}
+							break;
+						}
+							
+						case "value":
+						{
+							if(v == 0){
+								sItemVal = searchGroup.getElementAt(0) as SearchExpValueItem;
+								sItemVal.changeToValue();
 								sItemVal.setPrompt = cfg.prompt;
 								sItemVal.isAutoSubmitdisabled = cfg.disableautosubmit;
 								sItemVal.isValueRequired = cfg.isvaluerequired;// set the required property from the config
@@ -3136,7 +3292,40 @@
 							dateExpr = queryExpr.replace("[start_date]", startD);
 							dateExpr = dateExpr.replace("[end_date]", endD);
 							expr = AppendTo(expr, dateExpr, sItemVal.operator);
-						} else {
+						} else if (queryType == "value"){
+							var val1:Number = sItemVal.vValue1;
+							var val2:Number = sItemVal.vValue2;
+							var valExpr:String;
+							var quant:String = sItemVal.valQuant.selectedItem;
+							if (sItemVal.valValue2.visible){
+								valExpr = queryExpr.replace("[quant]","BETWEEN");
+								valExpr = valExpr.replace("[value]", val1);
+								valExpr = valExpr + " AND " + val2;
+							} else {
+								switch(quant)
+								{
+									case "Equals":
+									{
+										valExpr = queryExpr.replace("[quant]","=");
+										valExpr = valExpr.replace("[value]", val1);
+										break;
+									}
+									case "Greater Than":
+									{
+										valExpr = queryExpr.replace("[quant]",">");
+										valExpr = valExpr.replace("[value]", val1);
+										break;
+									}
+									case "Less Than":
+									{
+										valExpr = queryExpr.replace("[quant]","<");
+										valExpr = valExpr.replace("[value]", val1);
+										break;
+									}
+								}
+							}
+							expr = AppendTo(expr, valExpr, sItemVal.operator);
+						}else {
 							if (queryExpr == "[value]" || queryExpr.toLowerCase().indexOf(" in (") > 0){
 								//meaning an open SQL expression or an SQL with an IN Statement
 								eVal = sItemVal.textValue;
