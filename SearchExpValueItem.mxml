@@ -9,16 +9,17 @@
     
     <fx:Script>
         <![CDATA[
-            import com.esri.ags.layers.supportClasses.RangeDomain;
-            
-            import mx.collections.ArrayCollection;
-            import mx.controls.ToolTip;
-            import mx.events.FlexEvent;
-            import mx.events.ValidationResultEvent;
-            import mx.validators.NumberValidator;
-            
-            import spark.components.TextInput;
-            import spark.events.IndexChangeEvent;
+			import com.esri.ags.layers.supportClasses.RangeDomain;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.controls.ToolTip;
+			import mx.events.FlexEvent;
+			import mx.events.ValidationResultEvent;
+			import mx.validators.NumberValidator;
+			
+			import spark.components.TextInput;
+			import spark.events.IndexChangeEvent;
             
             private var _type:String;
             
@@ -34,6 +35,10 @@
 			[Bindable] private var _sDate:Date;
 			
 			[Bindable] private var _eDate:Date;
+			
+			[Bindable] private var _vValue1:Number;
+			
+			[Bindable] private var _vValue2:Number;
 			//END
             
             [Bindable] private var _prompt:String;
@@ -160,6 +165,8 @@
 				//MY ADD
 				dateSearch.visible = false;
 				dateSearch.includeInLayout = false;
+				valueSearch.visible = false;
+				valueSearch.includeInLayout = false;
 				//END
                 resetTxtSearch();
             }
@@ -173,6 +180,8 @@
 				//MY ADD
 				dateSearch.visible = false;
 				dateSearch.includeInLayout = false;
+				valueSearch.visible = false;
+				valueSearch.includeInLayout = false;
 				//END
             }
 			
@@ -185,6 +194,20 @@
 				txtSearch.includeInLayout = false;
 				dateSearch.visible = true;
 				dateSearch.includeInLayout = true;
+				valueSearch.visible = false;
+				valueSearch.includeInLayout = false;
+			}
+			
+			public function changeToValue():void
+			{
+				cbSearch.visible = false;
+				cbSearch.includeInLayout = false;
+				txtSearch.visible = false;
+				txtSearch.includeInLayout = false;
+				dateSearch.visible = false;
+				dateSearch.includeInLayout = false;
+				valueSearch.visible = true;
+				valueSearch.includeInLayout = true;
 			}
             //END
 			
@@ -229,6 +252,22 @@
 					endDate.selectedDate = _eDate;
 				}
 			}
+			
+			public function set vValue1(vVal:Number):void
+			{
+				_vValue1 = vVal;
+				if (isValue()){
+					valValue.text = String(_vValue1);
+				}
+			}
+			
+			public function set vValue2(vVal:Number):void
+			{
+				_vValue2 = vVal;
+				if (isValue()){
+					valValue2.text = String(_vValue2);
+				}
+			}
 			//END
             
             public function get textValue():String
@@ -261,6 +300,22 @@
 				}
 				return _eDate;
 			}
+			
+			public function get vValue1():Number
+			{
+				if (valueSearch.visible){
+					_vValue1 = Number(valValue.text);
+				}
+				return _vValue1;
+			}
+			
+			public function get vValue2():Number
+			{
+				if (valueSearch.visible){
+					_vValue2 = Number(valValue2.text);
+				}
+				return _vValue2;
+			}
             //END
 			
             public function isTextBox():Boolean
@@ -280,6 +335,11 @@
 			public function isDate():Boolean
 			{
 				return dateSearch.visible;
+			}
+			
+			public function isValue():Boolean
+			{
+				return valueSearch.visible;
 			}
             //END
 			
@@ -330,7 +390,21 @@
                 
                 //Set the font size to make the asterisk more visible
                 txtIsRequired.setStyle("fontSize", 22);
+				
+				valQuant.addEventListener(IndexChangeEvent.CHANGE, checkQuant);
             }
+			
+			private function checkQuant(event:Event):void{
+				var val:String = valQuant.selectedItem;
+				if (val == "Between"){
+					valValue2.visible = true;
+					valValue2.includeInLayout = true;
+				} else {
+					valValue2.text = "";
+					valValue2.visible = false;
+					valValue2.includeInLayout = false;
+				}
+			}
             
         ]]>
     </fx:Script>
@@ -354,6 +428,18 @@
 			<mx:DateField id="startDate"/>
 			<s:Label text="End:"/>
 			<mx:DateField id="endDate"/>	
+		</s:HGroup>
+		<s:HGroup visible="false" includeInLayout="false" id="valueSearch" horizontalAlign="center" width="99%" verticalAlign="contentJustify">
+			<s:DropDownList id="valQuant">
+				<s:ArrayList>
+					<fx:String id="valEQ">Equals</fx:String>
+					<fx:String id="valGT">Greater Than</fx:String>
+					<fx:String id="valLT">Less Than</fx:String>
+					<fx:String id="valBT">Between</fx:String>
+				</s:ArrayList>
+			</s:DropDownList>
+			<s:TextInput id="valValue"/>	
+			<s:TextInput id="valValue2" visible="false" includeInLayout="false"/>	
 		</s:HGroup>
         <s:TextInput id="txtSearch" width="99%" needsSoftKeyboard="true" visible="false" includeInLayout="false" />
         <s:DropDownList id="cbSearch" creationComplete="{cbSearch.width = _wTemplateWidth - 62;}"
