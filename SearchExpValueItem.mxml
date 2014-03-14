@@ -29,6 +29,12 @@
             [Bindable] private var _wTemplateWidth:Number;
             
             [Bindable] private var _textValue:String;
+			
+			//MY ADD
+			[Bindable] private var _sDate:Date;
+			
+			[Bindable] private var _eDate:Date;
+			//END
             
             [Bindable] private var _prompt:String;
             
@@ -149,6 +155,10 @@
                 cbSearch.dataProvider = null;
                 txtSearch.visible = true;
                 txtSearch.includeInLayout = true;
+				//MY ADD
+				dateSearch.visible = false;
+				dateSearch.includeInLayout = false;
+				//END
                 resetTxtSearch();
             }
             
@@ -158,8 +168,24 @@
                 cbSearch.includeInLayout = true;
                 txtSearch.visible = false;
                 txtSearch.includeInLayout = false;
+				//MY ADD
+				dateSearch.visible = false;
+				dateSearch.includeInLayout = false;
+				//END
             }
-            
+			
+			//MY ADD
+			public function changeToDate():void
+			{
+				cbSearch.visible = false;
+				cbSearch.includeInLayout = false;
+				txtSearch.visible = false;
+				txtSearch.includeInLayout = false;
+				dateSearch.visible = true;
+				dateSearch.includeInLayout = true;
+			}
+            //END
+			
             public function set setPrompt(value:String):void
             {
                 _prompt = value;
@@ -180,10 +206,28 @@
                 _textValue = value;
                 if (isTextBox()){
                     txtSearch.text = _textValue;
-                }else{
+                }else {
                     cbSearch.selectedItem = _textValue;
                 }
             }
+			
+			//MY ADD
+			public function set sDateValue(sDate:Date):void
+			{
+				_sDate = sDate;
+				if (isDate()){
+					startDate.selectedDate = _sDate;
+				}
+			}
+			
+			public function set eDateValue(eDate:Date):void
+			{
+				_eDate = eDate;
+				if (isDate()){
+					endDate.selectedDate = _eDate;
+				}
+			}
+			//END
             
             public function get textValue():String
             {
@@ -198,7 +242,25 @@
                 }
                 return _textValue;
             }
-            
+			
+			//MY ADD
+			public function get sDateValue():Date
+			{
+				if (dateSearch.visible){
+					_sDate = startDate.selectedDate;
+				}
+				return _sDate;
+			}
+			
+			public function get eDateValue():Date
+			{
+				if (dateSearch.visible){
+					_eDate = endDate.selectedDate;
+				}
+				return _eDate;
+			}
+            //END
+			
             public function isTextBox():Boolean
             {
                 return txtSearch.visible;
@@ -211,7 +273,14 @@
             {
                 return cbSearch.visible;
             }
-            
+			
+			//MY ADD
+			public function isDate():Boolean
+			{
+				return dateSearch.visible;
+			}
+            //END
+			
             /*
             * has the user entered a value
             */
@@ -278,7 +347,15 @@
                      visible="{_isValueRequired}"
                      toolTip="{_RequiredTooltip}"/>
         </s:HGroup>
-        <s:TextInput id="txtSearch" width="99%" needsSoftKeyboard="true" />
+        <!--MY ADD-->
+		<s:HGroup visible="false" includeInLayout="false" id="dateSearch" horizontalAlign="center" width="99%" verticalAlign="contentJustify">
+			<s:Label text="Start:"/>
+			<mx:DateField id="startDate"/>
+			<s:Label text="End:"/>
+			<mx:DateField id="endDate"/>	
+		</s:HGroup>
+	<!--END-->
+        <s:TextInput id="txtSearch" width="99%" needsSoftKeyboard="true" visible="false" includeInLayout="false" />
         <s:DropDownList id="cbSearch" creationComplete="{cbSearch.width = _wTemplateWidth - 62;}"
                         visible="false" includeInLayout="false"
                         labelField="label">
