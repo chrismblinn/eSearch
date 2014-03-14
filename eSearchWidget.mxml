@@ -154,6 +154,7 @@
 			import com.esri.ags.symbols.Symbol;
 			import com.esri.ags.tasks.GeometryService;
 			import com.esri.ags.tasks.GeometryServiceSingleton;
+			import com.esri.ags.tasks.QueryTask;
 			import com.esri.ags.tasks.supportClasses.BufferParameters;
 			import com.esri.ags.tasks.supportClasses.Query;
 			import com.esri.ags.tools.DrawTool;
@@ -718,7 +719,7 @@
                         for (j = 0; j < lyrExprList.length(); j++){
                             var lyrExprAlias:String = lyrExprList[j].@alias;
                             var lyrTextLabel:String = lyrExprList[j].@textsearchlabel;
-                            var lyrRequiresAValue:Boolean = lyrExprList[j].@isvaluerequired && lyrExprList[j].@isvaluerequired == "true";
+                            var lyrRequiresAValue:Boolean = lyrExprList[j].@isvaluerequired && lyrExprList[j].@isvaluerequired == "false";
                             var lyrExprVals:XMLList = lyrExprList[j]..value;
                             configLayerExprsVals = [];
                             for (v = 0; v < lyrExprVals.length(); v++){
@@ -736,7 +737,7 @@
                                 var valDateFormat:String = lyrExprVals[v].@dateformat || "";
                                 var valUseUTC:Boolean = lyrExprVals[v].@useutc && lyrExprVals[v].@useutc == "true";
                                 // if config is given and set to false explicitly, then make it optional (aka not required). Otherwise, default to being required
-                                var isOptional:Boolean = lyrExprVals[v].@isvaluerequired && lyrExprVals[v].@isvaluerequired == "false";
+                                var isOptional:Boolean = lyrExprVals[v].@isvaluerequired && lyrExprVals[v].@isvaluerequired == "true";
                                 var operatorValue:String =  lyrExprVals[v].@operator;
                                 var exprVals:Object = {
                                     prompt:valPrompt,
@@ -3125,83 +3126,75 @@
 						
 						//MY ADD
 						queryType = configSearchText[i].expr[j].values[sg].type;
-						switch(queryType)
-						{
-							case "date":
-							{
-								var sd:Date = sItemVal.sDateValue;
-								var ed:Date = sItemVal.eDateValue;
-								var startD:String = "'" + (sd.fullYear) + "-" + (sd.month + 1) + "-" + (sd.date) + " 00:00:00'";
-								var endD:String = "'" + (ed.fullYear) + "-" + (ed.month + 1) + "-" + (ed.date) + " 23:59:59'";
-								var dateExpr:String;
-								dateExpr = queryExpr.replace("[start_date]", startD);
-								dateExpr = dateExpr.replace("[end_date]", endD);
-								expr = AppendTo(expr, dateExpr, sItemVal.operator);
-								break;
+						
+						if (queryType == "date"){
+							var sd:Date = sItemVal.sDateValue;
+							var ed:Date = sItemVal.eDateValue;
+							var startD:String = "'" + (sd.fullYearUTC) + "-" + (sd.monthUTC + 1) + "-" + (sd.dateUTC) + " 00:00:00'";
+							var endD:String = "'" + (ed.fullYearUTC) + "-" + (ed.monthUTC + 1) + "-" + (ed.dateUTC) + " 23:59:59'";
+							var dateExpr:String;
+							dateExpr = queryExpr.replace("[start_date]", startD);
+							dateExpr = dateExpr.replace("[end_date]", endD);
+							expr = AppendTo(expr, dateExpr, sItemVal.operator);
+						} else {
+							if (queryExpr == "[value]" || queryExpr.toLowerCase().indexOf(" in (") > 0){
+								//meaning an open SQL expression or an SQL with an IN Statement
+								eVal = sItemVal.textValue;
+							}else{
+								eVal = sItemVal.textValue.replace(/'/g,"''");
+							};
+							/*If the expression is an IN Statement and the the value is a string then
+							replace the user defines comma seperated values with single quoted values*/
+							if(queryExpr.toLowerCase().indexOf(" in (") > 0 && queryExpr.toLowerCase().indexOf("'[value]'") > -1){
+								//replace the begining and trailing single qoutes if they exist
+								eVal = eVal.replace(/^'|'$/g, "").replace(/,|','/g, "','");
 							}
-								
-							default:
-							{
-								if (queryExpr == "[value]" || queryExpr.toLowerCase().indexOf(" in (") > 0){
-									//meaning an open SQL expression or an SQL with an IN Statement
-									eVal = sItemVal.textValue;
-								}else{
-									eVal = sItemVal.textValue.replace(/'/g,"''");
-								};
-								/*If the expression is an IN Statement and the the value is a string then
-								replace the user defines comma seperated values with single quoted values*/
-								if(queryExpr.toLowerCase().indexOf(" in (") > 0 && queryExpr.toLowerCase().indexOf("'[value]'") > -1){
-									//replace the begining and trailing single qoutes if they exist
-									eVal = eVal.replace(/^'|'$/g, "").replace(/,|','/g, "','");
+							if (sItemVal.isValueRequired && !sItemVal.hasAValue()){
+								// no value specified so skip this part of where clause
+								continue;
+							};
+							
+							if(sItemVal.textValue.toLowerCase() == "all" && !sItemVal.isTextBox()){
+								var mExpr:String = queryExpr.replace("=", "IN(") + ")";
+								var uList:String = configSearchText[i].expr[j].values[sg].userlist;
+								var myPat:RegExp;
+								var uaList:Array;
+								if (uList.indexOf("','") > -1)
+								{
+									myPat = /,'all'/gi;
+									uList = uList.replace(myPat, "");
+									uaList = mx.utils.StringUtil.trimArrayElements(uList,"','").split("','");
+									if (String(uaList[0]).substring(0,1) == "'"){
+										uaList[0] = String(uaList[0]).substring(1);
+									}
+									var lVal:String = String(uaList[uaList.length - 1]);
+									if (lVal.substring(lVal.length - 1) == "'"){
+										uaList[uaList.length - 1] = lVal.substring(0,lVal.length - 1);
+									}
 								}
-								if (sItemVal.isValueRequired && !sItemVal.hasAValue()){
-									// no value specified so skip this part of where clause
-									continue;
-								};
+								else
+								{
+									myPat = /,all/gi;
+									uList = uList.replace(myPat, "");
+									uaList = mx.utils.StringUtil.trimArrayElements(uList,",").split(",");
+								}
 								
-								if(sItemVal.textValue.toLowerCase() == "all" && !sItemVal.isTextBox()){
-									var mExpr:String = queryExpr.replace("=", "IN(") + ")";
-									var uList:String = configSearchText[i].expr[j].values[sg].userlist;
-									var myPat:RegExp;
-									var uaList:Array;
-									if (uList.indexOf("','") > -1)
-									{
-										myPat = /,'all'/gi;
-										uList = uList.replace(myPat, "");
-										uaList = mx.utils.StringUtil.trimArrayElements(uList,"','").split("','");
-										if (String(uaList[0]).substring(0,1) == "'"){
-											uaList[0] = String(uaList[0]).substring(1);
-										}
-										var lVal:String = String(uaList[uaList.length - 1]);
-										if (lVal.substring(lVal.length - 1) == "'"){
-											uaList[uaList.length - 1] = lVal.substring(0,lVal.length - 1);
-										}
-									}
-									else
-									{
-										myPat = /,all/gi;
-										uList = uList.replace(myPat, "");
-										uaList = mx.utils.StringUtil.trimArrayElements(uList,",").split(",");
-									}
-									
-									if(mExpr.indexOf("'[value]'") > -1){
-										uList = uaList.join("','");
-									}
-									criteriaFromValue = mExpr.replace(myPattern, uList);
+								if(mExpr.indexOf("'[value]'") > -1){
+									uList = uaList.join("','");
+								}
+								criteriaFromValue = mExpr.replace(myPattern, uList);
+								expr = AppendTo(expr, criteriaFromValue, sItemVal.operator);
+							}else if(sItemVal.textValue.toLowerCase() == "allu" && !sItemVal.isTextBox()){
+								expr = AppendTo(expr, "1=1", sItemVal.operator);
+							}else if(sItemVal.textValue.toLowerCase() == "null"){
+								var mExpr2:String = queryExpr.substr(0, queryExpr.indexOf("=")) + " is null";
+								expr = AppendTo(expr, mExpr2, sItemVal.operator);
+							}else{
+								//don't add the expression if there is no user input
+								if(eVal != ""){
+									criteriaFromValue = queryExpr.replace(myPattern, eVal);
 									expr = AppendTo(expr, criteriaFromValue, sItemVal.operator);
-								}else if(sItemVal.textValue.toLowerCase() == "allu" && !sItemVal.isTextBox()){
-									expr = AppendTo(expr, "1=1", sItemVal.operator);
-								}else if(sItemVal.textValue.toLowerCase() == "null"){
-									var mExpr2:String = queryExpr.substr(0, queryExpr.indexOf("=")) + " is null";
-									expr = AppendTo(expr, mExpr2, sItemVal.operator);
-								}else{
-									//don't add the expression if there is no user input
-									if(eVal != ""){
-										criteriaFromValue = queryExpr.replace(myPattern, eVal);
-										expr = AppendTo(expr, criteriaFromValue, sItemVal.operator);
-									}
 								}
-								break;
 							}
 						}
 						
